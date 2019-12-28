@@ -1,0 +1,5 @@
+name: EventSpigot
+version: 0.0.1
+description: EventSpigot
+main: dev.imabad.mceventsuite.spigot.EventSpigot
+author: Rushmead
