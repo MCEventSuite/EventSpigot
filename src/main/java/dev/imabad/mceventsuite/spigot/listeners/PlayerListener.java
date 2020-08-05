@@ -6,9 +6,18 @@ import dev.imabad.mceventsuite.spigot.impl.SpigotPlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerListener implements Listener {
+
+
+    @EventHandler
+    public void onPlayerLogin(PlayerLoginEvent playerJoinEvent){
+        if(EventCore.getInstance().getEventPlayerManager() == null){
+            playerJoinEvent.disallow(PlayerLoginEvent.Result.KICK_OTHER, "Server is still loading....");
+        }
+    }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent playerJoinEvent){

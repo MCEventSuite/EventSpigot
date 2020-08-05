@@ -1,5 +1,8 @@
 package dev.imabad.mceventsuite.spigot.impl;
 
+import dev.imabad.mceventsuite.core.EventCore;
+import dev.imabad.mceventsuite.core.api.actions.Action;
+import dev.imabad.mceventsuite.core.api.objects.EventRank;
 import dev.imabad.mceventsuite.core.api.player.ILocation;
 import dev.imabad.mceventsuite.core.api.player.IPlayer;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
@@ -90,5 +93,10 @@ public class SpigotPlayer implements IPlayer {
     @Override
     public boolean isVisible() {
         return visible;
+    }
+
+    @Override
+    public void executeAction(Action action) {
+        EventCore.getInstance().getActionExecutor().execute(action, this);
     }
 }

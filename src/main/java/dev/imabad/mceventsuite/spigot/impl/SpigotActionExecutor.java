@@ -19,6 +19,7 @@ public class SpigotActionExecutor implements IActionExecutor {
                 Player spigotPlayer = Bukkit.getPlayer(player.getUUID());
                 Material material = Material.matchMaterial((String) action.getVariable("material"));
                 if (material == null) {
+                    System.out.println("[EventSpigot] Tried to execute give item action but could not find material. Material: " + action.getVariable("material"));
                     return;
                 }
                 int slot = (int) action.getVariable("slot");
