@@ -2,6 +2,9 @@ package dev.imabad.mceventsuite.spigot.listeners;
 
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.events.JoinEvent;
+import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
+import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
+import dev.imabad.mceventsuite.core.modules.mysql.dao.PlayerDAO;
 import dev.imabad.mceventsuite.spigot.impl.SpigotPlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -21,7 +24,8 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent playerJoinEvent){
-        SpigotPlayer spigotPlayer = new SpigotPlayer(playerJoinEvent.getPlayer());
+        EventPlayer player = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(PlayerDAO.class).getOrCreatePlayer(playerJoinEvent.getPlayer().getUniqueId(), playerJoinEvent.getPlayer().getDisplayName());
+        SpigotPlayer spigotPlayer = SpigotPlayer.asSpigot(player, playerJoinEvent.getPlayer());
         EventCore.getInstance().getEventPlayerManager().addPlayer(spigotPlayer);
         EventCore.getInstance().getEventRegistry().handleEvent(new JoinEvent(spigotPlayer));
     }

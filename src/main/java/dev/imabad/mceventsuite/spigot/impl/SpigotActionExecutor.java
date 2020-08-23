@@ -2,7 +2,7 @@ package dev.imabad.mceventsuite.spigot.impl;
 
 import dev.imabad.mceventsuite.core.api.actions.Action;
 import dev.imabad.mceventsuite.core.api.actions.IActionExecutor;
-import dev.imabad.mceventsuite.core.api.player.IPlayer;
+import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -13,7 +13,7 @@ import java.util.List;
 
 public class SpigotActionExecutor implements IActionExecutor {
     @Override
-    public void execute(Action action, IPlayer player) {
+    public void execute(Action action, EventPlayer player) {
         switch(action.getType()){
             case GIVE_ITEM: {
                 Player spigotPlayer = Bukkit.getPlayer(player.getUUID());

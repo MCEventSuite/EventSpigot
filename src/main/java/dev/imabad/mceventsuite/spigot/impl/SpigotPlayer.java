@@ -2,97 +2,41 @@ package dev.imabad.mceventsuite.spigot.impl;
 
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.actions.Action;
-import dev.imabad.mceventsuite.core.api.objects.EventRank;
+import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
 import dev.imabad.mceventsuite.core.api.player.ILocation;
-import dev.imabad.mceventsuite.core.api.player.IPlayer;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import javax.persistence.Transient;
 import java.util.UUID;
 
-public class SpigotPlayer implements IPlayer {
+public class SpigotPlayer extends EventPlayer {
 
-    private String username;
-    private UUID uuid;
+    public static SpigotPlayer asSpigot(EventPlayer player, Player bukkitPlayer){
+        return new SpigotPlayer(player, bukkitPlayer);
+    }
+
+    @Transient
     private Player player;
     private boolean visible;
 
     public SpigotPlayer(Player player){
-        this.username = player.getDisplayName();
-        this.uuid = player.getUniqueId();
+        super(player.getUniqueId(), player.getDisplayName());
         this.player = player;
     }
 
-    @Override
-    public UUID getUUID() {
-        return this.uuid;
-    }
-
-    @Override
-    public String getUsername() {
-        return this.username;
-    }
-
-    @Override
-    public ILocation getLocation() {
-        return new SpigotLocation(this.player.getLocation());
+    protected SpigotPlayer(EventPlayer eventPlayer, Player player){
+        super(eventPlayer.getUUID(), eventPlayer.getLastUsername());
+        this.setRank(eventPlayer.getRank());
+        this.setPermissions(eventPlayer.getPermissions());
+        this.setProperties(eventPlayer.getProperties());
+        this.player = player;
     }
 
     @Override
     public void sendMessage(String message) {
         this.player.sendMessage(message);
-    }
-
-    @Override
-    public void kick(String reason) {
-        this.player.kickPlayer(reason);
-    }
-
-    @Override
-    public void teleport(ILocation location) {
-        this.player.teleport(SpigotLocation.toSpigotLocation(location));
-    }
-
-    /** Deprecated non-existent **/
-    @Deprecated
-    @Override
-    public void changeServer(String server) {
-
-    }
-
-    @Override
-    public void toggleFlight() {
-        this.player.setAllowFlight(!this.player.getAllowFlight());
-    }
-
-    @Override
-    public void setFlightEnabled(boolean enabled) {
-        this.player.setAllowFlight(enabled);
-    }
-
-    @Override
-    public boolean isFlightEnabled() {
-        return this.player.getAllowFlight();
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        if(visible){
-            for(Player player : Bukkit.getOnlinePlayers()){
-                player.showPlayer(EventSpigot.getInstance(), this.player);
-            }
-        } else {
-            for(Player player : Bukkit.getOnlinePlayers()){
-                player.hidePlayer(EventSpigot.getInstance(), this.player);
-            }
-        }
-        this.visible = visible;
-    }
-
-    @Override
-    public boolean isVisible() {
-        return visible;
     }
 
     @Override
