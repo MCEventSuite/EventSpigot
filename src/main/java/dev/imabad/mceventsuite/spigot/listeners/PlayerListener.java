@@ -32,7 +32,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent playerQuitEvent){
-        EventCore.getInstance().getEventPlayerManager().removePlayer(EventCore.getInstance().getEventPlayerManager().getPlayer(playerQuitEvent.getPlayer().getUniqueId()));
+        EventCore.getInstance().getEventPlayerManager().getPlayer(playerQuitEvent.getPlayer().getUniqueId()).ifPresent(eventPlayer -> EventCore.getInstance().getEventPlayerManager().removePlayer(eventPlayer));
     }
 
 }

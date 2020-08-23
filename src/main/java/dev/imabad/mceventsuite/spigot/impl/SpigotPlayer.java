@@ -3,13 +3,9 @@ package dev.imabad.mceventsuite.spigot.impl;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.actions.Action;
 import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
-import dev.imabad.mceventsuite.core.api.player.ILocation;
-import dev.imabad.mceventsuite.spigot.EventSpigot;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import javax.persistence.Transient;
-import java.util.UUID;
 
 public class SpigotPlayer extends EventPlayer {
 

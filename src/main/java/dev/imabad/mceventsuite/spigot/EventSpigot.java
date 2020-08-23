@@ -1,13 +1,21 @@
 package dev.imabad.mceventsuite.spigot;
 
+import com.plotsquared.core.api.PlotAPI;
+import com.plotsquared.core.player.PlotPlayer;
 import dev.imabad.mceventsuite.core.EventCore;
+import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
 import dev.imabad.mceventsuite.core.modules.join.JoinModule;
 import dev.imabad.mceventsuite.core.modules.redis.RedisChannel;
 import dev.imabad.mceventsuite.core.modules.redis.RedisMessageListener;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
 import dev.imabad.mceventsuite.core.modules.redis.events.RedisConnectionEvent;
+import dev.imabad.mceventsuite.core.modules.redis.messages.NewBoothMessage;
+import dev.imabad.mceventsuite.spigot.impl.EventPermission;
 import dev.imabad.mceventsuite.spigot.impl.SpigotActionExecutor;
 import dev.imabad.mceventsuite.spigot.listeners.PlayerListener;
+import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
+import net.milkbowl.vault.permission.Permission;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class EventSpigot extends JavaPlugin {
@@ -33,6 +41,12 @@ public class EventSpigot extends JavaPlugin {
         eventSpigot = this;
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new JoinModule());
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
+        if(getServer().getPluginManager().isPluginEnabled("Vault")){
+            getServer().getServicesManager().register(Permission.class, new EventPermission(), this, ServicePriority.Highest);
+        }
+        if(getServer().getPluginManager().isPluginEnabled("PlotSquared")){
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BoothModule());
+        }
     }
 
     @Override
