@@ -1,13 +1,14 @@
 package dev.imabad.mceventsuite.spigot.impl;
 
 import dev.imabad.mceventsuite.core.EventCore;
+import dev.imabad.mceventsuite.core.api.PlayerActions;
 import dev.imabad.mceventsuite.core.api.actions.Action;
 import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
 import org.bukkit.entity.Player;
 
 import javax.persistence.Transient;
 
-public class SpigotPlayer extends EventPlayer {
+public class SpigotPlayer extends EventPlayer implements PlayerActions {
 
     public static SpigotPlayer asSpigot(EventPlayer player, Player bukkitPlayer){
         return new SpigotPlayer(player, bukkitPlayer);

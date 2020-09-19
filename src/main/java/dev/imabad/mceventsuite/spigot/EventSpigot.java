@@ -4,12 +4,17 @@ import com.plotsquared.core.api.PlotAPI;
 import com.plotsquared.core.player.PlotPlayer;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
+import dev.imabad.mceventsuite.core.api.objects.EventRank;
 import dev.imabad.mceventsuite.core.modules.join.JoinModule;
+import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
+import dev.imabad.mceventsuite.core.modules.mysql.dao.RankDAO;
+import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.core.modules.redis.RedisChannel;
 import dev.imabad.mceventsuite.core.modules.redis.RedisMessageListener;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
 import dev.imabad.mceventsuite.core.modules.redis.events.RedisConnectionEvent;
 import dev.imabad.mceventsuite.core.modules.redis.messages.NewBoothMessage;
+import dev.imabad.mceventsuite.core.util.GsonUtils;
 import dev.imabad.mceventsuite.spigot.impl.EventPermission;
 import dev.imabad.mceventsuite.spigot.impl.SpigotActionExecutor;
 import dev.imabad.mceventsuite.spigot.listeners.PlayerListener;
@@ -18,6 +23,8 @@ import net.milkbowl.vault.permission.Permission;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.List;
+
 public class EventSpigot extends JavaPlugin {
 
     private static EventSpigot eventSpigot;
@@ -25,6 +32,9 @@ public class EventSpigot extends JavaPlugin {
     public static EventSpigot getInstance(){
         return eventSpigot;
     }
+
+
+    private List<EventRank> ranks;
 
     @Override
     public void onEnable() {
@@ -40,6 +50,10 @@ public class EventSpigot extends JavaPlugin {
         EventCore.getInstance().setActionExecutor(new SpigotActionExecutor());
         eventSpigot = this;
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new JoinModule());
+        EventCore.getInstance().getEventRegistry().registerListener(MySQLLoadedEvent.class, (event) -> {
+            ranks = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(RankDAO.class).getRanks();
+            System.out.println(GsonUtils.getGson().toJson(ranks));
+        });
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         if(getServer().getPluginManager().isPluginEnabled("Vault")){
             getServer().getServicesManager().register(Permission.class, new EventPermission(), this, ServicePriority.Highest);
