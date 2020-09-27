@@ -4,6 +4,7 @@ import com.plotsquared.bukkit.util.BukkitUtil;
 import com.plotsquared.core.api.PlotAPI;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
+import com.plotsquared.core.plot.PlotArea;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.events.JoinEvent;
 import dev.imabad.mceventsuite.core.api.modules.Module;
@@ -17,11 +18,14 @@ import dev.imabad.mceventsuite.core.modules.mysql.dao.RankDAO;
 import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class BoothModule extends Module {
 
@@ -42,6 +46,40 @@ public class BoothModule extends Module {
 
     private void onMysqlLoad(MySQLLoadedEvent t) {
         boothMember = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(RankDAO.class).getRankByName("Booth Member").orElse(new EventRank(15, "Booth Member", "", "", Collections.emptyList(), true));
+    }
+
+    public void fix(CommandSender sender){
+        for(String s : Arrays.asList("small", "medium", "large")){
+            sender.sendMessage("Fixing booths in " + s);
+            plotAPI.getPlotAreas(s).forEach(plotArea -> {
+                sender.sendMessage("PlotArea: " + plotArea.getId());
+                plotArea.getPlots().forEach(plot -> {
+                    sender.sendMessage("Plot: " + plot.getId() + "has " + plot.getTrusted().size() + " trusted and " + plot.getMembers().size() + " members");
+                    EventBooth booth = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(BoothDAO.class).getBoothFromPlotID(s, plot.getId().toString());
+                    if(booth != null){
+                        plot.getTrusted().clear();
+                        sender.sendMessage("Fixing plot: " + plot.getId());
+                        booth.getMembers().forEach(player -> {
+                            plot.addTrusted(player.getUUID());
+                        });
+                        sender.sendMessage("Plot: " + plot.getId() + " now has " + plot.getTrusted().size() + " trusted and " + plot.getMembers().size() + " members");
+                    }
+                });
+            });
+        }
+    }
+
+    public boolean canPlayerEdit(Player player, Location location){
+        if(player.isOp()){
+            return true;
+        }
+        for(PlotArea area: plotAPI.getPlotAreas(location.getWorld().getName())){
+            Plot plot = area.getPlot(BukkitUtil.getLocation(location));
+            if(plot != null && plot.isAdded(player.getUniqueId())){
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -66,7 +104,7 @@ public class BoothModule extends Module {
                 plot.claim(plotPlayer, true, null, true);
                 eventBooth.setStatus("assigned");
                 eventBooth.getMembers().forEach(eventPlayer -> {
-                    plot.addMember(eventPlayer.getUUID());
+                    plot.addTrusted(eventPlayer.getUUID());
                     if(eventPlayer.getRank().getPower() < boothMember.getPower()){
                         eventPlayer.setRank(boothMember);
                         EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(PlayerDAO.class).saveOrUpdatePlayer(eventPlayer);
