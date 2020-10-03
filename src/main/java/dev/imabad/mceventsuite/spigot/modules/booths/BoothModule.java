@@ -99,7 +99,7 @@ public class BoothModule extends Module implements Listener {
         }
     }
 
-    private void updateWorldBorder(String worldName, Optional<Double> size) {
+    private void updateWorldBorder(String worldName, Optional<Integer> minimumDistanceFromOrigin) {
         World world = Bukkit.getWorld(worldName);
 
         if (world == null) {
@@ -108,11 +108,11 @@ public class BoothModule extends Module implements Listener {
         }
 
         world.getWorldBorder().setCenter(0, 0);
-        world.getWorldBorder().setSize((size.isPresent() ? size.get() : determineBorderSize(worldName)) + 5);
+        world.getWorldBorder().setSize(determineBorderSize(worldName, minimumDistanceFromOrigin) + 5);
     }
 
-    private double determineBorderSize(String worldName) {
-        int maxDistanceFromOrigin = 0;
+    private double determineBorderSize(String worldName, Optional<Integer> minimumDistanceFromOrigin) {
+        int maxDistanceFromOrigin = minimumDistanceFromOrigin.orElse(0);
 
         for (PlotArea area : plotAPI.getPlotAreas(worldName)) {
             for (Plot plot : area.getPlots()) {
@@ -129,8 +129,8 @@ public class BoothModule extends Module implements Listener {
     @Subscribe
     public void onPlotAssigned(PlayerClaimPlotEvent event) {
         if (!this.isEnabled()) return;
-        double distance = event.getPlot().getDistanceFromOrigin();
-        updateWorldBorder(event.getPlot().getWorldName(), Optional.of(distance * 2));
+        int distance = event.getPlot().getDistanceFromOrigin();
+        updateWorldBorder(event.getPlot().getWorldName(), Optional.of(distance));
     }
 
     @EventHandler
