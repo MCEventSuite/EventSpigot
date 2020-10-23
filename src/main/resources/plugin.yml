@@ -4,6 +4,5 @@ description: EventSpigot
 main: dev.imabad.mceventsuite.spigot.EventSpigot
 author: Rushmead
 api-version: 1.16
-depend: [Vault]
+depend: [Vault, PlotSquared]
 load: STARTUP
-loadbefore: [PlotSquared]

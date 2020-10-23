@@ -1,7 +1,9 @@
 package dev.imabad.mceventsuite.spigot.modules.booths;
 
+import com.google.common.eventbus.Subscribe;
 import com.plotsquared.bukkit.util.BukkitUtil;
 import com.plotsquared.core.api.PlotAPI;
+import com.plotsquared.core.events.PlayerClaimPlotEvent;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotArea;
@@ -17,20 +19,26 @@ import dev.imabad.mceventsuite.core.modules.mysql.dao.PlayerDAO;
 import dev.imabad.mceventsuite.core.modules.mysql.dao.RankDAO;
 import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
+import dev.imabad.mceventsuite.spigot.EventSpigot;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.world.WorldLoadEvent;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
-public class BoothModule extends Module {
+public class BoothModule extends Module implements Listener {
 
     private PlotAPI plotAPI;
     private EventRank boothMember;
+    private List<String> boothWorlds = Arrays.asList("small", "medium", "large");
 
     @Override
     public String getName() {
@@ -40,8 +48,11 @@ public class BoothModule extends Module {
     @Override
     public void onEnable() {
         this.plotAPI = new PlotAPI();
+        this.plotAPI.registerListener(this);
+        Bukkit.getPluginManager().registerEvents(this, EventSpigot.getInstance());
         EventCore.getInstance().getEventRegistry().registerListener(JoinEvent.class, this::onPlayerJoin);
         EventCore.getInstance().getEventRegistry().registerListener(MySQLLoadedEvent.class, this::onMysqlLoad);
+        updateWorldBorders();
     }
 
     private void onMysqlLoad(MySQLLoadedEvent t) {
@@ -49,7 +60,7 @@ public class BoothModule extends Module {
     }
 
     public void fix(CommandSender sender){
-        for(String s : Arrays.asList("small", "medium", "large")){
+        for(String s : boothWorlds){
             sender.sendMessage("Fixing booths in " + s);
             plotAPI.getPlotAreas(s).forEach(plotArea -> {
                 sender.sendMessage("PlotArea: " + plotArea.getId());
@@ -82,9 +93,57 @@ public class BoothModule extends Module {
         return false;
     }
 
+    private void updateWorldBorders() {
+        for (String worldName : boothWorlds) {
+            updateWorldBorder(worldName, Optional.empty());
+        }
+    }
+
+    private void updateWorldBorder(String worldName, Optional<Integer> minimumDistanceFromOrigin) {
+        World world = Bukkit.getWorld(worldName);
+
+        if (world == null) {
+            System.err.println("World " + worldName + " not found, skipping border check...");
+            return;
+        }
+
+        world.getWorldBorder().setCenter(0, 0);
+        world.getWorldBorder().setSize(determineBorderSize(worldName, minimumDistanceFromOrigin) + 5);
+    }
+
+    private double determineBorderSize(String worldName, Optional<Integer> minimumDistanceFromOrigin) {
+        int maxDistanceFromOrigin = minimumDistanceFromOrigin.orElse(0);
+
+        for (PlotArea area : plotAPI.getPlotAreas(worldName)) {
+            for (Plot plot : area.getPlots()) {
+                int distanceFromOrigin = plot.getDistanceFromOrigin();
+                if (distanceFromOrigin > maxDistanceFromOrigin) {
+                    maxDistanceFromOrigin = distanceFromOrigin;
+                }
+            }
+        }
+
+        return maxDistanceFromOrigin * 2;
+    }
+
+    @Subscribe
+    public void onPlotAssigned(PlayerClaimPlotEvent event) {
+        if (!this.isEnabled()) return;
+        int distance = event.getPlot().getDistanceFromOrigin();
+        updateWorldBorder(event.getPlot().getWorldName(), Optional.of(distance));
+    }
+
+    @EventHandler
+    public void onWorldLoad(WorldLoadEvent event) {
+        if (boothWorlds.contains(event.getWorld().getName())) {
+            updateWorldBorder(event.getWorld().getName(), Optional.empty());
+        }
+    }
+
     @Override
     public void onDisable() {
-
+        // Ideally we would disable the PlotSquared event listeners if we could
+        WorldLoadEvent.getHandlerList().unregister(this);
     }
 
     @Override
