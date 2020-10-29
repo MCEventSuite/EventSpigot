@@ -15,12 +15,14 @@ import dev.imabad.mceventsuite.core.modules.redis.messages.UpdatedPlayerMessage;
 import dev.imabad.mceventsuite.core.modules.redis.messages.UpdatedRankMessage;
 import dev.imabad.mceventsuite.spigot.commands.EditSignCommand;
 import dev.imabad.mceventsuite.spigot.commands.FixBoothsCommand;
+import dev.imabad.mceventsuite.spigot.commands.GenMapCommand;
 import dev.imabad.mceventsuite.spigot.commands.NightVisionToggle;
 import dev.imabad.mceventsuite.spigot.impl.EventPermission;
 import dev.imabad.mceventsuite.spigot.impl.SpigotActionExecutor;
 import dev.imabad.mceventsuite.spigot.listeners.BuildListener;
 import dev.imabad.mceventsuite.spigot.listeners.PlayerListener;
 import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
+import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -99,16 +101,20 @@ public class EventSpigot extends JavaPlugin {
             System.out.println("Did we register successfully? " +  getServer().getServicesManager().isProvidedFor(Permission.class));
             System.out.println("Type of permission provider: " + getServer().getServicesManager().load(Permission.class).getName());
         }
-        EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BoothModule());
-        permissionAttachments = new HashMap<>();
-        unRegisterBukkitCommand(getCommand("ban"));
-        unRegisterBukkitCommand(getCommand("kick"));
         commandMap = getCommandMap();
         if(commandMap != null){
             commandMap.register("fixBooths", new FixBoothsCommand());
             commandMap.register("nv", new NightVisionToggle());
             commandMap.register("editsign", new EditSignCommand());
         }
+        if(getServer().getPluginManager().isPluginEnabled("PlotSquared")) {
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BoothModule());
+        }
+        EventCore.getInstance().getModuleRegistry().addAndEnableModule(new MapModule());
+        commandMap.register("genmap", new GenMapCommand());
+        permissionAttachments = new HashMap<>();
+        unRegisterBukkitCommand(getCommand("ban"));
+        unRegisterBukkitCommand(getCommand("kick"));
     }
 
     public HashMap<Integer, Team> getRankTeams() {
