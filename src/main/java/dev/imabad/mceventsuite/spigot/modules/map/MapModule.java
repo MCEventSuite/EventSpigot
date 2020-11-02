@@ -1,20 +1,26 @@
 package dev.imabad.mceventsuite.spigot.modules.map;
 
+import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.modules.Module;
+import dev.imabad.mceventsuite.core.api.objects.EventBoothPlot;
+import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
+import dev.imabad.mceventsuite.core.modules.mysql.dao.BoothDAO;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
+import dev.imabad.mceventsuite.spigot.commands.GenMapCommand;
+import dev.imabad.mceventsuite.spigot.modules.booths.commands.NewBoothPlotCommand;
 import net.minecraft.server.v1_16_R2.Block;
 import net.minecraft.server.v1_16_R2.BlockPosition;
 import net.minecraft.server.v1_16_R2.IBlockData;
-import net.minecraft.server.v1_16_R2.MaterialMapColor;
 import org.bukkit.*;
+import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_16_R2.block.data.CraftBlockData;
 import org.bukkit.event.Listener;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -26,6 +32,9 @@ public class MapModule extends Module implements Listener {
 
     @Override
     public void onEnable() {
+        SimpleCommandMap commandMap = EventSpigot.getInstance().getCommandMap();
+        commandMap.register("genmap", new GenMapCommand());
+        commandMap.register("nbp", new NewBoothPlotCommand());
     }
 
     @Override
@@ -36,6 +45,18 @@ public class MapModule extends Module implements Listener {
     @Override
     public List<Class<? extends Module>> getDependencies() {
         return Collections.emptyList();
+    }
+
+    public Material getMaterialForSize(String size){
+        switch(size.toLowerCase()){
+            case "small":
+                return Material.GREEN_CONCRETE_POWDER;
+            case "medium":
+                return Material.YELLOW_CONCRETE_POWDER;
+            case "large":
+                return Material.RED_CONCRETE_POWDER;
+        }
+        return Material.AIR;
     }
 
     public CompletableFuture<Boolean> generateMap(String worldName, int chunkRadiusX, int chunkRadiusZ, int cx, int cz){
@@ -53,21 +74,29 @@ public class MapModule extends Module implements Listener {
             }
         }
         Bukkit.getScheduler().runTaskAsynchronously(EventSpigot.getInstance(), () -> {
+            List<EventBoothPlot> plots = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(BoothDAO.class).getPlots();
             for (Chunk chunk : chunks) {
-                int[][] chunkPixels = new int[16][16];
                 for (int x = 0; x < 16; x++) {
                     for (int z = 0; z < 16; z++) {
                         int wx = 16 * chunk.getX() + x;
                         int wz = 16 * chunk.getZ() + z;
                         int y = world.getHighestBlockAt(wx, wz).getY();
-                        IBlockData blockData = ((CraftWorld) world).getHandle().getType(new BlockPosition(wx, y, wz));
+                        Optional<EventBoothPlot> plot = plots.stream().filter(eventBoothPlot -> eventBoothPlot.blockInBooth(wx, wz)).findFirst();
+                        IBlockData blockData;
+                        if(plot.isPresent()){
+                            EventBoothPlot plot1 = plot.get();
+                            Material material = getMaterialForSize(plot1.getBoothType());
+                            blockData = ((CraftBlockData) Bukkit.createBlockData(material)).getState();
+                        } else {
+                            blockData = ((CraftWorld) world).getHandle().getType(new BlockPosition(wx, y, wz));
+                        }
                         Block nmsBlock = blockData.getBlock();
                         int px = 16 * (chunk.getX() - cx) + x;
                         int pz = 16 * (chunk.getZ() - cz) + z;
-                        if (chunkPixels[x] == null) {
-                            chunkPixels[z] = new int[chunkRadiusZ * 16];
+                        if (pixels[px] == null) {
+                            pixels[pz] = new int[chunkRadiusZ * 16];
                         }
-                        chunkPixels[x][z] = nmsBlock.s().rgb;
+                        pixels[px][pz] = nmsBlock.s().rgb;
                     }
                 }
             }

@@ -4,6 +4,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.command.defaults.BukkitCommand;
 
 public abstract class BaseCommand extends BukkitCommand implements TabCompleter {
+
     public BaseCommand(String name) {
         super(name);
     }

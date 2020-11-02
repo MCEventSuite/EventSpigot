@@ -13,16 +13,16 @@ import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
 import dev.imabad.mceventsuite.core.modules.redis.events.RedisConnectionEvent;
 import dev.imabad.mceventsuite.core.modules.redis.messages.UpdatedPlayerMessage;
 import dev.imabad.mceventsuite.core.modules.redis.messages.UpdatedRankMessage;
-import dev.imabad.mceventsuite.spigot.commands.EditSignCommand;
-import dev.imabad.mceventsuite.spigot.commands.FixBoothsCommand;
-import dev.imabad.mceventsuite.spigot.commands.GenMapCommand;
-import dev.imabad.mceventsuite.spigot.commands.NightVisionToggle;
+import dev.imabad.mceventsuite.spigot.commands.*;
+import dev.imabad.mceventsuite.spigot.entities.ProfileManager;
 import dev.imabad.mceventsuite.spigot.impl.EventPermission;
 import dev.imabad.mceventsuite.spigot.impl.SpigotActionExecutor;
 import dev.imabad.mceventsuite.spigot.listeners.BuildListener;
+import dev.imabad.mceventsuite.spigot.listeners.EventListener;
 import dev.imabad.mceventsuite.spigot.listeners.PlayerListener;
 import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
+import dev.imabad.mceventsuite.spigot.modules.warps.WarpModule;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -54,6 +54,7 @@ public class EventSpigot extends JavaPlugin {
     private HashMap<Integer, Team> rankTeams = new HashMap<>();
     private Scoreboard scoreboard;
     private SimpleCommandMap commandMap;
+    private boolean isEvent = false;
 
     @Override
     public void onEnable() {
@@ -103,15 +104,18 @@ public class EventSpigot extends JavaPlugin {
         }
         commandMap = getCommandMap();
         if(commandMap != null){
-            commandMap.register("fixBooths", new FixBoothsCommand());
             commandMap.register("nv", new NightVisionToggle());
             commandMap.register("editsign", new EditSignCommand());
         }
         if(getServer().getPluginManager().isPluginEnabled("PlotSquared")) {
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BoothModule());
+        } else {
+            getServer().getPluginManager().registerEvents(new EventListener(), this);
+            isEvent = true;
         }
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new MapModule());
-        commandMap.register("genmap", new GenMapCommand());
+        EventCore.getInstance().getModuleRegistry().addAndEnableModule(new WarpModule());
+        ProfileManager.loadProfiles();
         permissionAttachments = new HashMap<>();
         unRegisterBukkitCommand(getCommand("ban"));
         unRegisterBukkitCommand(getCommand("kick"));
@@ -132,6 +136,10 @@ public class EventSpigot extends JavaPlugin {
         return scoreboard;
     }
 
+    public boolean isEvent() {
+        return isEvent;
+    }
+
     private Object getPrivateField(Object object, String field)throws SecurityException,
             NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         Class<?> clazz = object.getClass();
@@ -143,6 +151,9 @@ public class EventSpigot extends JavaPlugin {
     }
 
     public SimpleCommandMap getCommandMap(){
+        if(commandMap != null){
+            return commandMap;
+        }
         try {
             Object result = getPrivateField(getServer().getPluginManager(), "commandMap");
             return (SimpleCommandMap) result;

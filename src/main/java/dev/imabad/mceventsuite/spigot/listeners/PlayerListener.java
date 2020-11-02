@@ -6,6 +6,7 @@ import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
 import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
 import dev.imabad.mceventsuite.core.modules.mysql.dao.PlayerDAO;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
+import dev.imabad.mceventsuite.spigot.api.EventInventory;
 import dev.imabad.mceventsuite.spigot.impl.EventPermissible;
 import dev.imabad.mceventsuite.spigot.impl.SpigotPlayer;
 import dev.imabad.mceventsuite.spigot.utils.PermissibleInjector;
@@ -13,11 +14,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.permissions.PermissibleBase;
-import org.bukkit.permissions.PermissionAttachment;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Team;
@@ -44,8 +47,14 @@ public class PlayerListener implements Listener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if(playerJoinEvent.getPlayer().getGameMode() != GameMode.CREATIVE){
-            playerJoinEvent.getPlayer().setGameMode(GameMode.CREATIVE);
+        if(EventSpigot.getInstance().isEvent()){
+            if (playerJoinEvent.getPlayer().getGameMode() != GameMode.ADVENTURE) {
+                playerJoinEvent.getPlayer().setGameMode(GameMode.ADVENTURE);
+            }
+        } else {
+            if (playerJoinEvent.getPlayer().getGameMode() != GameMode.CREATIVE) {
+                playerJoinEvent.getPlayer().setGameMode(GameMode.CREATIVE);
+            }
         }
         if(EventSpigot.getInstance().getRankTeams().size() < 1){
             EventSpigot.getInstance().getRanks().forEach(eventRank -> {
@@ -82,6 +91,23 @@ public class PlayerListener implements Listener {
             }
             EventCore.getInstance().getEventPlayerManager().removePlayer(eventPlayer);
         });
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event){
+        if(event.getClickedInventory() != null) {
+            for (EventInventory eventInventory : EventInventory.EVENT_INVENTORIES) {
+                if(eventInventory.isInventory(event.getClickedInventory())) {
+                    ClickType clickType = event.getClick();
+                    InventoryType.SlotType slotType = event.getSlotType();
+                    boolean isPlayerInventory = event.getClickedInventory().equals(event.getWhoClicked().getInventory());
+                    ItemStack clickItem = event.getCurrentItem();
+                    int slot = event.getSlot();
+                    event.setCancelled(eventInventory.onPlayerClick(event.getWhoClicked(), slot, isPlayerInventory, clickItem, slotType, clickType));
+                    return;
+                }
+            }
+        }
     }
 
 }

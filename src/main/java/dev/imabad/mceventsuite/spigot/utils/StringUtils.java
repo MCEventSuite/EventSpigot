@@ -35,4 +35,47 @@ public class StringUtils {
         }
         return parsedString.toString();
     }
+
+    public static final String FORMAT_CODE_START = "{";
+    public static final String FORMAT_CODE_END = "}";
+
+    public static String capitalizeFirstLetter(String original) {
+        if (isStringNullorEmpty(original)) {
+            return original;
+        } else {
+            return original.substring(0, 1).toUpperCase() + original.substring(1);
+        }
+    }
+
+    public static String format(String msg, Object... replacements) {
+        return colorizeMessage(replace(msg, replacements));
+    }
+
+    public static String colorizeMessage(String message) {
+        return ChatColor.translateAlternateColorCodes('&', message);
+    }
+
+    public static boolean isStringNullorEmpty(String string) {
+        return string == null || string.isEmpty();
+    }
+
+    public static String replace(String msg, Object... replacements) {
+        int count = 0;
+        for (Object o : replacements) {
+            String formatCode = formatCode(count);
+            if (o != null && msg.contains(formatCode)) {
+                msg = msg.replace(formatCode, o.toString());
+            }
+            count++;
+        }
+        return msg;
+    }
+
+    private static String formatCode(int number) {
+        return FORMAT_CODE_START + number + FORMAT_CODE_END;
+    }
+
+    public static String trim(String string, int size) {
+        return string.length() > size ? string.substring(0, size - 1) : string;
+    }
 }

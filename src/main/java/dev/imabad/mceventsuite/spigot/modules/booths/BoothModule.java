@@ -7,6 +7,11 @@ import com.plotsquared.core.events.PlayerClaimPlotEvent;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotArea;
+import com.plotsquared.core.plot.PlotId;
+import com.plotsquared.core.util.MainUtil;
+import com.plotsquared.core.util.SchematicHandler;
+import com.plotsquared.core.util.task.RunnableVal;
+import com.plotsquared.core.util.task.TaskManager;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.events.JoinEvent;
 import dev.imabad.mceventsuite.core.api.modules.Module;
@@ -29,6 +34,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldLoadEvent;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -57,6 +63,24 @@ public class BoothModule extends Module implements Listener {
 
     private void onMysqlLoad(MySQLLoadedEvent t) {
         boothMember = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(RankDAO.class).getRankByName("Booth Member").orElse(new EventRank(15, "Booth Member", "", "", Collections.emptyList(), true));
+    }
+
+    public void schematicBooths(CommandSender sender){
+        EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(BoothDAO.class).getBooths().stream().filter(eventBooth -> eventBooth.getStatus().equalsIgnoreCase("assigned")).forEach(eventBooth -> {
+            plotAPI.getPlotAreas(eventBooth.getBoothType()).forEach(plotArea -> {
+                Plot plot = plotArea.getPlot(PlotId.fromString(eventBooth.getPlotID()));
+                if(plot != null) {
+                    plot.export(EventSpigot.getInstance().getDataFolder().getAbsolutePath() + File.separator + "booths" + File.separator + eventBooth.getId(), new RunnableVal<Boolean>() {
+                        @Override
+                        public void run(Boolean value) {
+                            if(value) {
+                                sender.sendMessage("Exported booth - " + eventBooth.getName());
+                            }
+                        }
+                    });
+                }
+            });
+        });
     }
 
     public void fix(CommandSender sender){
