@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.Location;
+import org.bukkit.block.data.type.Stairs;
 import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -79,12 +80,14 @@ public class StageModule extends Module {
       if (playerInteractEvent.getClickedBlock().getType().toString().toLowerCase().contains("stairs")) {
         if (!seats.containsKey(playerInteractEvent.getPlayer().getUniqueId())) {
           Location cLocation = playerInteractEvent.getClickedBlock().getLocation();
-          cLocation.subtract(0, 0.5, 0);
+          Stairs stairs = (Stairs) playerInteractEvent.getClickedBlock().getBlockData();
+          cLocation.setDirection(stairs.getFacing().getDirection().multiply(-1));
           cLocation.add(0.5, 0, 0.5);
           Chicken c = (Chicken) playerInteractEvent.getPlayer().getWorld().spawnEntity(cLocation,
               EntityType.CHICKEN);
           c.setInvisible(true);
           c.setInvulnerable(true);
+          c.setSilent(true);
           c.setAI(false);
           c.addPassenger(playerInteractEvent.getPlayer());
           seats.put(playerInteractEvent.getPlayer().getUniqueId(), c);

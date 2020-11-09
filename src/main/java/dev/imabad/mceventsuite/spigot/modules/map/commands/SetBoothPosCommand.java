@@ -37,7 +37,7 @@ public class SetBoothPosCommand extends BaseCommand {
             sender.sendMessage("Usage: /sbs <name>");
             return false;
         }
-        String name = getLastArgs(args, 1);
+        String name = getLastArgs(args, 0);
         name = name.toUpperCase().replaceAll(" ", "_");
         final String finalName = name;
         Optional<EventBoothPlot> plotOptional = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(BoothDAO.class).getPlots().stream().filter(eventBoothPlot -> eventBoothPlot.getBooth() != null && eventBoothPlot.getBooth().getName().toUpperCase().replaceAll(" ", "_").equalsIgnoreCase(finalName)).findFirst();
@@ -47,7 +47,7 @@ public class SetBoothPosCommand extends BaseCommand {
         }
         EventBoothPlot eventBoothPlot = plotOptional.get();
         Location l = player.getLocation();
-        eventBoothPlot.setFrontPos(l.getX() + "," + l.getY() + "," + l.getZ() + "," + l.getYaw() + "," + l.getPitch());
+        eventBoothPlot.setFrontPos(l.getBlockX() + "," + l.getBlockY() + "," + l.getBlockZ() + "," + l.getYaw() + "," + l.getPitch());
         EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(BoothDAO.class).saveBoothPlot(eventBoothPlot);
         sender.sendMessage("Updated booth location");
         if(EventCore.getInstance().getModuleRegistry().getModule(WarpModule.class).isEnabled()){
