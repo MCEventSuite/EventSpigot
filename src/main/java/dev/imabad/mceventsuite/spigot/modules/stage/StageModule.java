@@ -1,5 +1,15 @@
 package dev.imabad.mceventsuite.spigot.modules.stage;
 
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.world.World;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.internal.platform.WorldGuardPlatform;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
+import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
+import com.sk89q.worldguard.protection.managers.RegionManager;
 import dev.imabad.mceventsuite.core.api.modules.Module;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.interactions.Interaction;
@@ -12,12 +22,20 @@ import org.bukkit.Location;
 import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.util.Vector;
 
 public class StageModule extends Module {
 
   private HashMap<UUID, Entity> seats = new HashMap<>();
+
+  private static StateFlag isNightVision;
+
+  public static StateFlag getIsNightVision() {
+    return isNightVision;
+  }
 
   @Override
   public String getName() {
@@ -28,22 +46,50 @@ public class StageModule extends Module {
   public void onEnable() {
     InteractionRegistry.registerInteraction(Interaction.RIGHT_CLICK_BLOCK, this::enterSeat);
     EventSpigot.getInstance().getServer().getPluginManager().registerEvents(new StageListener(this), EventSpigot.getInstance());
+    FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
+    try {
+      StateFlag flag = new StateFlag("is-night-vision", true);
+      registry.register(flag);
+      isNightVision = flag;
+    } catch (FlagConflictException e) {
+      Flag<?> existing = registry.get("is-night-vision");
+      if (existing instanceof StateFlag) {
+        isNightVision = (StateFlag) existing;
+      } else {
+      }
+    }
+  }
+
+  private ApplicableRegionSet getPlayerRegions(Player player){
+    WorldGuardPlatform plat = WorldGuard.getInstance().getPlatform();
+    World world = plat.getMatcher().getWorldByName(player.getWorld().getName());
+    RegionManager manager = plat.getRegionContainer().get(world);
+    Vector v = player.getLocation().toVector();
+    return manager.getApplicableRegions(BlockVector3.at(v.getX(),v.getY(), v.getZ()));
+  }
+
+  public boolean isInRegion(Player player, String regionName){
+    return getPlayerRegions(player).getRegions().stream().anyMatch(protectedRegion -> protectedRegion.getId().equalsIgnoreCase(regionName));
   }
 
   private void enterSeat(Event event) {
     PlayerInteractEvent playerInteractEvent = (PlayerInteractEvent) event;
-    //TODO: Check is in a valid region
-    if(playerInteractEvent.getClickedBlock().getType().toString().contains("stairs")){
-      if(!seats.containsKey(playerInteractEvent.getPlayer().getUniqueId())){
-        Location cLocation = playerInteractEvent.getClickedBlock().getLocation();
-        cLocation.subtract(0, 0.5, 0);
-        Chicken c = (Chicken) playerInteractEvent.getPlayer().getWorld().spawnEntity(cLocation,
-            EntityType.CHICKEN);
-        c.setInvisible(true);
-        c.setInvulnerable(true);
-        c.setAI(false);
-        c.addPassenger(playerInteractEvent.getPlayer());
-        seats.put(playerInteractEvent.getPlayer().getUniqueId(), c);
+    if(isInRegion(playerInteractEvent.getPlayer(), "stage")) {
+      System.out.println(playerInteractEvent.getClickedBlock().getType().toString());
+      if (playerInteractEvent.getClickedBlock().getType().toString().toLowerCase().contains("stairs")) {
+        if (!seats.containsKey(playerInteractEvent.getPlayer().getUniqueId())) {
+          Location cLocation = playerInteractEvent.getClickedBlock().getLocation();
+          cLocation.subtract(0, 0.5, 0);
+          cLocation.add(0.5, 0, 0.5);
+          Chicken c = (Chicken) playerInteractEvent.getPlayer().getWorld().spawnEntity(cLocation,
+              EntityType.CHICKEN);
+          c.setInvisible(true);
+          c.setInvulnerable(true);
+          c.setAI(false);
+          c.addPassenger(playerInteractEvent.getPlayer());
+          seats.put(playerInteractEvent.getPlayer().getUniqueId(), c);
+          playerInteractEvent.getPlayer().sendMessage("Sitting in chair");
+        }
       }
     }
   }

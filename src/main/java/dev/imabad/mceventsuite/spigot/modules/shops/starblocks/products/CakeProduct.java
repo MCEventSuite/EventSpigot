@@ -64,7 +64,7 @@ public class CakeProduct implements ISkullProduct {
       cPlayer.getHandle().playerConnection.sendPacket(eatPacket);
       player.getInventory().remove(playerInteractEvent.getItem());
       EventCore.getInstance().getEventPlayerManager().getPlayer(player.getUniqueId()).ifPresent(eventPlayer -> {
-        int lastStarblocks = eventPlayer.getIntProperty("lastStarblocks");
+        long lastStarblocks = eventPlayer.getLongProperty("lastStarblocks");
         if(System.currentTimeMillis() - lastStarblocks >= TimeUnit.HOURS.toMillis(1)){
           eventPlayer.setProperty("lastStarblocks", System.currentTimeMillis());
           EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(eventPlayer.getUUID(), 250));

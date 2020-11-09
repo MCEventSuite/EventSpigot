@@ -1,5 +1,8 @@
 package dev.imabad.mceventsuite.spigot.modules.eventpass;
 
+import com.gmail.filoghost.holographicdisplays.api.Hologram;
+import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
+import com.gmail.filoghost.holographicdisplays.api.line.TextLine;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.modules.redis.RedisChannel;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
@@ -8,6 +11,7 @@ import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.commands.BaseCommand;
 import java.awt.Color;
 import java.util.Random;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -57,7 +61,12 @@ public class XPCannonCommand extends BaseCommand {
         final int xpAmount = xp;
         Location location = player.getLocation();
         Location primedTNT = location.clone();
-        primedTNT.add(0, 0.5, 0);
+        Location hologramL = location.clone();
+        primedTNT.add(0.5, 0.5, 0.5);
+        hologramL.add(0.5, 2, 0.5);
+        Hologram hologram = HologramsAPI.createHologram(EventSpigot.getInstance(), hologramL);
+        final TextLine countdownLine = hologram.appendTextLine(ChatColor.RED + "" + ChatColor.BOLD + countdown);
+        hologram.appendTextLine(ChatColor.YELLOW + "" + ChatColor.BOLD + "XP Cannon");
         TNTPrimed tntPrimed = (TNTPrimed) location.getWorld().spawnEntity(primedTNT, EntityType.PRIMED_TNT);
         tntPrimed.setIsIncendiary(false);
         tntPrimed.setFuseTicks(20 * countdown);
@@ -67,6 +76,7 @@ public class XPCannonCommand extends BaseCommand {
             @Override
             public void run() {
                 counter++;
+                countdownLine.setText(ChatColor.RED + "" + ChatColor.BOLD + (countDownTime - counter));
                 for(int i = 0; i < 360; i++){
                     double radians = Math.toRadians(i);
                     double x = finalRadius * Math.cos(radians);
@@ -79,6 +89,7 @@ public class XPCannonCommand extends BaseCommand {
                 if(counter > countDownTime){
                     cancel();
                     ParticleEffect.EXPLOSION_HUGE.display(location);
+                    hologram.delete();
                     location.getWorld().playSound(location, Sound.ENTITY_GENERIC_EXPLODE, SoundCategory.AMBIENT,1 ,1);
                     location.getWorld().getNearbyEntitiesByType(Player.class, location, finalRadius).forEach(player1 -> EventCore.getInstance().getModuleRegistry().getModule(
                         RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(player1.getUniqueId(), xpAmount)));
@@ -104,12 +115,6 @@ public class XPCannonCommand extends BaseCommand {
                 }
             }
         }.runTaskTimer(EventSpigot.getInstance(), 0, 20);
-        // Particle radius
-        // Countdown of x(default 10) seconds
-        // after 10 seconds
-            // Explosion
-            // raining XP orbs
-            // give xp to anyone in area
         return false;
     }
 

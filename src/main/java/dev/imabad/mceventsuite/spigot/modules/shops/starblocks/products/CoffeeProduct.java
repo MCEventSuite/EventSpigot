@@ -76,7 +76,7 @@ public class CoffeeProduct implements ISkullProduct {
       }
       player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10 * 20, 2));
       EventCore.getInstance().getEventPlayerManager().getPlayer(player.getUniqueId()).ifPresent(eventPlayer -> {
-        int lastStarblocks = eventPlayer.getIntProperty("lastStarblocks");
+        long lastStarblocks = eventPlayer.getLongProperty("lastStarblocks");
         if(System.currentTimeMillis() - lastStarblocks >= TimeUnit.HOURS.toMillis(1)){
           eventPlayer.setProperty("lastStarblocks", System.currentTimeMillis());
           EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(eventPlayer.getUUID(), 250));

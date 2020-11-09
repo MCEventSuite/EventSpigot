@@ -1,5 +1,7 @@
 package dev.imabad.mceventsuite.spigot.listeners;
 
+import dev.imabad.mceventsuite.core.EventCore;
+import dev.imabad.mceventsuite.spigot.modules.stage.StageModule;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,7 +18,13 @@ public class EventListener implements Listener {
     @EventHandler
     public void onDamage(EntityDamageEvent entityDamageEvent){
         if(entityDamageEvent.getEntity() instanceof Player){
-            entityDamageEvent.setCancelled(true);
+            Player player = (Player) entityDamageEvent.getEntity();
+            if(EventCore.getInstance().getModuleRegistry().getModule(StageModule.class).isInRegion(player, "KOTH")){
+                entityDamageEvent.setDamage(0);
+                entityDamageEvent.setCancelled(false);
+            } else {
+                entityDamageEvent.setCancelled(true);
+            }
         }
     }
 
