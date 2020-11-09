@@ -92,12 +92,6 @@ public class PlayerListener implements Listener {
             if(team.hasEntry(eventPlayer.getLastUsername())){
                 team.removeEntry(eventPlayer.getLastUsername());
             }
-            if(EventCore.getInstance().getModuleRegistry().isModuleEnabled(StaffTrackModule.class)) {
-                if (eventPlayer.hasPermission("eventsuite.staffchat")) {
-                    int minutes = EventCore.getInstance().getModuleRegistry().getModule(StaffTrackModule.class).getAndRemovePlayerTime(eventPlayer.getUUID());
-                    EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).publishMessage(RedisChannel.GLOBAL, new UpdateStaffTrackMessage(eventPlayer.getUUID(), minutes));
-                }
-            }
             EventCore.getInstance().getEventPlayerManager().removePlayer(eventPlayer);
         });
     }

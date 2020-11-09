@@ -3,6 +3,7 @@ package dev.imabad.mceventsuite.spigot;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
 import dev.imabad.mceventsuite.core.api.objects.EventRank;
+import dev.imabad.mceventsuite.core.modules.eventpass.EventPassModule;
 import dev.imabad.mceventsuite.core.modules.join.JoinModule;
 import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
 import dev.imabad.mceventsuite.core.modules.mysql.dao.PlayerDAO;
@@ -25,6 +26,7 @@ import dev.imabad.mceventsuite.spigot.listeners.PlayerListener;
 import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
 import dev.imabad.mceventsuite.spigot.modules.shops.ShopsModule;
+import dev.imabad.mceventsuite.spigot.modules.stafftrack.StaffTrackModule;
 import dev.imabad.mceventsuite.spigot.modules.warps.WarpModule;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.milkbowl.vault.permission.Permission;
@@ -126,6 +128,8 @@ public class EventSpigot extends JavaPlugin {
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new WarpModule());
         if(isEvent){
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new ShopsModule());
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new StaffTrackModule());
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new EventPassModule());
         }
         ProfileManager.loadProfiles();
         permissionAttachments = new HashMap<>();

@@ -36,7 +36,7 @@ public class SpeedCommand extends BaseCommand{
                 audience(sender).sendMessage(Component.text("You do not have permission for that speed level!").color(NamedTextColor.RED));
                 return false;
            }
-            player.setWalkSpeed(0.4f * speedLevel);
+            player.setWalkSpeed((1f / 5) * speedLevel);
             audience(sender).sendMessage(Component.text("Set walk speed to ").color(NamedTextColor.GREEN).append(Component.text(speedLevel).color(NamedTextColor.YELLOW)));
         }
         return false;
