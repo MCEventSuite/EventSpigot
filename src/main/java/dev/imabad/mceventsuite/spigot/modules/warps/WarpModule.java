@@ -5,6 +5,7 @@ import dev.imabad.mceventsuite.core.api.events.CoreEvent;
 import dev.imabad.mceventsuite.core.api.modules.Module;
 import dev.imabad.mceventsuite.core.api.objects.EventBooth;
 import dev.imabad.mceventsuite.core.api.objects.EventBoothPlot;
+import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
 import dev.imabad.mceventsuite.core.modules.mysql.dao.BoothDAO;
 import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
@@ -44,6 +45,11 @@ public class WarpModule extends Module {
         generateWarpItems();
     }
 
+    public void refresh(){
+        plots = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(BoothDAO.class).getPlots();
+        generateWarpItems();
+    }
+
     public void generateWarpItems(){
         warpItems = new ArrayList<>();
         World world = Bukkit.getWorld("world");
@@ -54,7 +60,12 @@ public class WarpModule extends Module {
             String name = boothPlot.getBooth() == null ? "Booth" : boothPlot.getBooth().getName();
             ItemStack item = ItemUtils.createItemStack(fi.stackColor, StringUtils.colorizeMessage("&r&l" + name), 1);
             String[] splits = boothPlot.getFrontPos() == null ? boothPlot.getPosOne().split(",") : boothPlot.getFrontPos().split(",");
-            Location l = new Location(world, Integer.parseInt(splits[0]), Integer.parseInt(splits[1]), Integer.parseInt(splits[2]));
+            Location l;
+            if(splits.length > 3){
+                l = new Location(world, Integer.parseInt(splits[0]), Integer.parseInt(splits[1]), Integer.parseInt(splits[2]), Float.parseFloat(splits[3]), Float.parseFloat(splits[4]));
+            } else {
+                l = new Location(world, Integer.parseInt(splits[0]), Integer.parseInt(splits[1]), Integer.parseInt(splits[2]));
+            }
             warpItems.add(new WarpItem(name, item, l, fi));
         }
         ItemStack STAGE_ITEM = ItemUtils.getSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTY5ODIxNzcyY2EyNjczZjRhY2I1MzkzZDEyNmIyZTYyZTgyY2U4NTVhNDljZmVlYTc3ODMwYzVkMTI0YSJ9fX0=", "&r&9&lStage");

@@ -1,4 +1,4 @@
-package dev.imabad.mceventsuite.spigot.modules.booths.commands;
+package dev.imabad.mceventsuite.spigot.modules.map.commands;
 
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
@@ -31,6 +31,9 @@ public class NewBoothPlotCommand extends BaseCommand {
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
         if(!(sender instanceof Player)){
+            return false;
+        }
+        if(!sender.hasPermission("eventsuite.nbp")){
             return false;
         }
         if(args.length != 0){

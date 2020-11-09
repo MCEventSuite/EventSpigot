@@ -11,8 +11,10 @@ import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.core.modules.redis.RedisMessageListener;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
 import dev.imabad.mceventsuite.core.modules.redis.events.RedisConnectionEvent;
-import dev.imabad.mceventsuite.core.modules.redis.messages.UpdatedPlayerMessage;
-import dev.imabad.mceventsuite.core.modules.redis.messages.UpdatedRankMessage;
+import dev.imabad.mceventsuite.core.modules.redis.messages.players.UpdatedPlayerMessage;
+import dev.imabad.mceventsuite.core.modules.redis.messages.players.UpdatedRankMessage;
+import dev.imabad.mceventsuite.core.modules.servers.ServersModule;
+import dev.imabad.mceventsuite.core.modules.servers.objects.Server;
 import dev.imabad.mceventsuite.spigot.commands.*;
 import dev.imabad.mceventsuite.spigot.entities.ProfileManager;
 import dev.imabad.mceventsuite.spigot.impl.EventPermission;
@@ -22,7 +24,9 @@ import dev.imabad.mceventsuite.spigot.listeners.EventListener;
 import dev.imabad.mceventsuite.spigot.listeners.PlayerListener;
 import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
+import dev.imabad.mceventsuite.spigot.modules.shops.ShopsModule;
 import dev.imabad.mceventsuite.spigot.modules.warps.WarpModule;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -55,6 +59,7 @@ public class EventSpigot extends JavaPlugin {
     private Scoreboard scoreboard;
     private SimpleCommandMap commandMap;
     private boolean isEvent = false;
+    private BukkitAudiences audiences;
 
     @Override
     public void onEnable() {
@@ -82,12 +87,15 @@ public class EventSpigot extends JavaPlugin {
                 });
                 Team team = rankTeams.get(msg.getRank().getId());
                 team.setDisplayName(msg.getRank().getName());
-                team.setPrefix(ChatColor.translateAlternateColorCodes('&', msg.getRank().getPrefix()) + " ");
+                team.setPrefix(ChatColor.translateAlternateColorCodes('&', msg.getRank().getPrefix()) + (msg.getRank().getPrefix().length() > 0 ? " " : ""));
                 team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
                 rankTeams.put(msg.getRank().getId(), team);
             }));
         });
+        audiences = BukkitAudiences.create(this);
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new EventSpigotModule());
+        ServersModule serversModule = new ServersModule();
+        EventCore.getInstance().getModuleRegistry().addAndEnableModule(serversModule);
         EventCore.getInstance().setActionExecutor(new SpigotActionExecutor());
         eventSpigot = this;
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new JoinModule());
@@ -106,6 +114,7 @@ public class EventSpigot extends JavaPlugin {
         if(commandMap != null){
             commandMap.register("nv", new NightVisionToggle());
             commandMap.register("editsign", new EditSignCommand());
+            commandMap.register("speed", new SpeedCommand());
         }
         if(getServer().getPluginManager().isPluginEnabled("PlotSquared")) {
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BoothModule());
@@ -115,10 +124,23 @@ public class EventSpigot extends JavaPlugin {
         }
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new MapModule());
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new WarpModule());
+        if(isEvent){
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new ShopsModule());
+        }
         ProfileManager.loadProfiles();
         permissionAttachments = new HashMap<>();
         unRegisterBukkitCommand(getCommand("ban"));
         unRegisterBukkitCommand(getCommand("kick"));
+        getServer().getScheduler().runTaskTimerAsynchronously(getInstance(), () -> {
+            Server thisServer = serversModule.getServerRedisManager().getServer(EventCore.getInstance().getIdentifier());
+            if(thisServer != null){
+                thisServer.setPlayerCount(getServer().getOnlinePlayers().size());
+                if(!thisServer.isOnline()){
+                    thisServer.setOnline(true);
+                }
+                serversModule.getServerRedisManager().addServer(thisServer);
+            }
+        }, 0, 30 * 20);
     }
 
     public HashMap<Integer, Team> getRankTeams() {
@@ -138,6 +160,10 @@ public class EventSpigot extends JavaPlugin {
 
     public boolean isEvent() {
         return isEvent;
+    }
+
+    public BukkitAudiences getAudiences() {
+        return audiences;
     }
 
     private Object getPrivateField(Object object, String field)throws SecurityException,
@@ -182,6 +208,12 @@ public class EventSpigot extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        Server server = EventCore.getInstance().getModuleRegistry().getModule(ServersModule.class).getServerRedisManager().getServer(EventCore.getInstance().getIdentifier());
+        if(server != null){
+            server.setOnline(false);
+            server.setPlayerCount(0);
+            EventCore.getInstance().getModuleRegistry().getModule(ServersModule.class).getServerRedisManager().addServer(server);
+        }
         EventCore.getInstance().shutdown();
     }
 

@@ -10,7 +10,7 @@ import org.bukkit.Location;
 import org.bukkit.Registry;
 
 public enum EntityTypes {
-    HUB_VILLAGER("HubVillager", 120, net.minecraft.server.v1_16_R2.EntityTypes.Builder.a(VillagerNPC::new, EnumCreatureType.CREATURE));
+    VILLAGER("villager", 120, net.minecraft.server.v1_16_R2.EntityTypes.Builder.a(VillagerNPC::new, EnumCreatureType.CREATURE));
     private String name;
     private int id;
     private net.minecraft.server.v1_16_R2.EntityTypes.Builder<?> builder;

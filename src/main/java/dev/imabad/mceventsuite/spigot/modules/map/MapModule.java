@@ -1,13 +1,26 @@
 package dev.imabad.mceventsuite.spigot.modules.map;
 
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
+import com.sk89q.worldedit.function.operation.Operation;
+import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.math.transform.AffineTransform;
+import com.sk89q.worldedit.session.ClipboardHolder;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.modules.Module;
+import dev.imabad.mceventsuite.core.api.objects.EventBooth;
 import dev.imabad.mceventsuite.core.api.objects.EventBoothPlot;
 import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
 import dev.imabad.mceventsuite.core.modules.mysql.dao.BoothDAO;
+import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
-import dev.imabad.mceventsuite.spigot.commands.GenMapCommand;
-import dev.imabad.mceventsuite.spigot.modules.booths.commands.NewBoothPlotCommand;
+import dev.imabad.mceventsuite.spigot.modules.map.commands.*;
 import net.minecraft.server.v1_16_R2.Block;
 import net.minecraft.server.v1_16_R2.BlockPosition;
 import net.minecraft.server.v1_16_R2.IBlockData;
@@ -15,16 +28,22 @@ import org.bukkit.*;
 import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
 import org.bukkit.craftbukkit.v1_16_R2.block.data.CraftBlockData;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class MapModule extends Module implements Listener {
+
+    private List<EventBooth> booths = new ArrayList<>();
+    private EditSession editSession ;
+
     @Override
     public String getName() {
         return "map";
@@ -35,6 +54,18 @@ public class MapModule extends Module implements Listener {
         SimpleCommandMap commandMap = EventSpigot.getInstance().getCommandMap();
         commandMap.register("genmap", new GenMapCommand());
         commandMap.register("nbp", new NewBoothPlotCommand());
+        commandMap.register("loadbooth", new LoadSchemCommand());
+        commandMap.register("undobooth", new UndoBoothCommand());
+        commandMap.register("sbs", new SetBoothPosCommand());
+        EventCore.getInstance().getEventRegistry().registerListener(MySQLLoadedEvent.class, this::onMysqlLoad);
+    }
+
+    private void onMysqlLoad(MySQLLoadedEvent t) {
+        booths = t.getMySQLDatabase().getDAO(BoothDAO.class).getBooths();
+    }
+
+    public List<EventBooth> getBooths() {
+        return booths;
     }
 
     @Override
@@ -57,6 +88,57 @@ public class MapModule extends Module implements Listener {
                 return Material.RED_CONCRETE_POWDER;
         }
         return Material.AIR;
+    }
+
+    public void undoBooth(){
+        EditSession newEditSession = WorldEdit.getInstance().newEditSession(editSession.getWorld());
+        editSession.undo(newEditSession);
+        newEditSession.commit();
+    }
+
+    public boolean loadBooth(Player player, String name, int rotationI){
+        editSession = WorldEdit.getInstance().newEditSessionBuilder().world(BukkitAdapter.adapt(player.getWorld())).build();
+        Optional<EventBooth> boothOptional = EventCore.getInstance().getModuleRegistry().getModule(MapModule.class).getBooths().stream().filter(eventBooth -> eventBooth.getName().toUpperCase().replace(' ', '_').equalsIgnoreCase(name)).findFirst();
+        if(!boothOptional.isPresent()){
+            player.sendMessage("Invalid booth.");
+            return false;
+        }
+        EventBooth booth = boothOptional.get();
+        Optional<EventBoothPlot> plotOptional = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(BoothDAO.class).getPlots().stream().filter(eventBoothPlot -> eventBoothPlot.blocksIsInBooth(player.getLocation().getBlockX(), player.getLocation().getBlockZ())).findFirst();
+        if(!plotOptional.isPresent()){
+            player.sendMessage("Please stand in a valid booth plot.");
+            return false;
+        }
+        EventBoothPlot plot = plotOptional.get();
+        File schemFile = new File(EventSpigot.getInstance().getDataFolder() + File.separator + "booths" + File.separator + booth.getId());
+        if(!schemFile.exists()){
+            return false;
+        }
+        ClipboardFormat format = ClipboardFormats.findByFile(schemFile);
+        try {
+            try (ClipboardReader reader = format.getReader(new FileInputStream(schemFile))) {
+                Clipboard clipboard = reader.read();
+                AffineTransform transform = new AffineTransform();
+                transform = transform.rotateY(-rotationI);
+                ClipboardHolder holder = new ClipboardHolder(clipboard);
+                holder.setTransform(holder.getTransform().combine(transform));
+                Operation operation = holder
+                        .createPaste(editSession)
+                        .to(BlockVector3.at(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ()))
+                        .ignoreAirBlocks(false)
+                        .build();
+                Operations.complete(operation);
+                editSession.close();
+                plot.setBooth(booth);
+                EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(BoothDAO.class).saveBoothPlot(plot);
+                player.sendMessage("Loaded booth.");
+                return true;
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+            player.sendMessage("Error loading");
+            return false;
+        }
     }
 
     public CompletableFuture<Boolean> generateMap(String worldName, int chunkRadiusX, int chunkRadiusZ, int cx, int cz){

@@ -16,14 +16,17 @@ public abstract class EventInventory {
     public final static List<EventInventory> EVENT_INVENTORIES = new ArrayList<>();
 
     protected final Inventory inventory;
+    private Player player;
     protected EventInventory backInventory;
 
-    public EventInventory(Player clearPlayer, String name, int size) {
+    public EventInventory(Player player, String name, int size) {
+        this.player = player;
         this.inventory = Bukkit.createInventory(null, getInvSizeForCount(size), name);
         EVENT_INVENTORIES.add(this);
     }
 
-    public EventInventory(Player clearPlayer, String name, InventoryType type) {
+    public EventInventory(Player player, String name, InventoryType type) {
+        this.player = player;
         this.inventory = Bukkit.createInventory(null, type, name);
         EVENT_INVENTORIES.add(this);
     }

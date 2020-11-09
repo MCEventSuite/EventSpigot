@@ -4,6 +4,7 @@ import org.bukkit.GameRule;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockGrowEvent;
+import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.event.world.WorldLoadEvent;
@@ -41,7 +42,12 @@ public class BuildListener implements Listener {
 
     @EventHandler
     public void onStructureGrow(StructureGrowEvent structureGrowEvent){
-        if(structureGrowEvent.getLocation().getWorld().getName().equalsIgnoreCase("small") || !structureGrowEvent.isFromBonemeal())
+        if(!structureGrowEvent.isFromBonemeal())
             structureGrowEvent.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onRedstone(BlockRedstoneEvent blockRedstoneEvent) {
+        blockRedstoneEvent.setNewCurrent(blockRedstoneEvent.getOldCurrent());
     }
 }

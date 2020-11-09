@@ -2,7 +2,10 @@ package dev.imabad.mceventsuite.spigot.utils;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import net.minecraft.server.v1_16_R2.NBTTagCompound;
+import net.minecraft.server.v1_16_R2.NBTTagList;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
@@ -138,6 +141,44 @@ public class ItemUtils {
         skull.setItemMeta(skullMeta);
         return skull;
     }
+    public static ItemStack getSkull(String url, String name, List<String> lore) {
+        ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
+        if (url == null || url.isEmpty())
+            return skull;
+        SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
+        GameProfile profile = new GameProfile(UUID.randomUUID(), null);
+        profile.getProperties().put("textures", new Property("textures", url));
+        Field profileField = null;
+        try {
+            profileField = skullMeta.getClass().getDeclaredField("profile");
+        } catch (NoSuchFieldException | SecurityException e) {
+            e.printStackTrace();
+        }
+        profileField.setAccessible(true);
+        try {
+            profileField.set(skullMeta, profile);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        skullMeta.setDisplayName(StringUtils.colorizeMessage(name));
+        skullMeta.setLore(lore);
+        skull.setItemMeta(skullMeta);
+        return skull;
+    }
+    public static boolean equalsItemTexture(ItemStack itemStack1, ItemStack itemStack2)
+    {
+        return getIconTextureString(itemStack1).equalsIgnoreCase(getIconTextureString(itemStack2));
+    }
 
-
+    private static String getIconTextureString(ItemStack itemStack)
+    {
+        net.minecraft.server.v1_16_R2.ItemStack nmsHead2 = CraftItemStack.asNMSCopy(itemStack);
+        NBTTagCompound rootCompound = (nmsHead2.hasTag()) ? nmsHead2.getTag() : new NBTTagCompound();
+        assert rootCompound != null;
+        NBTTagCompound ownerCompound = rootCompound.getCompound("SkullOwner");
+        NBTTagCompound iconProperties = ownerCompound.getCompound("Properties");
+        NBTTagList iconTextures = iconProperties.getList("textures", 10);
+        NBTTagCompound iconTexture = (NBTTagCompound) iconTextures.get(0);
+        return iconTexture.getString("Value");
+    }
 }

@@ -12,6 +12,18 @@ import com.plotsquared.core.util.MainUtil;
 import com.plotsquared.core.util.SchematicHandler;
 import com.plotsquared.core.util.task.RunnableVal;
 import com.plotsquared.core.util.task.TaskManager;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.EditSessionBuilder;
+import com.sk89q.worldedit.LocalSession;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
+import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardWriter;
+import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
+import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.CuboidRegion;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.events.JoinEvent;
 import dev.imabad.mceventsuite.core.api.modules.Module;
@@ -25,16 +37,20 @@ import dev.imabad.mceventsuite.core.modules.mysql.dao.RankDAO;
 import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
+import dev.imabad.mceventsuite.spigot.modules.booths.commands.FixBoothsCommand;
+import dev.imabad.mceventsuite.spigot.modules.booths.commands.SchemBoothsCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldLoadEvent;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -59,25 +75,59 @@ public class BoothModule extends Module implements Listener {
         EventCore.getInstance().getEventRegistry().registerListener(JoinEvent.class, this::onPlayerJoin);
         EventCore.getInstance().getEventRegistry().registerListener(MySQLLoadedEvent.class, this::onMysqlLoad);
         updateWorldBorders();
+        SimpleCommandMap commandMap = EventSpigot.getInstance().getCommandMap();
+        commandMap.register("schembooths", new SchemBoothsCommand());
+        commandMap.register("fixBooths", new FixBoothsCommand());
     }
 
     private void onMysqlLoad(MySQLLoadedEvent t) {
         boothMember = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(RankDAO.class).getRankByName("Booth Member").orElse(new EventRank(15, "Booth Member", "", "", Collections.emptyList(), true));
     }
 
+    public int maxY(String type){
+        switch(type.toLowerCase()){
+            case "small":
+                return 11;
+            case "medium":
+                return 16;
+            case "large":
+                return 22;
+        }
+        return 0;
+    }
+
     public void schematicBooths(CommandSender sender){
+        Player player = (Player) sender;
         EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(BoothDAO.class).getBooths().stream().filter(eventBooth -> eventBooth.getStatus().equalsIgnoreCase("assigned")).forEach(eventBooth -> {
             plotAPI.getPlotAreas(eventBooth.getBoothType()).forEach(plotArea -> {
                 Plot plot = plotArea.getPlot(PlotId.fromString(eventBooth.getPlotID()));
                 if(plot != null) {
-                    plot.export(EventSpigot.getInstance().getDataFolder().getAbsolutePath() + File.separator + "booths" + File.separator + eventBooth.getId(), new RunnableVal<Boolean>() {
-                        @Override
-                        public void run(Boolean value) {
-                            if(value) {
-                                sender.sendMessage("Exported booth - " + eventBooth.getName());
-                            }
+                    World world = Bukkit.getWorld(eventBooth.getBoothType());
+                    CuboidRegion region = plot.getLargestRegion();
+                    System.out.println(region.getMinimumPoint().toParserString() + " to " + region.getMaximumPoint().toParserString());
+                    int maxY = 64 + maxY(eventBooth.getBoothType());
+                    System.out.println("Max Y for booth is " + maxY);
+                    if(region.getPos1().getY() > maxY){
+                        BlockVector3 newPos = BlockVector3.at(region.getPos1().getX(), maxY + 1, region.getPos1().getZ());
+                        region.setPos1(newPos);
+                    } else if(region.getPos2().getY() > maxY){
+                        BlockVector3 newPos = BlockVector3.at(region.getPos2().getX(), maxY + 1, region.getPos2().getZ());
+                        region.setPos2(newPos);
+                    }
+                    BlockArrayClipboard clipboard = new BlockArrayClipboard(region);
+                    EditSession editSession = WorldEdit.getInstance().newEditSessionBuilder().world(BukkitAdapter.adapt(world)).build();
+                    ForwardExtentCopy forwardExtentCopy = new ForwardExtentCopy(editSession, region, clipboard, region.getMinimumPoint());
+                    forwardExtentCopy.setCopyingEntities(true);
+                    try {
+                        Operations.complete(forwardExtentCopy);
+                        try (ClipboardWriter writer = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getWriter(new FileOutputStream(new File(EventSpigot.getInstance().getDataFolder().getAbsolutePath() + File.separator + "booths" + File.separator + eventBooth.getId())))) {
+                            writer.write(clipboard);
+                            sender.sendMessage("Exported booth - " + eventBooth.getName());
                         }
-                    });
+                    }catch (Exception e){
+                        sender.sendMessage("Error exportig booth - " + eventBooth.getName());
+                        e.printStackTrace();
+                    }
                 }
             });
         });

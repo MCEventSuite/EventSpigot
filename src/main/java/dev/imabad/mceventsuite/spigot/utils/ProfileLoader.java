@@ -11,10 +11,8 @@ import java.util.UUID;
 
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
-import dev.imabad.mceventsuite.spigot.EventSpigot;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.craftbukkit.libs.jline.internal.Log;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;

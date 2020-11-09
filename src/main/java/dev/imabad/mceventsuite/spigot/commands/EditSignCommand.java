@@ -23,7 +23,7 @@ public class EditSignCommand extends BaseCommand {
     }
 
     @Override
-    public boolean execute(CommandSender sender, String commandLabel, String[] args) {
+    public boolean execute(CommandSender sender, String label, String[] args) {
         if(!(sender instanceof Player)){
             return false;
         }

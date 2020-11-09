@@ -1,13 +1,13 @@
 package dev.imabad.mceventsuite.spigot.entities;
 
 import java.lang.reflect.Field;
-import java.util.LinkedHashSet;
+import java.util.*;
 
-import net.kyori.text.Component;
-import net.kyori.text.ComponentBuilder;
-import net.md_5.bungee.api.chat.TextComponent;
+import com.destroystokyo.paper.entity.ai.MobGoalHelper;
+import com.destroystokyo.paper.entity.ai.PaperMobGoals;
+import dev.imabad.mceventsuite.spigot.utils.StringUtils;
 import net.minecraft.server.v1_16_R2.*;
-import net.minecraft.server.v1_16_R2.EntityTypes;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
@@ -16,7 +16,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 
 public class VillagerNPC extends EntityVillager {
 
-    public static final String busyTag = "Busy";
+    public static final String busyTag = "&c&lBusy";
     private String name;
     private Location spawn;
     private boolean moving = false;
@@ -24,16 +24,20 @@ public class VillagerNPC extends EntityVillager {
     private Location spawnLocation = null;
     private boolean isBusy = false;
 
-    public VillagerNPC(EntityTypes<EntityVillager> entitytypes, World world){
+    public VillagerNPC(net.minecraft.server.v1_16_R2.EntityTypes<EntityVillager> entitytypes, World world){
         super(entitytypes, world);
+        System.out.println("C1 Removing goals");
+        Bukkit.getMobGoals().removeAllGoals((Villager)this.getBukkitCreature());
+//        this.goalSelector.a(8, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 3.0F));
     }
 
     public VillagerNPC(World world, Location spawnLocation, String name) {
-        super(EntityTypes.VILLAGER, world);
-        clearGoals();
+        super(net.minecraft.server.v1_16_R2.EntityTypes.VILLAGER, world);
         this.spawnLocation = spawnLocation;
         this.name = name;
-        this.goalSelector.a(8, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 3.0F));
+        System.out.println("C2 Removing goals");
+        Bukkit.getMobGoals().removeAllGoals((Villager)this.getBukkitCreature());
+//        this.goalSelector.a(8, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 3.0F));
     }
 
     public static Object getPrivateField(String fieldName, Class clazz, Object object) {
@@ -43,37 +47,31 @@ public class VillagerNPC extends EntityVillager {
             field = clazz.getDeclaredField(fieldName);
             field.setAccessible(true);
             o = field.get(object);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
         return o;
     }
 
     private void clearGoals() {
-        LinkedHashSet<?> goalB = (LinkedHashSet<?>) getPrivateField("b", PathfinderGoalSelector.class,
-                goalSelector);
-        goalB.clear();
-        LinkedHashSet<?> goalC = (LinkedHashSet<?>) getPrivateField("c", PathfinderGoalSelector.class,
+        Collection<?> goalC = (Collection<?>) getPrivateField("d", PathfinderGoalSelector.class,
                 goalSelector);
         goalC.clear();
-        LinkedHashSet<?> targetB = (LinkedHashSet<?>) getPrivateField("b", PathfinderGoalSelector.class,
-                targetSelector);
-        targetB.clear();
-        LinkedHashSet<?> targetC = (LinkedHashSet<?>) getPrivateField("c", PathfinderGoalSelector.class,
+        Collection<?> targetC = (Collection<?>) getPrivateField("d", PathfinderGoalSelector.class,
                 targetSelector);
         targetC.clear();
     }
 
     public VillagerNPC spawn(Location loc, String name) {
         spawn = loc;
+        spawnLocation = loc;
         World nmsWorld = ((CraftWorld) loc.getWorld()).getHandle();
         setPositionRotation(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
         Villager merchant = (Villager) this.getBukkitEntity();
         merchant.setAdult();
         merchant.setBreed(false);
-        merchant.setCustomName(name);
+        merchant.setAI(false);
+        merchant.setCustomName(StringUtils.colorizeMessage(getUnformattedName()));
         merchant.setCustomNameVisible(true);
         merchant.setHealth(20D);
         merchant.setRemoveWhenFarAway(false);
@@ -82,14 +80,11 @@ public class VillagerNPC extends EntityVillager {
     }
 
     public void moveToBlock(Location l, float speed) {
+        clearGoals();
+        setNoAI(false);
         moving = true;
         currentlyMovingTo = l;
         setPositionRotation(locX(), locY(), locZ(), l.getYaw(), l.getPitch());
-        ;
-        NBTTagCompound tag = new NBTTagCompound();
-        this.save(tag);
-        tag.setInt("NoAI", 0);
-        this.load(tag);
         Villager merchant = (Villager) this.getBukkitEntity();
         merchant.getLocation().setDirection(l.getDirection());
         PathEntity pathEntity = this.navigation.a(new BlockPosition(l.getX(), l.getY(), l.getZ()), 0);
@@ -97,12 +92,18 @@ public class VillagerNPC extends EntityVillager {
         getNavigation().a(pathEntity, speed);
     }
 
-    public ChatComponentText getNormalName() {
-        return new ChatComponentText(name);
+    public String getNormalName() {
+        return StringUtils.colorizeMessage(name);
     }
+
+    public String getBusyName(){ return StringUtils.colorizeMessage(name + " - " + busyTag); }
 
     public Location getSpawnLocation() {
         return spawnLocation;
+    }
+
+    public String getUnformattedName(){
+        return name;
     }
 
     public String getRawNormalName() {
@@ -115,11 +116,11 @@ public class VillagerNPC extends EntityVillager {
 
     public void setBusy(boolean busy) {
         if (busy) {
-            setCustomName(getNormalName());
+            this.getBukkitEntity().setCustomName(getBusyName());
             this.isBusy = true;
         }
         if (!busy) {
-            setCustomName(getNormalName());
+            this.getBukkitEntity().setCustomName(getNormalName());
             this.isBusy = false;
         }
     }
