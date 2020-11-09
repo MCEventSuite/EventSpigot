@@ -1,5 +1,7 @@
 package dev.imabad.mceventsuite.spigot.modules.map;
 
+import com.influxdb.client.domain.WritePrecision;
+import com.influxdb.client.write.Point;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -16,6 +18,7 @@ import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.modules.Module;
 import dev.imabad.mceventsuite.core.api.objects.EventBooth;
 import dev.imabad.mceventsuite.core.api.objects.EventBoothPlot;
+import dev.imabad.mceventsuite.core.modules.influx.InfluxDBModule;
 import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
 import dev.imabad.mceventsuite.core.modules.mysql.dao.BoothDAO;
 import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
@@ -36,6 +39,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -58,6 +62,18 @@ public class MapModule extends Module implements Listener {
         commandMap.register("undobooth", new UndoBoothCommand());
         commandMap.register("sbs", new SetBoothPosCommand());
         EventCore.getInstance().getEventRegistry().registerListener(MySQLLoadedEvent.class, this::onMysqlLoad);
+        if(EventCore.getInstance().getModuleRegistry().isModuleEnabled(InfluxDBModule.class)) {
+            EventSpigot.getInstance().getServer().getScheduler().runTaskTimerAsynchronously(EventSpigot.getInstance(), () -> {
+                List<Point> dataPoints = new ArrayList<>();
+                for (Player p : EventSpigot.getInstance().getServer().getOnlinePlayers()) {
+                    Location l = p.getLocation();
+                    Point dataPoint = Point.measurement("playerLocations").addTag("server", EventCore.getInstance().getIdentifier())
+                            .addTag("world", "venue").addField("value", l.getX() + "," + l.getZ()).time(Instant.now().toEpochMilli(), WritePrecision.MS);
+                    dataPoints.add(dataPoint);
+                }
+                EventCore.getInstance().getModuleRegistry().getModule(InfluxDBModule.class).writePoints(dataPoints);
+            }, 0, 5 * (60 * 20));
+        }
     }
 
     private void onMysqlLoad(MySQLLoadedEvent t) {
@@ -70,12 +86,13 @@ public class MapModule extends Module implements Listener {
 
     @Override
     public void onDisable() {
-
+        booths.clear();
+        editSession.close();
     }
 
     @Override
     public List<Class<? extends Module>> getDependencies() {
-        return Collections.emptyList();
+        return Collections.singletonList(InfluxDBModule.class);
     }
 
     public Material getMaterialForSize(String size){
