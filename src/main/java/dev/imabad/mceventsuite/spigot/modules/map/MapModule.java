@@ -46,7 +46,9 @@ import java.util.concurrent.CompletableFuture;
 public class MapModule extends Module implements Listener {
 
     private List<EventBooth> booths = new ArrayList<>();
-    private EditSession editSession ;
+    private List<Location> spawnLocations = new ArrayList<>();
+    private EditSession editSession;
+    private final Random random = new Random();
 
     @Override
     public String getName() {
@@ -74,6 +76,15 @@ public class MapModule extends Module implements Listener {
                 EventCore.getInstance().getModuleRegistry().getModule(InfluxDBModule.class).writePoints(dataPoints);
             }, 0, 5 * (60 * 20));
         }
+        World mainWorld = Bukkit.getWorld("world");
+        spawnLocations.add(new Location(mainWorld, 367, 71 ,380, 180, 0));
+        spawnLocations.add(new Location(mainWorld, 373, 71 ,380, 180, 0));
+        spawnLocations.add(new Location(mainWorld, 387, 71 ,380, 180, 0));
+        spawnLocations.add(new Location(mainWorld, 393, 71 ,380, 180, 0));
+        spawnLocations.add(new Location(mainWorld, 407, 71 ,380, 180, 0));
+        spawnLocations.add(new Location(mainWorld, 413, 71 ,380, 180, 0));
+        spawnLocations.add(new Location(mainWorld, 427, 71 ,380, 180, 0));
+        spawnLocations.add(new Location(mainWorld, 433, 71 ,380, 180, 0));
     }
 
     private void onMysqlLoad(MySQLLoadedEvent t) {
@@ -82,6 +93,14 @@ public class MapModule extends Module implements Listener {
 
     public List<EventBooth> getBooths() {
         return booths;
+    }
+
+    public List<Location> getSpawnLocations() {
+        return spawnLocations;
+    }
+
+    public Location getRandomLocation(){
+        return spawnLocations.get(random.nextInt(spawnLocations.size()));
     }
 
     @Override
