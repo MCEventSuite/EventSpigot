@@ -3,6 +3,7 @@ package dev.imabad.mceventsuite.spigot.listeners;
 import org.bukkit.GameRule;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockFormEvent;
 import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
@@ -49,5 +50,12 @@ public class BuildListener implements Listener {
     @EventHandler
     public void onRedstone(BlockRedstoneEvent blockRedstoneEvent) {
         blockRedstoneEvent.setNewCurrent(blockRedstoneEvent.getOldCurrent());
+    }
+
+    @EventHandler
+    public void onBlockFormEvent(BlockFormEvent blockFormEvent){
+        if(blockFormEvent.getBlock().getType().toString().toLowerCase().contains("concrete_powder")){
+            blockFormEvent.setCancelled(true);
+        }
     }
 }
