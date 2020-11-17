@@ -26,6 +26,7 @@ import dev.imabad.mceventsuite.spigot.listeners.PlayerListener;
 import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.EventPassSpigotModule;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
+import dev.imabad.mceventsuite.spigot.modules.player.PlayerModule;
 import dev.imabad.mceventsuite.spigot.modules.shops.ShopsModule;
 import dev.imabad.mceventsuite.spigot.modules.stafftrack.StaffTrackModule;
 import dev.imabad.mceventsuite.spigot.modules.stage.StageModule;
@@ -134,6 +135,7 @@ public class EventSpigot extends JavaPlugin {
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new EventPassModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new EventPassSpigotModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new StageModule());
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new PlayerModule());
         }
         ProfileManager.loadProfiles();
         permissionAttachments = new HashMap<>();

@@ -5,9 +5,6 @@ import dev.imabad.mceventsuite.core.api.events.JoinEvent;
 import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
 import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
 import dev.imabad.mceventsuite.core.modules.mysql.dao.PlayerDAO;
-import dev.imabad.mceventsuite.core.modules.redis.RedisChannel;
-import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
-import dev.imabad.mceventsuite.core.modules.redis.messages.players.UpdateStaffTrackMessage;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.api.EventInventory;
 import dev.imabad.mceventsuite.spigot.impl.EventPermissible;
@@ -15,11 +12,10 @@ import dev.imabad.mceventsuite.spigot.impl.SpigotPlayer;
 import dev.imabad.mceventsuite.spigot.interactions.Interaction;
 import dev.imabad.mceventsuite.spigot.interactions.InteractionRegistry;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
-import dev.imabad.mceventsuite.spigot.modules.stafftrack.StaffTrackModule;
+import dev.imabad.mceventsuite.spigot.modules.player.PlayerHotbar;
 import dev.imabad.mceventsuite.spigot.utils.PermissibleInjector;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -80,6 +76,7 @@ public class PlayerListener implements Listener {
         }
         playerJoinEvent.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 1, true, false, false));
         playerJoinEvent.getPlayer().teleport(EventCore.getInstance().getModuleRegistry().getModule(MapModule.class).getRandomLocation());
+        PlayerHotbar.givePlayerInventory(playerJoinEvent.getPlayer());
     }
 
     @EventHandler

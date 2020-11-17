@@ -24,8 +24,8 @@ public class WarpInventoryPage extends EventInventory {
     private WarpCategory filter = WarpCategory.ALL;
     private HashMap<Integer, WarpItem> warpItemHashMap = new HashMap<>();
 
-    public WarpInventoryPage(Player clearPlayer) {
-        super(clearPlayer, "Cubed! Warp", 54);
+    public WarpInventoryPage(Player player) {
+        super(player, "Cubed! Warp", 54);
     }
 
     @Override
