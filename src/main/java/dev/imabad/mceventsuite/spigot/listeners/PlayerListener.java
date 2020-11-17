@@ -97,7 +97,6 @@ public class PlayerListener implements Listener {
             EventCore.getInstance().getEventPlayerManager().removePlayer(eventPlayer);
         });
     }
-
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event){
         if(event.getClickedInventory() != null) {

@@ -68,7 +68,7 @@ public class ShopsModule extends Module implements Listener {
 
     @EventHandler
     public void onWorldLoad(WorldLoadEvent worldLoadEvent){
-        if(worldLoadEvent.getWorld().getName().equalsIgnoreCase("world")){
+        if(worldLoadEvent.getWorld().getName().equalsIgnoreCase("venue")){
             mainWorld = worldLoadEvent.getWorld();
         }
     }

@@ -52,7 +52,7 @@ public class WarpModule extends Module {
 
     public void generateWarpItems(){
         warpItems = new ArrayList<>();
-        World world = Bukkit.getWorld("world");
+        World world = Bukkit.getWorld("venue");
         plots.sort(Comparator.comparingInt(o -> WarpCategory.fromName(o.getBoothType()).ordinal()));
         for(int i = 0; i < plots.size(); i++){
             EventBoothPlot boothPlot = plots.get(i);

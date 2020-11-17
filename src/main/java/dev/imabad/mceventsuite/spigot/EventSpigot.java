@@ -56,7 +56,6 @@ public class EventSpigot extends JavaPlugin {
         return eventSpigot;
     }
 
-
     private List<EventRank> ranks;
     private HashMap<UUID, PermissionAttachment> permissionAttachments;
     private HashMap<Integer, Team> rankTeams = new HashMap<>();
@@ -67,6 +66,7 @@ public class EventSpigot extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        eventSpigot = this;
         new EventCore(getDataFolder());
         EventCore.getInstance().getEventRegistry().registerListener(RedisConnectionEvent.class, redisConnectionEvent -> {
             System.out.println("[EventSpigot] Connected to Redis");
@@ -101,7 +101,6 @@ public class EventSpigot extends JavaPlugin {
         ServersModule serversModule = new ServersModule();
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(serversModule);
         EventCore.getInstance().setActionExecutor(new SpigotActionExecutor());
-        eventSpigot = this;
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new JoinModule());
         EventCore.getInstance().getEventRegistry().registerListener(MySQLLoadedEvent.class, (event) -> {
             ranks = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(RankDAO.class).getRanks();
@@ -119,6 +118,8 @@ public class EventSpigot extends JavaPlugin {
             commandMap.register("nv", new NightVisionToggle());
             commandMap.register("editsign", new EditSignCommand());
             commandMap.register("speed", new SpeedCommand());
+            commandMap.register("linksign", new LinkSignCommand());
+            commandMap.register("slink", new SignLinkCommand());
         }
         if(getServer().getPluginManager().isPluginEnabled("PlotSquared")) {
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BoothModule());

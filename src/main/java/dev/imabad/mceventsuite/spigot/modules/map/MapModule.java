@@ -76,7 +76,7 @@ public class MapModule extends Module implements Listener {
                 EventCore.getInstance().getModuleRegistry().getModule(InfluxDBModule.class).writePoints(dataPoints);
             }, 0, 5 * (60 * 20));
         }
-        World mainWorld = Bukkit.getWorld("world");
+        World mainWorld = Bukkit.getWorld("venue");
         spawnLocations.add(new Location(mainWorld, 367, 71 ,380, 180, 0));
         spawnLocations.add(new Location(mainWorld, 373, 71 ,380, 180, 0));
         spawnLocations.add(new Location(mainWorld, 387, 71 ,380, 180, 0));
