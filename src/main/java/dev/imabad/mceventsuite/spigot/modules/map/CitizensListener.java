@@ -1,6 +1,7 @@
-package dev.imabad.mceventsuite.spigot.modules.shops;
+package dev.imabad.mceventsuite.spigot.modules.map;
 
 import dev.imabad.mceventsuite.core.EventCore;
+import dev.imabad.mceventsuite.spigot.modules.shops.ShopsModule;
 import dev.imabad.mceventsuite.spigot.modules.shops.squareways.SquarewayShop;
 import dev.imabad.mceventsuite.spigot.modules.shops.starblocks.StarblocksShop;
 import org.bukkit.event.EventHandler;
@@ -10,9 +11,7 @@ public class CitizensListener implements Listener {
 
     @EventHandler
     public void onCitizensLoad(net.citizensnpcs.api.event.CitizensEnableEvent event){
-        ShopsModule module = EventCore.getInstance().getModuleRegistry().getModule(ShopsModule.class);
-        module.registerShop(new StarblocksShop(module));
-        module.registerShop(new SquarewayShop(module));
+        EventCore.getInstance().getModuleRegistry().getModule(MapModule.class).initKevins();
     }
 
 }

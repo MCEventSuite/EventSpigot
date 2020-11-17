@@ -16,6 +16,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -23,10 +26,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class WarpModule extends Module {
+public class WarpModule extends Module implements Listener {
 
     private List<EventBoothPlot> plots;
     private List<WarpItem> warpItems;
+    private World mainWorld;
 
     @Override
     public String getName() {
@@ -38,6 +42,7 @@ public class WarpModule extends Module {
         SimpleCommandMap commandMap = EventSpigot.getInstance().getCommandMap();
         commandMap.register("warp", new WarpCommand());
         EventCore.getInstance().getEventRegistry().registerListener(MySQLLoadedEvent.class, this::onMysqlLoad);
+        EventSpigot.getInstance().getServer().getPluginManager().registerEvents(this, EventSpigot.getInstance());
     }
 
     private void onMysqlLoad(MySQLLoadedEvent t) {
@@ -48,6 +53,14 @@ public class WarpModule extends Module {
     public void refresh(){
         plots = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(BoothDAO.class).getPlots();
         generateWarpItems();
+    }
+
+    @EventHandler
+    public void onWorldLoad(WorldLoadEvent worldLoadEvent){
+        if(worldLoadEvent.getWorld().getName().equalsIgnoreCase("venue")){
+            mainWorld = worldLoadEvent.getWorld();
+            generateWarpItems();
+        }
     }
 
     public void generateWarpItems(){

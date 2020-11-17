@@ -12,12 +12,12 @@ import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.core.modules.redis.RedisMessageListener;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
 import dev.imabad.mceventsuite.core.modules.redis.events.RedisConnectionEvent;
+import dev.imabad.mceventsuite.core.modules.redis.messages.players.UpdatePlayerXPMessage;
 import dev.imabad.mceventsuite.core.modules.redis.messages.players.UpdatedPlayerMessage;
 import dev.imabad.mceventsuite.core.modules.redis.messages.players.UpdatedRankMessage;
 import dev.imabad.mceventsuite.core.modules.servers.ServersModule;
 import dev.imabad.mceventsuite.core.modules.servers.objects.Server;
 import dev.imabad.mceventsuite.spigot.commands.*;
-import dev.imabad.mceventsuite.spigot.entities.ProfileManager;
 import dev.imabad.mceventsuite.spigot.impl.EventPermission;
 import dev.imabad.mceventsuite.spigot.impl.SpigotActionExecutor;
 import dev.imabad.mceventsuite.spigot.listeners.BuildListener;
@@ -31,8 +31,11 @@ import dev.imabad.mceventsuite.spigot.modules.shops.ShopsModule;
 import dev.imabad.mceventsuite.spigot.modules.stafftrack.StaffTrackModule;
 import dev.imabad.mceventsuite.spigot.modules.stage.StageModule;
 import dev.imabad.mceventsuite.spigot.modules.warps.WarpModule;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.sound.Sound;
 import net.milkbowl.vault.permission.Permission;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommand;
@@ -81,6 +84,15 @@ public class EventSpigot extends JavaPlugin {
                     }
                 }
             }));
+            EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).registerListener(UpdatePlayerXPMessage.class, new RedisMessageListener<>((msg) -> {
+                if(EventCore.getInstance().getEventPlayerManager().hasPlayer(msg.getUuid())){
+                    Player player = Bukkit.getPlayer(msg.getUuid());
+                    if(player != null) {
+                        player.setLevel(msg.getNewLevel());
+                        getAudiences().player(player).playSound(Sound.sound(Key.key("minecraft:ui.toast.challenge_complete"), Sound.Source.AMBIENT, 1f, 1f));
+                    }
+                }
+            }));
             EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).registerListener(UpdatedRankMessage.class, new RedisMessageListener<>((msg) -> {
                 ranks = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(RankDAO.class).getRanks(true);
                 EventCore.getInstance().getEventPlayerManager().getPlayers().stream().filter(player -> player.getRank().getId() == msg.getRank().getId()).forEach(player -> {
@@ -121,6 +133,7 @@ public class EventSpigot extends JavaPlugin {
             commandMap.register("speed", new SpeedCommand());
             commandMap.register("linksign", new LinkSignCommand());
             commandMap.register("slink", new SignLinkCommand());
+            commandMap.register("goserver", new SendToServerCommand());
         }
         if(getServer().getPluginManager().isPluginEnabled("PlotSquared")) {
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BoothModule());
@@ -138,7 +151,6 @@ public class EventSpigot extends JavaPlugin {
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new StageModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new PlayerModule());
         }
-        ProfileManager.loadProfiles();
         permissionAttachments = new HashMap<>();
         unRegisterBukkitCommand(getCommand("ban"));
         unRegisterBukkitCommand(getCommand("kick"));

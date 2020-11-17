@@ -3,6 +3,8 @@ package dev.imabad.mceventsuite.spigot.listeners;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.events.JoinEvent;
 import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
+import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassDAO;
+import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassPlayer;
 import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
 import dev.imabad.mceventsuite.core.modules.mysql.dao.PlayerDAO;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
@@ -77,6 +79,8 @@ public class PlayerListener implements Listener {
         playerJoinEvent.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 1, true, false, false));
         playerJoinEvent.getPlayer().teleport(EventCore.getInstance().getModuleRegistry().getModule(MapModule.class).getRandomLocation());
         PlayerHotbar.givePlayerInventory(playerJoinEvent.getPlayer());
+        EventPassPlayer eventPassPlayer = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).getOrCreateEventPass(player);
+        playerJoinEvent.getPlayer().setLevel(eventPassPlayer.levelFromXP());
     }
 
     @EventHandler

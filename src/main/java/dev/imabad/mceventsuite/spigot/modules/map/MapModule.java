@@ -52,6 +52,7 @@ public class MapModule extends Module implements Listener {
     private List<Location> spawnLocations = new ArrayList<>();
     private EditSession editSession;
     private final Random random = new Random();
+    private KevinManager kevinManager;
 
     @Override
     public String getName() {
@@ -81,6 +82,9 @@ public class MapModule extends Module implements Listener {
         }
         EventSpigot
             .getInstance().getServer().getPluginManager().registerEvents(this, EventSpigot.getInstance());
+        if(EventSpigot.getInstance().getServer().getPluginManager().getPlugin("Citizens") != null){
+            EventSpigot.getInstance().getServer().getPluginManager().registerEvents(new dev.imabad.mceventsuite.spigot.modules.map.CitizensListener(), EventSpigot.getInstance());
+        }
     }
 
     private void onMysqlLoad(MySQLLoadedEvent t) {
@@ -102,6 +106,10 @@ public class MapModule extends Module implements Listener {
         }
     }
 
+    public void initKevins(){
+        kevinManager = new KevinManager(mainWorld);
+    }
+
     public List<EventBooth> getBooths() {
         return booths;
     }
@@ -118,6 +126,7 @@ public class MapModule extends Module implements Listener {
     public void onDisable() {
         booths.clear();
         editSession.close();
+        kevinManager.byeKevins();
     }
 
     @Override
