@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import net.minecraft.server.v1_16_R2.NBTTagCompound;
 import net.minecraft.server.v1_16_R2.NBTTagList;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
@@ -165,6 +166,11 @@ public class ItemUtils {
         skull.setItemMeta(skullMeta);
         return skull;
     }
+
+    public static boolean equalsItemName(ItemStack itemStack, String name){
+        return ChatColor.stripColor(itemStack.getItemMeta().getDisplayName()).equalsIgnoreCase(name);
+    }
+
     public static boolean equalsItemTexture(ItemStack itemStack1, ItemStack itemStack2)
     {
         return getIconTextureString(itemStack1).equalsIgnoreCase(getIconTextureString(itemStack2));

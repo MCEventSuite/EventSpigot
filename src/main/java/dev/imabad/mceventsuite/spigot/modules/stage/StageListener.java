@@ -61,9 +61,9 @@ public class StageListener implements Listener {
       }
     }
     if(regionEnterEvent.getRegionId().equalsIgnoreCase("KOTH")){
-      regionEnterEvent.getPlayer().getInventory().setItem(4, KNOCK_STICK);
+      regionEnterEvent.getPlayer().getInventory().setItem(5, KNOCK_STICK);
       EventSpigot.getInstance().getAudiences().player(regionEnterEvent.getPlayer()).sendMessage(
-          Component.text("You have entered King Of the Hill!").color(NamedTextColor.GREEN));
+          Component.text("You have entered king of the hill!").color(NamedTextColor.GREEN));
     }
   }
 
@@ -73,7 +73,7 @@ public class StageListener implements Listener {
       if(leftEvent.getPlayer().getInventory().getItem(4).getType().equals(Material.STICK)){
         leftEvent.getPlayer().getInventory().setItem(4, new ItemStack(Material.AIR));
         EventSpigot.getInstance().getAudiences().player(leftEvent.getPlayer()).sendMessage(
-            Component.text("You have left King Of the Hill!").color(NamedTextColor.RED));
+            Component.text("You have left king of the hill!").color(NamedTextColor.RED));
       }
     }
   }

@@ -15,7 +15,6 @@ public class EventSpigotModule extends Module {
 
     @Override
     public void onEnable() {
-
     }
 
     @Override

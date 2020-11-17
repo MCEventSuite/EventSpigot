@@ -32,6 +32,7 @@ import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
 import org.bukkit.craftbukkit.v1_16_R2.block.data.CraftBlockData;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 import javax.imageio.ImageIO;
@@ -42,10 +43,12 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import org.bukkit.event.world.WorldLoadEvent;
 
 public class MapModule extends Module implements Listener {
 
     private List<EventBooth> booths = new ArrayList<>();
+    private World mainWorld;
     private List<Location> spawnLocations = new ArrayList<>();
     private EditSession editSession;
     private final Random random = new Random();
@@ -76,19 +79,27 @@ public class MapModule extends Module implements Listener {
                 EventCore.getInstance().getModuleRegistry().getModule(InfluxDBModule.class).writePoints(dataPoints);
             }, 0, 5 * (60 * 20));
         }
-        World mainWorld = Bukkit.getWorld("venue");
-        spawnLocations.add(new Location(mainWorld, 367, 71 ,380, 180, 0));
-        spawnLocations.add(new Location(mainWorld, 373, 71 ,380, 180, 0));
-        spawnLocations.add(new Location(mainWorld, 387, 71 ,380, 180, 0));
-        spawnLocations.add(new Location(mainWorld, 393, 71 ,380, 180, 0));
-        spawnLocations.add(new Location(mainWorld, 407, 71 ,380, 180, 0));
-        spawnLocations.add(new Location(mainWorld, 413, 71 ,380, 180, 0));
-        spawnLocations.add(new Location(mainWorld, 427, 71 ,380, 180, 0));
-        spawnLocations.add(new Location(mainWorld, 433, 71 ,380, 180, 0));
+        EventSpigot
+            .getInstance().getServer().getPluginManager().registerEvents(this, EventSpigot.getInstance());
     }
 
     private void onMysqlLoad(MySQLLoadedEvent t) {
         booths = t.getMySQLDatabase().getDAO(BoothDAO.class).getBooths();
+    }
+
+    @EventHandler
+    public void onWorldLoad(WorldLoadEvent worldLoadEvent){
+        if(worldLoadEvent.getWorld().getName().equalsIgnoreCase("venue")){
+            mainWorld = worldLoadEvent.getWorld();
+            spawnLocations.add(new Location(mainWorld, 367, 71 ,380, 180, 0));
+            spawnLocations.add(new Location(mainWorld, 373, 71 ,380, 180, 0));
+            spawnLocations.add(new Location(mainWorld, 387, 71 ,380, 180, 0));
+            spawnLocations.add(new Location(mainWorld, 393, 71 ,380, 180, 0));
+            spawnLocations.add(new Location(mainWorld, 407, 71 ,380, 180, 0));
+            spawnLocations.add(new Location(mainWorld, 413, 71 ,380, 180, 0));
+            spawnLocations.add(new Location(mainWorld, 427, 71 ,380, 180, 0));
+            spawnLocations.add(new Location(mainWorld, 433, 71 ,380, 180, 0));
+        }
     }
 
     public List<EventBooth> getBooths() {
