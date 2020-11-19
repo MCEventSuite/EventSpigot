@@ -5,8 +5,10 @@ import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
 import dev.imabad.mceventsuite.core.modules.eventpass.EventPassModule;
 import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassDAO;
 import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassPlayer;
+import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassReward;
 import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
 import dev.imabad.mceventsuite.spigot.api.EventInventory;
+import dev.imabad.mceventsuite.spigot.modules.eventpass.EventPassSpigotModule;
 import dev.imabad.mceventsuite.spigot.utils.ItemUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -18,12 +20,17 @@ import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 public class EventPassInventoryPage extends EventInventory {
 
   private static final ItemStack LEFT_ARROW = ItemUtils.getSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNWFlNzg0NTFiZjI2Y2Y0OWZkNWY1NGNkOGYyYjM3Y2QyNWM5MmU1Y2E3NjI5OGIzNjM0Y2I1NDFlOWFkODkifX19", "&cBack");
   private static final ItemStack RIGHT_ARROW = ItemUtils.getSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTE3ZjM2NjZkM2NlZGZhZTU3Nzc4Yzc4MjMwZDQ4MGM3MTlmZDVmNjVmZmEyYWQzMjU1Mzg1ZTQzM2I4NmUifX19", "&cNext");
   private static final ItemStack CLOSE = ItemUtils.createItemStack(Material.BARRIER, "&cClose");
-  private static final ItemStack INFO = ItemUtils.createItemStack(Material.PAPER, "&cInfo");
+  private static final ItemStack INFO = ItemUtils.createItemStack(Material.PAPER, "&9Cubed! &eEvent Pass", Arrays.asList("&7Unlock cosmetics by earning XP around", "&7the event or by purchasing a VIP rank.", "&c\n", "&7For more info and to view the cosmetics,", "&7visit &apass.cubedcon.com"));
   private static final ItemStack BLANK = ItemUtils.createItemStack(Material.GRAY_STAINED_GLASS_PANE, "&c");
 
   private int page = 0;
@@ -61,6 +68,15 @@ public class EventPassInventoryPage extends EventInventory {
     return textColor + "Level " + level;
   }
 
+  public List<String> getLevelDescription(int level){
+    Optional<EventPassReward> optionalReward = EventCore.getInstance().getModuleRegistry().getModule(EventPassSpigotModule.class).getRewardForLevel(level);
+    if(!optionalReward.isPresent()){
+      return Collections.emptyList();
+    }
+    EventPassReward rew = optionalReward.get();
+    return Arrays.asList("&7" + rew.getDescription(), "&d" + rew.getName());
+  }
+
   public void generatePath(){
     int currentLevel = this.eventPassPlayer.levelFromXP();
     int startPos = 0;
@@ -68,12 +84,12 @@ public class EventPassInventoryPage extends EventInventory {
     boolean isDown;
     int nextPos = startPos;
     int verticalCount = 0;
-    this.inventory.setItem(0, ItemUtils.createItemStack(getItemForLevel(startLevel), getLevelName(startLevel)));
+    this.inventory.setItem(0, ItemUtils.createItemStack(getItemForLevel(startLevel), getLevelName(startLevel), getLevelDescription(startLevel)));
     nextPos++;
     int levelVerticalCount = 0;
     int levelHorizontalCount = 2;
     for(int level = startLevel + 1; level < startLevel + pageLevels; level++){
-      this.inventory.setItem(nextPos, ItemUtils.createItemStack(getItemForLevel(level), getLevelName(level)));
+      this.inventory.setItem(nextPos, ItemUtils.createItemStack(getItemForLevel(level), getLevelName(level), getLevelDescription(level)));
       if(levelHorizontalCount == 2){
         isAcross = false;
         levelHorizontalCount = 0;

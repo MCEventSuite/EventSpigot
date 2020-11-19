@@ -1,5 +1,6 @@
 package dev.imabad.mceventsuite.spigot.modules.stage;
 
+import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.World;
 import com.sk89q.worldguard.WorldGuard;
@@ -31,6 +32,7 @@ import org.bukkit.util.Vector;
 public class StageModule extends Module {
 
   private HashMap<UUID, Entity> seats = new HashMap<>();
+  private Hologram kothHologram;
 
   private static StateFlag isNightVision;
 
@@ -108,10 +110,22 @@ public class StageModule extends Module {
   public void onDisable() {
     seats.values().forEach(Entity::remove);
     seats.clear();
+    if(getKothHologram() != null){
+      getKothHologram().delete();
+      kothHologram = null;
+    }
   }
 
   @Override
   public List<Class<? extends Module>> getDependencies() {
     return Collections.emptyList();
+  }
+
+  public Hologram getKothHologram() {
+    return kothHologram;
+  }
+
+  public void setKothHologram(Hologram kothHologram) {
+    this.kothHologram = kothHologram;
   }
 }

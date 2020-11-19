@@ -67,7 +67,7 @@ public class SandwichProduct implements ISkullProduct {
         long lastStarblocks = eventPlayer.getLongProperty("lastSquareway");
         if(System.currentTimeMillis() - lastStarblocks >= TimeUnit.HOURS.toMillis(1)){
           eventPlayer.setProperty("lastSquareway", System.currentTimeMillis());
-          EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(eventPlayer.getUUID(), 250));
+          EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(eventPlayer.getUUID(), 250, "Ate a sandwich"));
         }
       });
     }, 20);

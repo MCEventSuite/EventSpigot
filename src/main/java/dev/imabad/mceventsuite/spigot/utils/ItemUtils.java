@@ -9,14 +9,12 @@ import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.inventory.meta.*;
 import org.bukkit.potion.PotionEffect;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ItemUtils {
 
@@ -68,6 +66,7 @@ public class ItemUtils {
     public static ItemStack createItemStack(Material material, String name, List<String> lore) {
         ItemStack itemStack = createItemStack(material, name);
         ItemMeta meta = itemStack.getItemMeta();
+        lore = lore.stream().map(StringUtils::colorizeMessage).collect(Collectors.toList());
         meta.setLore(lore);
         itemStack.setItemMeta(meta);
         return itemStack;
@@ -76,6 +75,7 @@ public class ItemUtils {
     public static ItemStack createItemStack(Material material, int amount, List<String> lore) {
         ItemStack itemStack = createItemStack(material, amount);
         ItemMeta meta = itemStack.getItemMeta();
+        lore = lore.stream().map(StringUtils::colorizeMessage).collect(Collectors.toList());
         meta.setLore(lore);
         itemStack.setItemMeta(meta);
         return itemStack;
@@ -84,6 +84,7 @@ public class ItemUtils {
     public static ItemStack createItemStack(Material material, String name, int amount, List<String> lore) {
         ItemStack itemStack = createItemStack(material, name, amount);
         ItemMeta meta = itemStack.getItemMeta();
+        lore = lore.stream().map(StringUtils::colorizeMessage).collect(Collectors.toList());
         meta.setLore(lore);
         itemStack.setItemMeta(meta);
         return itemStack;
@@ -110,6 +111,17 @@ public class ItemUtils {
         return itemStack;
     }
 
+    public static ItemStack createBook(String name, List<String> lore, List<String> pages) {
+        ItemStack bookItemStack = createItemStack(Material.WRITTEN_BOOK, name, lore);
+        BookMeta bookMeta = (BookMeta) bookItemStack.getItemMeta();
+        bookMeta.setTitle(StringUtils.colorizeMessage(name));
+        bookMeta.setAuthor("CubedCon");
+        bookMeta.setGeneration(BookMeta.Generation.ORIGINAL);
+        pages = pages.stream().map(StringUtils::colorizeMessage).collect(Collectors.toList());
+        bookMeta.setPages(pages);
+        bookItemStack.setItemMeta(bookMeta);
+        return bookItemStack;
+    }
 
     public static ItemStack getSkullPlayer(Player player, String name, List<String> lore) {
         ItemStack headItemStack = new ItemStack(Material.PLAYER_HEAD);

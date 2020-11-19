@@ -14,6 +14,7 @@ import dev.imabad.mceventsuite.spigot.utils.ItemUtils;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.event.EventHandler;
@@ -81,16 +82,18 @@ public class WarpModule extends Module implements Listener {
             }
             warpItems.add(new WarpItem(name, item, l, fi));
         }
-        ItemStack STAGE_ITEM = ItemUtils.getSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTY5ODIxNzcyY2EyNjczZjRhY2I1MzkzZDEyNmIyZTYyZTgyY2U4NTVhNDljZmVlYTc3ODMwYzVkMTI0YSJ9fX0=", "&r&9&lStage");
-        warpItems.add(new WarpItem("Stage", STAGE_ITEM, new Location(world, 926,71, 529), WarpCategory.OTHER));
-        ItemStack GAMES_ITEM = ItemUtils.getSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMWM0Mjk3ZDE5YTFhNzEzOTExNDdhNjljODI1ZDM3NDgyMThlNGM1YmQwMTZjN2NjYWNjYjA1ZmUzZjQifX19", "&r&9&lGames");
+        ItemStack STAGE_ITEM = ItemUtils.createItemStack(Material.NETHER_STAR, "&r&9&lStage");
+        warpItems.add(new WarpItem("Stage", STAGE_ITEM, new Location(world, 926,71, 529, -180, 0), WarpCategory.OTHER));
+        ItemStack GAMES_ITEM = ItemUtils.createItemStack(Material.TRIDENT, "&r&9&lGames");
         warpItems.add(new WarpItem("Games", GAMES_ITEM, new Location(world, 977, 72, 535), WarpCategory.OTHER));
-        ItemStack STICKY_PISTON = ItemUtils.getSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzdlMWE0YmRmYWI2ZjM5OTA2MTAxZDI5MmQzYmYyMjg4ZWJkNTUzZDFkZGEzYTNhNzgyMjUwNzRhYmM1NThmNiJ9fX0=","&r&a&lStickyPiston");
-        warpItems.add(new WarpItem("StickyPiston", STICKY_PISTON, new Location(world, 926, 71, 538), WarpCategory.OTHER));
-        ItemStack ENTRANCE = ItemUtils.getSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDgwOWZhZTBjMTI5YTAxYTBhNDBlYTNiNTZlODA2ZTk2MmFkMjE1NjkyMGI2OWE1MDhmNDI3YWYyMjI4OTA2ZSJ9fX0=", "&r&9&lEntrance");
+        ItemStack STICKY_PISTON = ItemUtils.createItemStack(Material.STICKY_PISTON, "&r&a&lStickyPiston");
+        warpItems.add(new WarpItem("StickyPiston", STICKY_PISTON, new Location(world, 862, 66, 580, -80, 0), WarpCategory.OTHER));
+        ItemStack ENTRANCE = ItemUtils.createItemStack(Material.OAK_DOOR, "&r&9&lEntrance");
         warpItems.add(new WarpItem("Entrance", ENTRANCE, new Location(world, 408, 78, 538), WarpCategory.OTHER));
-        ItemStack STATION = ItemUtils.getSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYzQyMDcwYWNjODE0YmM5NDZlNTk4NzllYzdkYTQ1ZGU5ODRkM2VlOWExNTkzOTNkZWZiNTk4NTNhYmUzYjYifX19", "&r&9&lStation");
-        warpItems.add(new WarpItem("Station", STATION, new Location(world, 408, 78, 538), WarpCategory.OTHER));
+        ItemStack STATION = ItemUtils.createItemStack(Material.MINECART, "&r&9&lStation");
+        warpItems.add(new WarpItem("Station", STATION, new Location(world, 409, 78, 374), WarpCategory.OTHER));
+        ItemStack MINIGAMEMASH = ItemUtils.createItemStack(Material.CROSSBOW, "&r&9&lMinigame Mash");
+        warpItems.add(new WarpItem("Minigame Mash", MINIGAMEMASH, new Location(world, 558, 66, 569), WarpCategory.OTHER));
     }
 
     public List<WarpItem> getWarpItems() {

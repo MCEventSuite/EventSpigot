@@ -67,7 +67,7 @@ public class CakeProduct implements ISkullProduct {
         long lastStarblocks = eventPlayer.getLongProperty("lastStarblocks");
         if(System.currentTimeMillis() - lastStarblocks >= TimeUnit.HOURS.toMillis(1)){
           eventPlayer.setProperty("lastStarblocks", System.currentTimeMillis());
-          EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(eventPlayer.getUUID(), 250));
+          EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(eventPlayer.getUUID(), 250, "Ate some cake!"));
         }
       });
     }, 20);

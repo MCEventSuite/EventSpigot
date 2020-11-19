@@ -85,14 +85,15 @@ public class XPCannonCommand extends BaseCommand {
                     ParticleEffect.FLAME.display(location);
                     location.subtract(x, 0, z);
                 }
-                location.getWorld().playSound(location, Sound.BLOCK_ANVIL_LAND, SoundCategory.AMBIENT,1 ,1);
-                if(counter > countDownTime){
+                location.getWorld().playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, SoundCategory.AMBIENT,1 ,1);
+                location.getWorld().playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, SoundCategory.AMBIENT,1 ,1);
+                if(counter >= countDownTime){
                     cancel();
                     ParticleEffect.EXPLOSION_HUGE.display(location);
                     hologram.delete();
                     location.getWorld().playSound(location, Sound.ENTITY_GENERIC_EXPLODE, SoundCategory.AMBIENT,1 ,1);
                     location.getWorld().getNearbyEntitiesByType(Player.class, location, finalRadius).forEach(player1 -> EventCore.getInstance().getModuleRegistry().getModule(
-                        RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(player1.getUniqueId(), xpAmount)));
+                        RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(player1.getUniqueId(), xpAmount, "Earned from XP Cannon!")));
                     new BukkitRunnable(){
                         float r = 0;
                         final float per3Ticks = finalRadius / 20f;

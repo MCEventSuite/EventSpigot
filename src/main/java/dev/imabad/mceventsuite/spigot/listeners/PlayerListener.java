@@ -24,6 +24,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Team;
@@ -77,10 +78,13 @@ public class PlayerListener implements Listener {
             playerJoinEvent.getPlayer().removePotionEffect(potionEffect.getType());
         }
         playerJoinEvent.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 1, true, false, false));
-        playerJoinEvent.getPlayer().teleport(EventCore.getInstance().getModuleRegistry().getModule(MapModule.class).getRandomLocation());
+        if(!playerJoinEvent.getPlayer().hasPlayedBefore()) {
+            playerJoinEvent.getPlayer().teleport(EventCore.getInstance().getModuleRegistry().getModule(MapModule.class).getRandomLocation());
+        }
         PlayerHotbar.givePlayerInventory(playerJoinEvent.getPlayer());
         EventPassPlayer eventPassPlayer = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).getOrCreateEventPass(player);
         playerJoinEvent.getPlayer().setLevel(eventPassPlayer.levelFromXP());
+        playerJoinEvent.setJoinMessage("");
     }
 
     @EventHandler
@@ -97,7 +101,9 @@ public class PlayerListener implements Listener {
             }
             EventCore.getInstance().getEventPlayerManager().removePlayer(eventPlayer);
         });
+        playerQuitEvent.setQuitMessage("");
     }
+
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event){
         if(event.getClickedInventory() != null) {
@@ -151,6 +157,9 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void inventoryClickEvent(InventoryClickEvent event) {
         InteractionRegistry.handleEvent(Interaction.CLICK_INSIDE_INVENTORY, event);
+        if(event.getClickedInventory() instanceof PlayerInventory && !event.getWhoClicked().hasPermission("eventsuite.inventory")){
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -166,5 +175,12 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void inventoryDrag(InventoryDragEvent event){
         InteractionRegistry.handleEvent(Interaction.DRAG_INVENTORY, event);
+    }
+
+    @EventHandler
+    public void onDrop(PlayerDropItemEvent event){
+        if(!event.getPlayer().hasPermission("eventsuite.inventory")){
+            event.setCancelled(true);
+        }
     }
 }

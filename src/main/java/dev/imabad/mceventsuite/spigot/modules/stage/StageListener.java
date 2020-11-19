@@ -1,5 +1,8 @@
 package dev.imabad.mceventsuite.spigot.modules.stage;
 
+import com.gmail.filoghost.holographicdisplays.api.Hologram;
+import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
+import com.gmail.filoghost.holographicdisplays.api.line.TextLine;
 import com.mewin.WGRegionEvents.events.RegionEnterEvent;
 import com.mewin.WGRegionEvents.events.RegionEnteredEvent;
 import com.mewin.WGRegionEvents.events.RegionLeftEvent;
@@ -10,6 +13,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -17,6 +22,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.server.PluginEnableEvent;
+import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -55,7 +62,7 @@ public class StageListener implements Listener {
 
   @EventHandler
   public void onEnterRegion(RegionEnteredEvent regionEnterEvent){
-    boolean isNightVision = regionEnterEvent.getRegion().getFlag(StageModule.getIsNightVision()) == State.ALLOW;
+    boolean isNightVision = regionEnterEvent.getRegion().getFlag(StageModule.getIsNightVision()) == State.ALLOW || regionEnterEvent.getRegion().getFlag(StageModule.getIsNightVision()) == null;
     if(isNightVision){
       if(regionEnterEvent.getPlayer().getActivePotionEffects().stream().noneMatch(potionEffect -> potionEffect.getType().equals(
           PotionEffectType.NIGHT_VISION))){
@@ -76,10 +83,14 @@ public class StageListener implements Listener {
       List<Player> playersInKOTH = Bukkit.getOnlinePlayers().stream().filter(player -> module.isInRegion(player, "KOTH")).collect(Collectors.toList());
       if(playersOnTop.size() > 1){
         playersInKOTH.forEach(player -> EventSpigot.getInstance().getAudiences().player(player).sendActionBar(TIED));
+        ((TextLine)module.getKothHologram().getLine(0)).setText(ChatColor.RED + "TIED");
       } else if(playersOnTop.size() == 1){
         Player playerOnTop = playersOnTop.get(0);
         Component kingOfTheHill = Component.text("King of the Hill - ").color(NamedTextColor.BLUE).append(Component.text(playerOnTop.getName()).decorate(TextDecoration.BOLD).color(NamedTextColor.GREEN));
         playersInKOTH.forEach(player -> EventSpigot.getInstance().getAudiences().player(player).sendActionBar(kingOfTheHill));
+        ((TextLine)module.getKothHologram().getLine(0)).setText(ChatColor.GREEN + playerOnTop.getName());
+      } else {
+        ((TextLine)module.getKothHologram().getLine(0)).setText(ChatColor.GREEN + "NO BODY");
       }
     }
   }
@@ -97,11 +108,25 @@ public class StageListener implements Listener {
         List<Player> playersInKOTH = Bukkit.getOnlinePlayers().stream().filter(player -> module.isInRegion(player, "KOTH")).collect(Collectors.toList());
         if(playersOnTop.size() > 1){
           playersInKOTH.forEach(player -> EventSpigot.getInstance().getAudiences().player(player).sendActionBar(TIED));
+          ((TextLine)module.getKothHologram().getLine(0)).setText(ChatColor.RED + "TIED");
         } else if(playersOnTop.size() == 1){
           Player playerOnTop = playersOnTop.get(0);
           Component kingOfTheHill = Component.text("King of the Hill - ").color(NamedTextColor.BLUE).append(Component.text(playerOnTop.getName()).decorate(TextDecoration.BOLD).color(NamedTextColor.GREEN));
           playersInKOTH.forEach(player -> EventSpigot.getInstance().getAudiences().player(player).sendActionBar(kingOfTheHill));
+          ((TextLine)module.getKothHologram().getLine(0)).setText(ChatColor.GREEN + playerOnTop.getName());
+        } else {
+          ((TextLine)module.getKothHologram().getLine(0)).setText(ChatColor.GREEN + "NO BODY");
         }
+    }
+  }
+
+  @EventHandler
+  public void onPluginEnable(PluginEnableEvent event){
+    if(event.getPlugin().getName().equalsIgnoreCase("HolographicDisplays")){
+      Hologram hologram = HologramsAPI.createHologram(EventSpigot.getInstance(), new Location(Bukkit.getWorld("venue"), 669.5, 83, 537.5));
+      hologram.insertTextLine(0, ChatColor.GREEN + "NO BODY");
+      hologram.insertTextLine(1, ChatColor.RED + "KING OF THE HILL");
+      module.setKothHologram(hologram);
     }
   }
 

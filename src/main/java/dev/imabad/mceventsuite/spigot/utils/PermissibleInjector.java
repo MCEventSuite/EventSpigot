@@ -34,14 +34,15 @@ public class PermissibleInjector {
 
     public static void inject(Player player, EventPermissible eventPermissible) throws Exception{
         PermissibleBase permissibleBase = (PermissibleBase) HUMAN_ENTITY_PERM.get(player);
-        if(permissibleBase instanceof EventPermissible){
-            throw new IllegalStateException("Already injected EventPermission into player");
+        if(!(permissibleBase instanceof EventPermissible)){
+            permissibleBase.clearPermissions();
+            eventPermissible.setOldPermissible(permissibleBase);
+        } else {
+            eventPermissible.setOldPermissible(((EventPermissible) permissibleBase).getOldPermissible());
         }
 //        List<PermissionAttachment> permissionAttachments = (List<PermissionAttachment>) ATTACHMENTS_FIELD.get(permissibleBase);
 //        eventPermissible.loadExistingAttachments(permissionAttachments);
 //        permissionAttachments.clear();
-        permissibleBase.clearPermissions();
-        eventPermissible.setOldPermissible(permissibleBase);
         HUMAN_ENTITY_PERM.set(player, eventPermissible);
     }
 

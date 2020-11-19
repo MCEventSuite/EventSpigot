@@ -1,5 +1,7 @@
 package dev.imabad.mceventsuite.spigot.commands;
 
+import dev.imabad.mceventsuite.core.EventCore;
+import dev.imabad.mceventsuite.spigot.modules.stage.StageModule;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
@@ -36,6 +38,10 @@ public class SpeedCommand extends BaseCommand{
                 audience(sender).sendMessage(Component.text("You do not have permission for that speed level!").color(NamedTextColor.RED));
                 return false;
            }
+            if(EventCore.getInstance().getModuleRegistry().getModule(StageModule.class).isInRegion(player, "sticky")){
+                audience(sender).sendMessage(Component.text("You cannot do that there!").color(NamedTextColor.RED));
+                return false;
+            }
             player.setWalkSpeed((1f / 5) * speedLevel);
             audience(sender).sendMessage(Component.text("Set walk speed to ").color(NamedTextColor.GREEN).append(Component.text(speedLevel).color(NamedTextColor.YELLOW)));
         }

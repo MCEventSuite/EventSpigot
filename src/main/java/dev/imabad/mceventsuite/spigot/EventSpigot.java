@@ -18,6 +18,7 @@ import dev.imabad.mceventsuite.core.modules.redis.messages.players.UpdatedRankMe
 import dev.imabad.mceventsuite.core.modules.servers.ServersModule;
 import dev.imabad.mceventsuite.core.modules.servers.objects.Server;
 import dev.imabad.mceventsuite.spigot.commands.*;
+import dev.imabad.mceventsuite.spigot.impl.EventPermissible;
 import dev.imabad.mceventsuite.spigot.impl.EventPermission;
 import dev.imabad.mceventsuite.spigot.impl.SpigotActionExecutor;
 import dev.imabad.mceventsuite.spigot.listeners.BuildListener;
@@ -31,6 +32,7 @@ import dev.imabad.mceventsuite.spigot.modules.shops.ShopsModule;
 import dev.imabad.mceventsuite.spigot.modules.stafftrack.StaffTrackModule;
 import dev.imabad.mceventsuite.spigot.modules.stage.StageModule;
 import dev.imabad.mceventsuite.spigot.modules.warps.WarpModule;
+import dev.imabad.mceventsuite.spigot.utils.PermissibleInjector;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.sound.Sound;
@@ -76,11 +78,24 @@ public class EventSpigot extends JavaPlugin {
             System.out.println("[EventSpigot] Connected to Redis");
             EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).registerListener(UpdatedPlayerMessage.class, new RedisMessageListener<>((msg) -> {
                 if(EventCore.getInstance().getEventPlayerManager().hasPlayer(msg.getUUID())){
+                    EventRank previousRank = EventCore.getInstance().getEventPlayerManager().getPlayer(msg.getUUID()).get().getRank();;
                     EventPlayer eventPlayer = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(PlayerDAO.class).getPlayer(msg.getUUID());
                     EventCore.getInstance().getEventPlayerManager().addPlayer(eventPlayer);
                     Player player = getServer().getPlayer(eventPlayer.getUUID());
                     if(player != null){
-                        player.recalculatePermissions();
+                        EventPermissible eventPermissible = new EventPermissible(player, eventPlayer);
+                        try {
+                            PermissibleInjector.inject(player, eventPermissible);
+                        } catch (Exception ignored) {
+                        }
+                        Team previousTeam = getScoreboard().getTeam(previousRank.getName());
+                        if(previousTeam.hasEntry(player.getDisplayName())){
+                            previousTeam.removeEntry(player.getDisplayName());
+                        }
+                        Team team = getScoreboard().getTeam(eventPlayer.getRank().getName());
+                        if(!team.hasEntry(player.getDisplayName())) {
+                            team.addEntry(player.getDisplayName());
+                        }
                     }
                 }
             }));
@@ -225,7 +240,7 @@ public class EventSpigot extends JavaPlugin {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //
         }
     }
 
