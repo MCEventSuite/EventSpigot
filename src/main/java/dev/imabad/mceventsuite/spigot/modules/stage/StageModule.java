@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+
+import dev.imabad.mceventsuite.spigot.utils.RegionUtils;
 import org.bukkit.Location;
 import org.bukkit.block.data.type.Stairs;
 import org.bukkit.entity.Chicken;
@@ -63,21 +65,9 @@ public class StageModule extends Module {
     }
   }
 
-  private ApplicableRegionSet getPlayerRegions(Player player){
-    WorldGuardPlatform plat = WorldGuard.getInstance().getPlatform();
-    World world = plat.getMatcher().getWorldByName(player.getWorld().getName());
-    RegionManager manager = plat.getRegionContainer().get(world);
-    Vector v = player.getLocation().toVector();
-    return manager.getApplicableRegions(BlockVector3.at(v.getX(),v.getY(), v.getZ()));
-  }
-
-  public boolean isInRegion(Player player, String regionName){
-    return getPlayerRegions(player).getRegions().stream().anyMatch(protectedRegion -> protectedRegion.getId().equalsIgnoreCase(regionName));
-  }
-
   private void enterSeat(Event event) {
     PlayerInteractEvent playerInteractEvent = (PlayerInteractEvent) event;
-    if(isInRegion(playerInteractEvent.getPlayer(), "stage")) {
+    if(RegionUtils.isInRegion(playerInteractEvent.getPlayer(), "stage")) {
       System.out.println(playerInteractEvent.getClickedBlock().getType().toString());
       if (playerInteractEvent.getClickedBlock().getType().toString().toLowerCase().contains("stairs")) {
         if (!seats.containsKey(playerInteractEvent.getPlayer().getUniqueId())) {

@@ -1,18 +1,20 @@
 package dev.imabad.mceventsuite.spigot.commands;
 
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
 
-public class NightVisionToggle extends BukkitCommand {
+public class NightVisionToggle extends BaseCommand {
     public NightVisionToggle() {
-        super("nv");
+        super("nv", "eventsuite.nv");
     }
 
     @Override
@@ -34,5 +36,10 @@ public class NightVisionToggle extends BukkitCommand {
             sender.sendMessage(ChatColor.GREEN + "Toggled night vision on");
         }
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+        return null;
     }
 }

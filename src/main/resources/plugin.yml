@@ -4,6 +4,6 @@ description: EventSpigot
 main: dev.imabad.mceventsuite.spigot.EventSpigot
 author: Rushmead
 api-version: 1.16
-softdepend: [Vault, PlotSquared, Citizens]
+softdepend: [Vault, PlotSquared, Citizens, HolographicDisplays]
 depend: [WorldEdit]
 load: STARTUP

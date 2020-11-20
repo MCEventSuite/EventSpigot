@@ -13,6 +13,8 @@ import dev.imabad.mceventsuite.spigot.modules.warps.inventories.WarpInventoryPag
 import dev.imabad.mceventsuite.spigot.utils.ItemUtils;
 import java.util.Collections;
 import java.util.List;
+
+import dev.imabad.mceventsuite.spigot.utils.RegionUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -53,7 +55,7 @@ public class PlayerModule extends Module implements Listener {
     if(playerInteractEvent.getItem() != null && playerInteractEvent.getItem().getType() != Material.AIR){
       ItemStack itemStack = playerInteractEvent.getItem();
       if(itemStack.getType().equals(PlayerHotbar.GADGETS.getType())){
-        if(!EventCore.getInstance().getModuleRegistry().getModule(StageModule.class).isInRegion(player, "stage") && !EventCore.getInstance().getModuleRegistry().getModule(StageModule.class).isInRegion(player, "sticky")){
+        if(!RegionUtils.isInRegion(player, "stage") && !RegionUtils.isInRegion(player, "sticky")){
           new CosmeticsInventoryPage(player).open(player, null);
         }
       } else if(itemStack.getType().equals(PlayerHotbar.NAVIGATION.getType())){

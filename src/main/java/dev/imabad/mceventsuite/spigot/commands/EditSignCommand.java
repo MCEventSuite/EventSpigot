@@ -19,7 +19,7 @@ import java.util.List;
 
 public class EditSignCommand extends BaseCommand {
     public EditSignCommand() {
-        super("editsign");
+        super("editsign", "eventsuite.editsign");
     }
 
     @Override

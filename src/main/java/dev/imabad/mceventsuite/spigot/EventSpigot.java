@@ -149,6 +149,10 @@ public class EventSpigot extends JavaPlugin {
             commandMap.register("linksign", new LinkSignCommand());
             commandMap.register("slink", new SignLinkCommand());
             commandMap.register("goserver", new SendToServerCommand());
+            commandMap.register("tpa", new TpaCommand());
+            commandMap.register("tpaccept", new TpacceptCommand());
+            commandMap.register("tptoggle", new TptoggleCommand());
+            commandMap.register("fly", new FlyCommand());
         }
         if(getServer().getPluginManager().isPluginEnabled("PlotSquared")) {
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BoothModule());
