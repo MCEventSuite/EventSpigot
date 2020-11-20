@@ -9,6 +9,7 @@ import com.mewin.WGRegionEvents.events.RegionLeftEvent;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.utils.ItemUtils;
+import dev.imabad.mceventsuite.spigot.utils.RegionUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -79,8 +80,8 @@ public class StageListener implements Listener {
       EventSpigot.getInstance().getAudiences().player(regionEnterEvent.getPlayer()).sendMessage(
           Component.text("You have entered king of the hill!").color(NamedTextColor.GREEN));
     } else if(regionEnterEvent.getRegionId().equalsIgnoreCase("KOTH-TOP")){
-      List<Player> playersOnTop = Bukkit.getOnlinePlayers().stream().filter(player -> module.isInRegion(player, "KOTH-TOP")).collect(Collectors.toList());
-      List<Player> playersInKOTH = Bukkit.getOnlinePlayers().stream().filter(player -> module.isInRegion(player, "KOTH")).collect(Collectors.toList());
+      List<Player> playersOnTop = Bukkit.getOnlinePlayers().stream().filter(player -> RegionUtils.isInRegion(player, "KOTH-TOP")).collect(Collectors.toList());
+      List<Player> playersInKOTH = Bukkit.getOnlinePlayers().stream().filter(player -> RegionUtils.isInRegion(player, "KOTH")).collect(Collectors.toList());
       if(playersOnTop.size() > 1){
         playersInKOTH.forEach(player -> EventSpigot.getInstance().getAudiences().player(player).sendActionBar(TIED));
         ((TextLine)module.getKothHologram().getLine(0)).setText(ChatColor.RED + "TIED");
@@ -97,15 +98,15 @@ public class StageListener implements Listener {
 
   @EventHandler
   public void onRegionLeave(RegionLeftEvent leftEvent){
-    if(leftEvent.getRegionId().equalsIgnoreCase("KOTH") && !module.isInRegion(leftEvent.getPlayer(), "KOTH-TOP")){
+    if(leftEvent.getRegionId().equalsIgnoreCase("KOTH") && !RegionUtils.isInRegion(leftEvent.getPlayer(), "KOTH-TOP")){
       if(leftEvent.getPlayer().getInventory().getItem(5).getType().equals(Material.STICK)){
         leftEvent.getPlayer().getInventory().setItem(5, new ItemStack(Material.AIR));
         EventSpigot.getInstance().getAudiences().player(leftEvent.getPlayer()).sendMessage(
             Component.text("You have left king of the hill!").color(NamedTextColor.RED));
       }
     } else if(leftEvent.getRegionId().equalsIgnoreCase("KOTH-TOP")){
-        List<Player> playersOnTop = Bukkit.getOnlinePlayers().stream().filter(player -> module.isInRegion(player, "KOTH-TOP")).collect(Collectors.toList());
-        List<Player> playersInKOTH = Bukkit.getOnlinePlayers().stream().filter(player -> module.isInRegion(player, "KOTH")).collect(Collectors.toList());
+        List<Player> playersOnTop = Bukkit.getOnlinePlayers().stream().filter(player -> RegionUtils.isInRegion(player, "KOTH-TOP")).collect(Collectors.toList());
+        List<Player> playersInKOTH = Bukkit.getOnlinePlayers().stream().filter(player -> RegionUtils.isInRegion(player, "KOTH")).collect(Collectors.toList());
         if(playersOnTop.size() > 1){
           playersInKOTH.forEach(player -> EventSpigot.getInstance().getAudiences().player(player).sendActionBar(TIED));
           ((TextLine)module.getKothHologram().getLine(0)).setText(ChatColor.RED + "TIED");

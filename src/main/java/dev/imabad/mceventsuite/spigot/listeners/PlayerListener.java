@@ -9,6 +9,7 @@ import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
 import dev.imabad.mceventsuite.core.modules.mysql.dao.PlayerDAO;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.api.EventInventory;
+import dev.imabad.mceventsuite.spigot.commands.TpaCommand;
 import dev.imabad.mceventsuite.spigot.impl.EventPermissible;
 import dev.imabad.mceventsuite.spigot.impl.SpigotPlayer;
 import dev.imabad.mceventsuite.spigot.interactions.Interaction;
@@ -101,6 +102,7 @@ public class PlayerListener implements Listener {
             e.printStackTrace();
         }
         EventCore.getInstance().getEventPlayerManager().getPlayer(playerQuitEvent.getPlayer().getUniqueId()).ifPresent(eventPlayer -> {
+            TpaCommand.getTeleportRequests().remove(eventPlayer.getUUID().toString());
             Team team = EventSpigot.getInstance().getScoreboard().getTeam(eventPlayer.getRank().getName());
             if(team.hasEntry(eventPlayer.getLastUsername())){
                 team.removeEntry(eventPlayer.getLastUsername());
