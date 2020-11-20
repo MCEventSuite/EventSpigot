@@ -40,7 +40,7 @@ public class SpeedCommand extends BaseCommand{
                 return false;
            }
             if(RegionUtils.isInRegion(player, "sticky")){
-                audience(sender).sendMessage(Component.text("You cannot do that there!").color(NamedTextColor.RED));
+                audience(sender).sendMessage(Component.text("You cannot do that here!").color(NamedTextColor.RED));
                 return false;
             }
             player.setWalkSpeed((1f / 5) * speedLevel);

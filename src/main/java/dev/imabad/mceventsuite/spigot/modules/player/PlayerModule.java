@@ -57,6 +57,8 @@ public class PlayerModule extends Module implements Listener {
       if(itemStack.getType().equals(PlayerHotbar.GADGETS.getType())){
         if(!RegionUtils.isInRegion(player, "stage") && !RegionUtils.isInRegion(player, "sticky")){
           new CosmeticsInventoryPage(player).open(player, null);
+        } else {
+          player.sendMessage(ChatColor.RED + "Sorry but you cannot use that here.");
         }
       } else if(itemStack.getType().equals(PlayerHotbar.NAVIGATION.getType())){
         playerInteractEvent.setCancelled(true);

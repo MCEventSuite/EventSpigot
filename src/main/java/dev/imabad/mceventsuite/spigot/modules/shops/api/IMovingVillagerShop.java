@@ -11,6 +11,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.geysermc.floodgate.FloodgateAPI;
 
 import java.util.List;
 
@@ -22,7 +23,12 @@ public interface IMovingVillagerShop extends IShop {
                 LegacyComponentSerializer.legacy('&').deserialize(villagerNPC.getDisplayName()).append(Component.text(": One ").color(NamedTextColor.WHITE)).append(Component.text(product.getDisplayName()).decoration(TextDecoration.BOLD, true).color(NamedTextColor.RED)).append(Component.text(" coming right up!").color(NamedTextColor.WHITE).decoration(TextDecoration.BOLD, false));
         EventSpigot.getInstance().getAudiences().player(player).sendMessage(comingUp);
         Runnable runnable = () -> {
-            ItemStack itemStack = product.getItemStack();
+            ItemStack itemStack;
+            if(FloodgateAPI.isBedrockPlayer(player)){
+                itemStack = product.getBedrockItemStack();
+            } else {
+                itemStack = product.getItemStack();
+            }
             ItemMeta itemMeta = itemStack.getItemMeta();
             itemMeta.setDisplayName(product.getDisplayName());
             List<String> newLore = product.getLore();

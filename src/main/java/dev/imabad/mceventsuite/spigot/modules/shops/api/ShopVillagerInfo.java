@@ -125,6 +125,5 @@ public class ShopVillagerInfo
             this.shopNPC.addTrait(trait);
         }
         trait.setSkinPersistent(name, signature, value);
-        trait.setShouldUpdateSkins(true);
     }
 }

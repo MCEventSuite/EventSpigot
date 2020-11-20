@@ -1,5 +1,8 @@
 package dev.imabad.mceventsuite.spigot.modules.stage;
 
+import com.cubedcon.cosmetics.CosmeticItemCategory;
+import com.cubedcon.cosmetics.CubedCosmetics;
+import com.cubedcon.cosmetics.managers.CosmeticManager;
 import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import com.gmail.filoghost.holographicdisplays.api.line.TextLine;
@@ -28,8 +31,10 @@ import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.geysermc.floodgate.FloodgateAPI;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,6 +79,10 @@ public class StageListener implements Listener {
           PotionEffectType.NIGHT_VISION))) {
         regionEnterEvent.getPlayer().removePotionEffect(PotionEffectType.NIGHT_VISION);
       }
+    }
+    boolean isAllowParticles = regionEnterEvent.getRegion().getFlag(StageModule.getAllowParticles()) == State.ALLOW || regionEnterEvent.getRegion().getFlag(StageModule.getAllowParticles()) == null;
+    if(!isAllowParticles){
+      Arrays.asList(CosmeticItemCategory.BALLOONS, CosmeticItemCategory.GADGETS, CosmeticItemCategory.PARTICLES, CosmeticItemCategory.TRAILS).forEach(category -> CosmeticManager.getInstance().getCurrentCosmeticItemByCategory(regionEnterEvent.getPlayer().getUniqueId(), category).ifPresent(cosmeticItem -> CosmeticManager.getInstance().removeCosmeticItem(cosmeticItem)));
     }
     if(regionEnterEvent.getRegionId().equalsIgnoreCase("KOTH")){
       regionEnterEvent.getPlayer().getInventory().setItem(5, KNOCK_STICK);

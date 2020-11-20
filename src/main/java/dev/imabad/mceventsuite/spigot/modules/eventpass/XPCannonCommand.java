@@ -11,6 +11,8 @@ import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.commands.BaseCommand;
 import java.awt.Color;
 import java.util.Random;
+
+import net.citizensnpcs.api.CitizensAPI;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -92,7 +94,7 @@ public class XPCannonCommand extends BaseCommand {
                     ParticleEffect.EXPLOSION_HUGE.display(location);
                     hologram.delete();
                     location.getWorld().playSound(location, Sound.ENTITY_GENERIC_EXPLODE, SoundCategory.AMBIENT,1 ,1);
-                    location.getWorld().getNearbyEntitiesByType(Player.class, location, finalRadius).forEach(player1 -> EventCore.getInstance().getModuleRegistry().getModule(
+                    location.getWorld().getNearbyEntitiesByType(Player.class, location, finalRadius).stream().filter(player1 -> !CitizensAPI.getNPCRegistry().isNPC(player1)).forEach(player1 -> EventCore.getInstance().getModuleRegistry().getModule(
                         RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(player1.getUniqueId(), xpAmount, "Earned from XP Cannon!")));
                     new BukkitRunnable(){
                         float r = 0;

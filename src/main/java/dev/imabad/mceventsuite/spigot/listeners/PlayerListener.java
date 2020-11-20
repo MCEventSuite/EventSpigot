@@ -43,6 +43,10 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
+    public void onCommandSend(PlayerCommandSendEvent event){
+    }
+
+    @EventHandler
     public void onPlayerJoin(PlayerJoinEvent playerJoinEvent){
         EventPlayer player = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(PlayerDAO.class).getOrCreatePlayer(playerJoinEvent.getPlayer().getUniqueId(), playerJoinEvent.getPlayer().getDisplayName());
         SpigotPlayer spigotPlayer = SpigotPlayer.asSpigot(player, playerJoinEvent.getPlayer());
@@ -51,6 +55,7 @@ public class PlayerListener implements Listener {
         EventPermissible eventPermissible = new EventPermissible(playerJoinEvent.getPlayer(), player);
         try {
             PermissibleInjector.inject(playerJoinEvent.getPlayer(), eventPermissible);
+            playerJoinEvent.getPlayer().updateCommands();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -92,6 +97,7 @@ public class PlayerListener implements Listener {
         if(FloodgateAPI.isBedrockPlayer(playerJoinEvent.getPlayer())){
             NCPAPIProvider.getNoCheatPlusAPI().getPlayerDataManager().getPlayerData(playerJoinEvent.getPlayer()).exempt(CheckType.ALL);
         }
+        NCPAPIProvider.getNoCheatPlusAPI().getPlayerDataManager().getPlayerData(playerJoinEvent.getPlayer()).exempt(CheckType.MOVING_SURVIVALFLY);
     }
 
     @EventHandler

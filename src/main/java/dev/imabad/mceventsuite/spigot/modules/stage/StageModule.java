@@ -35,11 +35,16 @@ public class StageModule extends Module {
 
   private HashMap<UUID, Entity> seats = new HashMap<>();
   private Hologram kothHologram;
+  private FlagRegistry flagRegistry;
 
   private static StateFlag isNightVision;
+  private static StateFlag allowParticles;
 
   public static StateFlag getIsNightVision() {
     return isNightVision;
+  }
+  public static StateFlag getAllowParticles() {
+    return allowParticles;
   }
 
   @Override
@@ -51,19 +56,15 @@ public class StageModule extends Module {
   public void onEnable() {
     InteractionRegistry.registerInteraction(Interaction.RIGHT_CLICK_BLOCK, this::enterSeat);
     EventSpigot.getInstance().getServer().getPluginManager().registerEvents(new StageListener(this), EventSpigot.getInstance());
-    FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
+    flagRegistry = WorldGuard.getInstance().getFlagRegistry();
     try {
-      StateFlag flag = new StateFlag("is-night-vision", true);
-      registry.register(flag);
-      isNightVision = flag;
-    } catch (FlagConflictException e) {
-      Flag<?> existing = registry.get("is-night-vision");
-      if (existing instanceof StateFlag) {
-        isNightVision = (StateFlag) existing;
-      } else {
-      }
+      isNightVision = RegionUtils.getOrRegisterFlag(new StateFlag("is-night-vision", true));
+      allowParticles = RegionUtils.getOrRegisterFlag(new StateFlag("allow-particles", true));
+    } catch (Exception ignored) {
     }
   }
+
+
 
   private void enterSeat(Event event) {
     PlayerInteractEvent playerInteractEvent = (PlayerInteractEvent) event;

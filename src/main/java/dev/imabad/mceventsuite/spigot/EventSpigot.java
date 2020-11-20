@@ -24,6 +24,7 @@ import dev.imabad.mceventsuite.spigot.impl.SpigotActionExecutor;
 import dev.imabad.mceventsuite.spigot.listeners.BuildListener;
 import dev.imabad.mceventsuite.spigot.listeners.EventListener;
 import dev.imabad.mceventsuite.spigot.listeners.PlayerListener;
+import dev.imabad.mceventsuite.spigot.modules.bedrock.BedrockModule;
 import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.EventPassSpigotModule;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
@@ -169,6 +170,7 @@ public class EventSpigot extends JavaPlugin {
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new EventPassSpigotModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new StageModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new PlayerModule());
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BedrockModule());
         }
         permissionAttachments = new HashMap<>();
         unRegisterBukkitCommand(getCommand("ban"));
@@ -182,7 +184,7 @@ public class EventSpigot extends JavaPlugin {
                 }
                 serversModule.getServerRedisManager().addServer(thisServer);
             }
-        }, 0, 30 * 20);
+        }, 0, 15 * 20);
     }
 
     public HashMap<Integer, Team> getRankTeams() {
