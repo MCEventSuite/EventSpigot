@@ -24,6 +24,9 @@ public class EditSignCommand extends BaseCommand {
 
     @Override
     public boolean execute(CommandSender sender, String label, String[] args) {
+        if(!super.execute(sender, label, args)){
+            return false;
+        }
         if(!(sender instanceof Player)){
             return false;
         }
