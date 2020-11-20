@@ -7,13 +7,16 @@ import dev.imabad.mceventsuite.core.modules.redis.messages.players.AwardPlayerXP
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.modules.shops.api.IShop;
 import dev.imabad.mceventsuite.spigot.modules.shops.api.ISkullProduct;
+import dev.imabad.mceventsuite.spigot.utils.ItemUtils;
 import dev.imabad.mceventsuite.spigot.utils.SoundHelper;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
 import net.minecraft.server.v1_16_R2.PacketPlayOutEntityStatus;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.craftbukkit.v1_16_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +34,11 @@ public class CakeProduct implements ISkullProduct {
     this.cost = cost;
     this.textureID = textureID;
     this.shop = shop;
+  }
+
+  @Override
+  public ItemStack getBedrockItemStack() {
+    return ItemUtils.createItemStack(Material.CAKE, getDisplayName(), getLore());
   }
 
   @Override

@@ -26,6 +26,11 @@ public interface IProduct {
 
   ItemStack getItemStack();
 
+  default ItemStack getBedrockItemStack(){
+    return getItemStack();
+  }
+
   IShop getShop();
+
 
 }

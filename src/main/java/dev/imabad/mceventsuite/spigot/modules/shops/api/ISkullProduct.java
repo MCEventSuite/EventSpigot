@@ -11,4 +11,5 @@ public interface ISkullProduct extends IProduct
     default ItemStack getItemStack() {
         return ItemUtils.getSkull(getTextureID(), getDisplayName(), getLore());
     }
+
 }

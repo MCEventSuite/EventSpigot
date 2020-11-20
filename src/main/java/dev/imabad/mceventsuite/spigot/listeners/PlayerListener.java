@@ -16,6 +16,8 @@ import dev.imabad.mceventsuite.spigot.interactions.InteractionRegistry;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
 import dev.imabad.mceventsuite.spigot.modules.player.PlayerHotbar;
 import dev.imabad.mceventsuite.spigot.utils.PermissibleInjector;
+import fr.neatmonster.nocheatplus.NCPAPIProvider;
+import fr.neatmonster.nocheatplus.checks.CheckType;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.event.EventHandler;
@@ -28,6 +30,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Team;
+import org.geysermc.floodgate.FloodgateAPI;
 
 public class PlayerListener implements Listener {
 
@@ -85,6 +88,9 @@ public class PlayerListener implements Listener {
         EventPassPlayer eventPassPlayer = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).getOrCreateEventPass(player);
         playerJoinEvent.getPlayer().setLevel(eventPassPlayer.levelFromXP());
         playerJoinEvent.setJoinMessage("");
+        if(FloodgateAPI.isBedrockPlayer(playerJoinEvent.getPlayer())){
+            NCPAPIProvider.getNoCheatPlusAPI().getPlayerDataManager().getPlayerData(playerJoinEvent.getPlayer()).exempt(CheckType.ALL);
+        }
     }
 
     @EventHandler

@@ -46,5 +46,6 @@ dependencies {
     compileOnly 'com.mewin:WGRegionEvents:1.3'
     compileOnly 'com.gmail.filoghost.holographicdisplays:holographicdisplays-api:2.4.0'
     compileOnly 'dev.imabad.mceventsuite:cubedcosmetics:1.0'
-    compileOnly 'org.geysermc:floodgate-bukkit:1.0-20201116.041026-25'
+    compileOnly 'org.geysermc:floodgate-bukkit:1.0-SNAPSHOT'
+    implementation 'fr.neatmonster:nocheatplus:1.2@jar'
 }
