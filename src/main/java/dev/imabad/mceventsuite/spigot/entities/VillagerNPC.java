@@ -6,11 +6,11 @@ import java.util.*;
 import com.destroystokyo.paper.entity.ai.MobGoalHelper;
 import com.destroystokyo.paper.entity.ai.PaperMobGoals;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
-import net.minecraft.server.v1_16_R2.*;
+import net.minecraft.server.v1_16_R3.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 
@@ -24,7 +24,7 @@ public class VillagerNPC extends EntityVillager {
     private Location spawnLocation = null;
     private boolean isBusy = false;
 
-    public VillagerNPC(net.minecraft.server.v1_16_R2.EntityTypes<EntityVillager> entitytypes, World world){
+    public VillagerNPC(net.minecraft.server.v1_16_R3.EntityTypes<EntityVillager> entitytypes, World world){
         super(entitytypes, world);
         System.out.println("C1 Removing goals");
         Bukkit.getMobGoals().removeAllGoals((Villager)this.getBukkitCreature());
@@ -32,7 +32,7 @@ public class VillagerNPC extends EntityVillager {
     }
 
     public VillagerNPC(World world, Location spawnLocation, String name) {
-        super(net.minecraft.server.v1_16_R2.EntityTypes.VILLAGER, world);
+        super(net.minecraft.server.v1_16_R3.EntityTypes.VILLAGER, world);
         this.spawnLocation = spawnLocation;
         this.name = name;
         System.out.println("C2 Removing goals");

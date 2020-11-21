@@ -2,11 +2,11 @@ package dev.imabad.mceventsuite.spigot.utils;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import net.minecraft.server.v1_16_R2.NBTTagCompound;
-import net.minecraft.server.v1_16_R2.NBTTagList;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
+import net.minecraft.server.v1_16_R3.NBTTagList;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.*;
@@ -190,7 +190,7 @@ public class ItemUtils {
 
     private static String getIconTextureString(ItemStack itemStack)
     {
-        net.minecraft.server.v1_16_R2.ItemStack nmsHead2 = CraftItemStack.asNMSCopy(itemStack);
+        net.minecraft.server.v1_16_R3.ItemStack nmsHead2 = CraftItemStack.asNMSCopy(itemStack);
         NBTTagCompound rootCompound = (nmsHead2.hasTag()) ? nmsHead2.getTag() : new NBTTagCompound();
         assert rootCompound != null;
         NBTTagCompound ownerCompound = rootCompound.getCompound("SkullOwner");

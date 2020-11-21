@@ -2,20 +2,20 @@ package dev.imabad.mceventsuite.spigot.entities;
 
 import java.lang.reflect.Field;
 
-import net.minecraft.server.v1_16_R2.Entity;
-import net.minecraft.server.v1_16_R2.EnumCreatureType;
-import net.minecraft.server.v1_16_R2.IRegistry;
-import net.minecraft.server.v1_16_R2.MinecraftKey;
+import net.minecraft.server.v1_16_R3.Entity;
+import net.minecraft.server.v1_16_R3.EnumCreatureType;
+import net.minecraft.server.v1_16_R3.IRegistry;
+import net.minecraft.server.v1_16_R3.MinecraftKey;
 import org.bukkit.Location;
 import org.bukkit.Registry;
 
 public enum EntityTypes {
-    VILLAGER("villager", 120, net.minecraft.server.v1_16_R2.EntityTypes.Builder.a(VillagerNPC::new, EnumCreatureType.CREATURE));
+    VILLAGER("villager", 120, net.minecraft.server.v1_16_R3.EntityTypes.Builder.a(VillagerNPC::new, EnumCreatureType.CREATURE));
     private String name;
     private int id;
-    private net.minecraft.server.v1_16_R2.EntityTypes.Builder<?> builder;
+    private net.minecraft.server.v1_16_R3.EntityTypes.Builder<?> builder;
 
-    EntityTypes(String name, int id, final net.minecraft.server.v1_16_R2.EntityTypes.Builder<?> builder) {
+    EntityTypes(String name, int id, final net.minecraft.server.v1_16_R3.EntityTypes.Builder<?> builder) {
         this.name = name;
         this.id = id;
         this.builder = builder;
@@ -30,9 +30,9 @@ public enum EntityTypes {
         return null;
     }
 
-    private static void addToMaps(net.minecraft.server.v1_16_R2.EntityTypes.Builder<?> builder, String name, int id) {
+    private static void addToMaps(net.minecraft.server.v1_16_R3.EntityTypes.Builder<?> builder, String name, int id) {
         String nameSpace = "eventspigot_" + name;
-        net.minecraft.server.v1_16_R2.IRegistry.a(IRegistry.ENTITY_TYPE, nameSpace, builder.a(nameSpace));
+        net.minecraft.server.v1_16_R3.IRegistry.a(IRegistry.ENTITY_TYPE, nameSpace, builder.a(nameSpace));
     }
 
     public static Object getPrivateField(String fieldName, Class clazz, Object object) {
