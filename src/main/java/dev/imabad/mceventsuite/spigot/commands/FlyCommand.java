@@ -2,6 +2,7 @@ package dev.imabad.mceventsuite.spigot.commands;
 
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
+import dev.imabad.mceventsuite.spigot.modules.player.PlayerModule;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -30,12 +31,20 @@ public class FlyCommand extends BaseCommand {
             return false;
         }
 
+        if (!PlayerModule.playerCanFly(sender)) {
+            return false;
+        }
+
         if (sender.isFlying()) {
             sender.setFlying(false);
             sender.setAllowFlight(false);
         } else {
-            sender.setAllowFlight(true);
-            sender.setFlying(true);
+            if (PlayerModule.playerCanFly(sender)) {
+                sender.setAllowFlight(true);
+                sender.setFlying(true);
+            } else {
+                return false;
+            }
         }
 
         return true;

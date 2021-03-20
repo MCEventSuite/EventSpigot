@@ -123,12 +123,15 @@ public class PlayerListener implements Listener {
         if(event.getClickedInventory() != null) {
             for (EventInventory eventInventory : EventInventory.EVENT_INVENTORIES) {
                 if(eventInventory.isInventory(event.getClickedInventory())) {
+                    // TODO: Potentially allow handler to override this (but safely if the handler throws)
+                    event.setCancelled(true);
+
                     ClickType clickType = event.getClick();
                     InventoryType.SlotType slotType = event.getSlotType();
                     boolean isPlayerInventory = event.getClickedInventory().equals(event.getWhoClicked().getInventory());
                     ItemStack clickItem = event.getCurrentItem();
                     int slot = event.getSlot();
-                    event.setCancelled(eventInventory.onPlayerClick(event.getWhoClicked(), slot, isPlayerInventory, clickItem, slotType, clickType));
+                    eventInventory.onPlayerClick(event.getWhoClicked(), slot, isPlayerInventory, clickItem, slotType, clickType);
                     return;
                 }
             }
