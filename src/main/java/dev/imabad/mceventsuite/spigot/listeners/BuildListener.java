@@ -1,6 +1,8 @@
 package dev.imabad.mceventsuite.spigot.listeners;
 
+import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
 import org.bukkit.GameRule;
+import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockFormEvent;
@@ -38,7 +40,10 @@ public class BuildListener implements Listener {
 
     @EventHandler
     public void onPlantGrow(BlockGrowEvent blockGrowEvent){
-        blockGrowEvent.setCancelled(true);
+        World world = blockGrowEvent.getBlock().getWorld();
+        if (BoothModule.BOOTH_WORLDS.contains(world.getName())) {
+            blockGrowEvent.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -49,7 +54,10 @@ public class BuildListener implements Listener {
 
     @EventHandler
     public void onRedstone(BlockRedstoneEvent blockRedstoneEvent) {
-        blockRedstoneEvent.setNewCurrent(blockRedstoneEvent.getOldCurrent());
+        World world = blockRedstoneEvent.getBlock().getWorld();
+        if (BoothModule.BOOTH_WORLDS.contains(world.getName())) {
+            blockRedstoneEvent.setNewCurrent(blockRedstoneEvent.getOldCurrent());
+        }
     }
 
     @EventHandler

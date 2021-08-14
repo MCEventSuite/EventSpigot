@@ -1,7 +1,5 @@
 package dev.imabad.mceventsuite.spigot.listeners;
 
-import dev.imabad.mceventsuite.core.EventCore;
-import dev.imabad.mceventsuite.spigot.modules.stage.StageModule;
 import dev.imabad.mceventsuite.spigot.utils.RegionUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

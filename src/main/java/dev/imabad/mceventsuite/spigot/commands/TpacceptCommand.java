@@ -10,7 +10,6 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import dev.imabad.mceventsuite.spigot.modules.stage.StageModule;
 import dev.imabad.mceventsuite.spigot.utils.RegionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

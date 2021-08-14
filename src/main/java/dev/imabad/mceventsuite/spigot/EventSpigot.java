@@ -31,7 +31,6 @@ import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
 import dev.imabad.mceventsuite.spigot.modules.player.PlayerModule;
 import dev.imabad.mceventsuite.spigot.modules.shops.ShopsModule;
 import dev.imabad.mceventsuite.spigot.modules.stafftrack.StaffTrackModule;
-import dev.imabad.mceventsuite.spigot.modules.stage.StageModule;
 import dev.imabad.mceventsuite.spigot.modules.warps.WarpModule;
 import dev.imabad.mceventsuite.spigot.utils.PermissibleInjector;
 import net.kyori.adventure.key.Key;
@@ -145,46 +144,48 @@ public class EventSpigot extends JavaPlugin {
         commandMap = getCommandMap();
         if(commandMap != null){
             commandMap.register("nv", new NightVisionToggle());
-            commandMap.register("editsign", new EditSignCommand());
             commandMap.register("speed", new SpeedCommand());
             commandMap.register("linksign", new LinkSignCommand());
             commandMap.register("slink", new SignLinkCommand());
-            commandMap.register("goserver", new SendToServerCommand());
             commandMap.register("tpa", new TpaCommand());
             commandMap.register("tpaccept", new TpacceptCommand());
             commandMap.register("tptoggle", new TptoggleCommand());
-            commandMap.register("fly", new FlyCommand());
+            commandMap.register("spawn", new SpawnCommand());
         }
-        if(getServer().getPluginManager().isPluginEnabled("PlotSquared")) {
-            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BoothModule());
-        } else {
-            getServer().getPluginManager().registerEvents(new EventListener(), this);
-            isEvent = true;
-        }
-        EventCore.getInstance().getModuleRegistry().addAndEnableModule(new MapModule());
-        EventCore.getInstance().getModuleRegistry().addAndEnableModule(new WarpModule());
-        if(isEvent){
+        if(isEvent) {
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new WarpModule());
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new MapModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new ShopsModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new StaffTrackModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new EventPassModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new EventPassSpigotModule());
-            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new StageModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new PlayerModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BedrockModule());
+        } else {
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BoothModule());
         }
-        permissionAttachments = new HashMap<>();
-        unRegisterBukkitCommand(getCommand("ban"));
-        unRegisterBukkitCommand(getCommand("kick"));
+
         getServer().getScheduler().runTaskTimerAsynchronously(getInstance(), () -> {
             Server thisServer = serversModule.getServerRedisManager().getServer(EventCore.getInstance().getIdentifier());
+
+            if (thisServer == null) {
+                System.out.println("[EventSpigot] Registering server...");
+                thisServer = new Server(EventCore.getInstance().getIdentifier(), "", 0, 0, 0, 100);
+            }
+
             if(thisServer != null){
                 thisServer.setPlayerCount(getServer().getOnlinePlayers().size());
                 if(!thisServer.isOnline()){
                     thisServer.setOnline(true);
                 }
-                serversModule.getServerRedisManager().addServer(thisServer);
             }
+
+            serversModule.getServerRedisManager().addServer(thisServer);
         }, 0, 15 * 20);
+
+        permissionAttachments = new HashMap<>();
+        unRegisterBukkitCommand(getCommand("ban"));
+        unRegisterBukkitCommand(getCommand("kick"));
     }
 
     public HashMap<Integer, Team> getRankTeams() {

@@ -17,21 +17,24 @@ import dev.imabad.mceventsuite.spigot.interactions.InteractionRegistry;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
 import dev.imabad.mceventsuite.spigot.modules.player.PlayerHotbar;
 import dev.imabad.mceventsuite.spigot.utils.PermissibleInjector;
-import fr.neatmonster.nocheatplus.NCPAPIProvider;
-import fr.neatmonster.nocheatplus.checks.CheckType;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
+import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
+import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Team;
 import org.geysermc.floodgate.FloodgateAPI;
+
+import java.util.Optional;
+import java.util.function.Supplier;
 
 public class PlayerListener implements Listener {
 
@@ -48,7 +51,14 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent playerJoinEvent){
-        EventPlayer player = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(PlayerDAO.class).getOrCreatePlayer(playerJoinEvent.getPlayer().getUniqueId(), playerJoinEvent.getPlayer().getDisplayName());
+        Optional<EventPlayer> playerOptional = EventCore.getInstance().getEventPlayerManager().getPlayer(playerJoinEvent.getPlayer().getUniqueId());
+
+        if (!playerOptional.isPresent()) {
+            EventSpigot.getInstance().getLogger().warning("Player missing, loading again in PlayerJoinEvent handler!");
+        }
+
+        EventPlayer player = playerOptional.orElseGet(() -> EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(PlayerDAO.class).getOrCreatePlayer(playerJoinEvent.getPlayer().getUniqueId(), playerJoinEvent.getPlayer().getDisplayName()));
+
         SpigotPlayer spigotPlayer = SpigotPlayer.asSpigot(player, playerJoinEvent.getPlayer());
         EventCore.getInstance().getEventPlayerManager().addPlayer(spigotPlayer);
         EventCore.getInstance().getEventRegistry().handleEvent(new JoinEvent(spigotPlayer));
@@ -87,17 +97,30 @@ public class PlayerListener implements Listener {
             playerJoinEvent.getPlayer().removePotionEffect(potionEffect.getType());
         }
         playerJoinEvent.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 1, true, false, false));
-        if(!playerJoinEvent.getPlayer().hasPlayedBefore()) {
-            playerJoinEvent.getPlayer().teleport(EventCore.getInstance().getModuleRegistry().getModule(MapModule.class).getRandomLocation());
+        if(!playerJoinEvent.getPlayer().hasPlayedBefore() || playerJoinEvent.getPlayer().getName().equalsIgnoreCase("olivervscreeper")) {
+            // playerJoinEvent.getPlayer().teleport(EventCore.getInstance().getModuleRegistry().getModule(MapModule.class).getRandomLocation());
+            playerJoinEvent.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', "&6-----------------------&r"));
+            playerJoinEvent.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', "&eWelcome to &d&lCubed! Creative&r"));
+            playerJoinEvent.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', "&6-----------------------&r"));
+            playerJoinEvent.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', "&eTo claim your first plot, type &a/plot auto&r"));
+            playerJoinEvent.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', "&bPlease respect the rules and have fun!"));
         }
-        PlayerHotbar.givePlayerInventory(playerJoinEvent.getPlayer());
-        EventPassPlayer eventPassPlayer = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).getOrCreateEventPass(player);
-        playerJoinEvent.getPlayer().setLevel(eventPassPlayer.levelFromXP());
-        playerJoinEvent.setJoinMessage("");
-        if(FloodgateAPI.isBedrockPlayer(playerJoinEvent.getPlayer())){
-            NCPAPIProvider.getNoCheatPlusAPI().getPlayerDataManager().getPlayerData(playerJoinEvent.getPlayer()).exempt(CheckType.ALL);
+        if (EventSpigot.getInstance().isEvent()) {
+            PlayerHotbar.givePlayerInventory(playerJoinEvent.getPlayer());
+            EventPassPlayer eventPassPlayer = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).getOrCreateEventPass(player);
+            playerJoinEvent.getPlayer().setLevel(eventPassPlayer.levelFromXP());
         }
-        NCPAPIProvider.getNoCheatPlusAPI().getPlayerDataManager().getPlayerData(playerJoinEvent.getPlayer()).exempt(CheckType.MOVING_SURVIVALFLY);
+
+        playerJoinEvent.setJoinMessage(getJoinQuitMessage(
+                "+",
+                player.getRank().getPrefix(),
+                playerJoinEvent.getPlayer().getName()
+        ));
+
+        // if(FloodgateAPI.isBedrockPlayer(playerJoinEvent.getPlayer())){
+        //     NCPAPIProvider.getNoCheatPlusAPI().getPlayerDataManager().getPlayerData(playerJoinEvent.getPlayer()).exempt(CheckType.ALL);
+        // }
+        // NCPAPIProvider.getNoCheatPlusAPI().getPlayerDataManager().getPlayerData(playerJoinEvent.getPlayer()).exempt(CheckType.MOVING_SURVIVALFLY);
     }
 
     @EventHandler
@@ -114,8 +137,22 @@ public class PlayerListener implements Listener {
                 team.removeEntry(eventPlayer.getLastUsername());
             }
             EventCore.getInstance().getEventPlayerManager().removePlayer(eventPlayer);
+
+            playerQuitEvent.setQuitMessage(getJoinQuitMessage(
+                    "-",
+                    eventPlayer.getRank().getPrefix(),
+                    playerQuitEvent.getPlayer().getName()
+            ));
         });
-        playerQuitEvent.setQuitMessage("");
+    }
+
+    private String getJoinQuitMessage(String symbol, String prefix, String name) {
+        return String.format(
+                ChatColor.GRAY + "[%s] " + ChatColor.WHITE + "%s %s",
+                symbol,
+                ChatColor.translateAlternateColorCodes('&', prefix),
+                name
+        );
     }
 
     @EventHandler
@@ -143,25 +180,37 @@ public class PlayerListener implements Listener {
         InteractionRegistry.handleEvent(Interaction.MOVE, event);
     }
 
+//    @EventHandler
+//    public void onPlayerInteract(PlayerInteractEvent event) {
+//        switch (event.getAction()) {
+//            case RIGHT_CLICK_AIR:
+//                InteractionRegistry.handleEvent(Interaction.RIGHT_CLICK, event);
+//                InteractionRegistry.handleEvent(Interaction.RIGHT_CLICK_AIR, event);
+//                break;
+//            case RIGHT_CLICK_BLOCK:
+//                InteractionRegistry.handleEvent(Interaction.RIGHT_CLICK, event);
+//                InteractionRegistry.handleEvent(Interaction.RIGHT_CLICK_BLOCK, event);
+//                break;
+//            case LEFT_CLICK_AIR:
+//                InteractionRegistry.handleEvent(Interaction.LEFT_CLICK, event);
+//                InteractionRegistry.handleEvent(Interaction.LEFT_CLICK_AIR, event);
+//                break;
+//            case LEFT_CLICK_BLOCK:
+//                InteractionRegistry.handleEvent(Interaction.LEFT_CLICK, event);
+//                InteractionRegistry.handleEvent(Interaction.LEFT_CLICK_BLOCK, event);
+//                break;
+//        }
+//    }
+
     @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        switch (event.getAction()) {
-            case RIGHT_CLICK_AIR:
-                InteractionRegistry.handleEvent(Interaction.RIGHT_CLICK, event);
-                InteractionRegistry.handleEvent(Interaction.RIGHT_CLICK_AIR, event);
-                break;
-            case RIGHT_CLICK_BLOCK:
-                InteractionRegistry.handleEvent(Interaction.RIGHT_CLICK, event);
-                InteractionRegistry.handleEvent(Interaction.RIGHT_CLICK_BLOCK, event);
-                break;
-            case LEFT_CLICK_AIR:
-                InteractionRegistry.handleEvent(Interaction.LEFT_CLICK, event);
-                InteractionRegistry.handleEvent(Interaction.LEFT_CLICK_AIR, event);
-                break;
-            case LEFT_CLICK_BLOCK:
-                InteractionRegistry.handleEvent(Interaction.LEFT_CLICK, event);
-                InteractionRegistry.handleEvent(Interaction.LEFT_CLICK_BLOCK, event);
-                break;
+    public void onPortal(PortalCreateEvent event) {
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent event) {
+        if (event.getCause() == PlayerTeleportEvent.TeleportCause.END_PORTAL || event.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL || event.getCause() == PlayerTeleportEvent.TeleportCause.END_GATEWAY || event.getTo().getWorld().getEnvironment() != World.Environment.NORMAL) {
+            event.setCancelled(true);
         }
     }
 
