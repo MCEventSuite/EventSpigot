@@ -40,10 +40,22 @@ public class TeleportInventory extends EventInventory {
         if (slot == 11) {
             World world = Bukkit.getWorld("creative");
             player.teleport(new Location(world, -2, 52, 0.5, 270, 0));
+            return false;
         } else if (slot == 12) {
+            World world = Bukkit.getWorld("contest");
+            player.teleport(new Location(world, -2, 51, 0.5, 270, 0));
+            return false;
+        }
+
+        EventPlayer eventPlayer = EventCore.getInstance().getEventPlayerManager().getPlayer(player.getUniqueId()).get();
+
+        if (eventPlayer.getRank().getPower() < 70) {
+            player.sendMessage(ChatColor.RED + "Booth building is now closed.");
             player.closeInventory();
-            player.sendMessage(ChatColor.GOLD + "The contest world is coming soon!");
-        } else if (slot == 13) {
+            return false;
+        }
+
+        if (slot == 13) {
             World world = Bukkit.getWorld("small");
 
             if (!player.hasPermission("multiverse.access.small")) {

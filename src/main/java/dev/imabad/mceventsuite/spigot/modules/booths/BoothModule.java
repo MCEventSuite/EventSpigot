@@ -23,14 +23,12 @@ import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import net.citizensnpcs.api.event.CitizensEnableEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 
 public class BoothModule extends Module implements Listener {
@@ -39,6 +37,7 @@ public class BoothModule extends Module implements Listener {
     private EventRank boothMember;
     private CitizensListener citizensListener;
     public final static List<String> BOOTH_WORLDS = Arrays.asList("small", "medium", "large");
+    private final static boolean BOOTHS_CLOSED = true;
 
     @Override
     public String getName() {
@@ -83,7 +82,7 @@ public class BoothModule extends Module implements Listener {
         PlotPlayer plotPlayer = PlotPlayer.from(bukkitPlayer);
         List<EventBooth> booths = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(BoothDAO.class).getPlayerBooths(player);
 
-        if (booths.size() > 0) {
+        if (booths.size() > 0 && !BOOTHS_CLOSED) {
             booths.stream().filter(eventBooth -> eventBooth.getOwner().equals(player)).filter(eventBooth -> eventBooth.getStatus().equalsIgnoreCase("un-assigned")).forEach(eventBooth -> {
                 EventSpigot.getInstance().getLogger().info("Adding permissions for " + bukkitPlayer.getName());
                 player.getPermissions().add("multiverse.access." + eventBooth.getBoothType());
@@ -119,7 +118,7 @@ public class BoothModule extends Module implements Listener {
                 });
             });
         } else {
-            if (plotPlayer == null || plotAPI.getPlayerPlots(plotPlayer).size() == 0) {
+            if (plotPlayer == null || plotAPI.getPlayerPlots(plotPlayer).size() == 0 || (BOOTHS_CLOSED && BOOTH_WORLDS.contains(bukkitPlayer.getWorld().getName()))) {
                 World world = Bukkit.getWorld("creative");
                 bukkitPlayer.teleport(new Location(world, 0.5, 52, -1.5, 0, 0));
             }
@@ -158,6 +157,16 @@ public class BoothModule extends Module implements Listener {
                 || command.contains("/mvtp")) {
             event.setCancelled(true);
             new TeleportInventory(event.getPlayer()).open(event.getPlayer(), null);
+        }
+    }
+
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent event) {
+        Optional<EventPlayer> player = EventCore.getInstance().getEventPlayerManager().getPlayer(event.getPlayer().getUniqueId());
+
+        if (BOOTH_WORLDS.contains(event.getTo().getWorld().getName()) && (!player.isPresent() || player.get().getRank().getPower() < 70)) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage(ChatColor.RED + "Booth building is now closed.");
         }
     }
 

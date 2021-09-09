@@ -96,7 +96,6 @@ public class PlayerListener implements Listener {
         for(PotionEffect potionEffect : playerJoinEvent.getPlayer().getActivePotionEffects()){
             playerJoinEvent.getPlayer().removePotionEffect(potionEffect.getType());
         }
-        playerJoinEvent.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 1, true, false, false));
         if(!playerJoinEvent.getPlayer().hasPlayedBefore() || playerJoinEvent.getPlayer().getName().equalsIgnoreCase("olivervscreeper")) {
             // playerJoinEvent.getPlayer().teleport(EventCore.getInstance().getModuleRegistry().getModule(MapModule.class).getRandomLocation());
             playerJoinEvent.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', "&6-----------------------&r"));
