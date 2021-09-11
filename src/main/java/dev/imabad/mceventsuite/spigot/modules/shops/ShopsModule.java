@@ -1,6 +1,5 @@
 package dev.imabad.mceventsuite.spigot.modules.shops;
 
-import com.plotsquared.core.util.ItemUtil;
 import dev.imabad.mceventsuite.core.api.modules.Module;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.entities.VillagerNPC;

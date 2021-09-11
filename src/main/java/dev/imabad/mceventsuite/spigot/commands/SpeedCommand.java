@@ -1,7 +1,6 @@
 package dev.imabad.mceventsuite.spigot.commands;
 
 import dev.imabad.mceventsuite.core.EventCore;
-import dev.imabad.mceventsuite.spigot.modules.stage.StageModule;
 import dev.imabad.mceventsuite.spigot.utils.RegionUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;

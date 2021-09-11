@@ -162,8 +162,8 @@ public class EventSpigot extends JavaPlugin {
             isEvent = true;
         }
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new MapModule());
-        EventCore.getInstance().getModuleRegistry().addAndEnableModule(new WarpModule());
         if(isEvent){
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new WarpModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new ShopsModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new StaffTrackModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new EventPassModule());
@@ -177,14 +177,23 @@ public class EventSpigot extends JavaPlugin {
         unRegisterBukkitCommand(getCommand("kick"));
         getServer().getScheduler().runTaskTimerAsynchronously(getInstance(), () -> {
             Server thisServer = serversModule.getServerRedisManager().getServer(EventCore.getInstance().getIdentifier());
+
+            if (thisServer == null) {
+                System.out.println("[EventSpigot] Registering server...");
+                thisServer = new Server(EventCore.getInstance().getIdentifier(), "", 0, 0, 0, 100);
+            }
+
             if(thisServer != null){
                 thisServer.setPlayerCount(getServer().getOnlinePlayers().size());
                 if(!thisServer.isOnline()){
                     thisServer.setOnline(true);
                 }
-                serversModule.getServerRedisManager().addServer(thisServer);
             }
+
+            serversModule.getServerRedisManager().addServer(thisServer);
         }, 0, 15 * 20);
+
+
     }
 
     public HashMap<Integer, Team> getRankTeams() {

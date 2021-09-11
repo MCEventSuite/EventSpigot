@@ -2,7 +2,6 @@ package dev.imabad.mceventsuite.spigot.modules.map.commands;
 
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.spigot.commands.BaseCommand;
-import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

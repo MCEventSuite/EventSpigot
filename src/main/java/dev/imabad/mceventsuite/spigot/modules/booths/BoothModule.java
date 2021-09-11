@@ -2,7 +2,7 @@ package dev.imabad.mceventsuite.spigot.modules.booths;
 
 import com.google.common.eventbus.Subscribe;
 import com.plotsquared.bukkit.util.BukkitUtil;
-import com.plotsquared.core.api.PlotAPI;
+import com.plotsquared.core.PlotAPI;
 import com.plotsquared.core.events.PlayerClaimPlotEvent;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
@@ -159,7 +159,7 @@ public class BoothModule extends Module implements Listener {
             return true;
         }
         for(PlotArea area: plotAPI.getPlotAreas(location.getWorld().getName())){
-            Plot plot = area.getPlot(BukkitUtil.getLocation(location));
+            Plot plot = area.getPlot(BukkitUtil.adapt(location));
             if(plot != null && plot.isAdded(player.getUniqueId())){
                 return true;
             }
@@ -232,7 +232,7 @@ public class BoothModule extends Module implements Listener {
         booths.stream().filter(eventBooth -> eventBooth.getOwner().equals(player)).filter(eventBooth -> eventBooth.getStatus().equalsIgnoreCase("un-assigned")).forEach(eventBooth -> {
             bukkitPlayer.teleport(Bukkit.getWorld(eventBooth.getBoothType()).getSpawnLocation());
             plotAPI.getPlotAreas(eventBooth.getBoothType()).stream().findFirst().ifPresent(plotArea -> {
-                PlotPlayer plotPlayer = PlotPlayer.wrap(player.getUUID());
+                PlotPlayer plotPlayer = PlotPlayer.from(bukkitPlayer);
                 Plot plot = plotArea.getNextFreePlot(plotPlayer, null);
                 plot.claim(plotPlayer, true, null, true);
                 eventBooth.setStatus("assigned");

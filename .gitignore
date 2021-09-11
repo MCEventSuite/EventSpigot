@@ -4,3 +4,6 @@ out/
 build/
 run/
 libs/
+.idea/
+jars/
+.DS_STORE

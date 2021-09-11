@@ -1,7 +1,5 @@
 package dev.imabad.mceventsuite.spigot.commands;
 
-import com.plotsquared.core.api.PlotAPI;
-import com.plotsquared.core.player.PlotPlayer;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
@@ -10,7 +8,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;

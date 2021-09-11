@@ -6,7 +6,7 @@ plugins {
 group 'dev.imabad.mceventsuite'
 version '1.0'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.9
 
 repositories {
     mavenLocal()
@@ -19,10 +19,11 @@ repositories {
         name "Bungeecord"
         url "https://oss.sonatype.org/content/repositories/snapshots"
     }
+    maven { url "https://papermc.io/repo/repository/maven-public/" }
     maven { url 'https://jitpack.io' }
+    maven { url = 'https://repo.md-5.net/content/repositories/snapshots/' } // NCP
     maven { url = "https://maven.enginehub.org/repo/" } // WorldEdit
     maven { url = "https://mvn.intellectualsites.com/content/groups/public" } // PlotSquared
-    maven { url = "https://mvn.imabad.dev/repository/maven-releases/" } // PlotSquared
     maven { url = "https://libraries.minecraft.net"} // Authlib / Minecraft
     maven { url = "https://repo.citizensnpcs.co/"} //Citizens
     maven { url = "https://repo.codemc.io/repository/maven-public/"} //CodeMC
@@ -36,9 +37,8 @@ dependencies {
     compileOnly "com.github.MilkBowl:VaultAPI:1.7"
     compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.2.0-SNAPSHOT")
     compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.4-SNAPSHOT")
-    compileOnly("com.plotsquared:PlotSquared-Core:5.13.8")
-    compileOnly("com.plotsquared:PlotSquared-Bukkit:5.13.8") { transitive = false }
-    compileOnly("io.papermc:paper:1.16.4:latest")
+    compileOnly("com.plotsquared:PlotSquared-Core:6.0.8-SNAPSHOT")
+    compileOnly("com.plotsquared:PlotSquared-Bukkit:6.0.8-SNAPSHOT") { transitive = false }
     compileOnly("com.mojang:authlib:1.5.21")
     implementation 'net.kyori:adventure-platform-bukkit:4.0.0-SNAPSHOT'
     compile ("xyz.xenondevs:particle:1.5.1")
@@ -47,5 +47,7 @@ dependencies {
     compileOnly 'com.gmail.filoghost.holographicdisplays:holographicdisplays-api:2.4.0'
     compileOnly 'dev.imabad.mceventsuite:cubedcosmetics:1.0'
     compileOnly 'org.geysermc:floodgate-bukkit:1.0-SNAPSHOT'
-    implementation 'fr.neatmonster:nocheatplus:1.2@jar'
+    compileOnly 'fr.neatmonster:nocheatplus:3.16.1-SNAPSHOT'
+    compileOnly "com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT"
+    compileOnly "com.destroystokyo.paper:paper:1.16.5-R0.1-SNAPSHOT"
 }

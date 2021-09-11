@@ -63,6 +63,24 @@ To get a local copy up and running follow these simple example steps.
 ### Prerequisites
 
 * Gradle
+* Maven
+
+* Paper
+* WGRegionEvents
+
+You can install Paper using the following steps:
+
+1. Clone the Paper repository: `git clone --branch ver/1.16.5 --depth 1 https://github.com/PaperMC/Paper.git`
+1. Enter the project: `cd Paper`
+1. Fetch the 1.16.5 branch: `git fetch --depth 1 origin ver/1.16.5`
+1. Run `cd Paper`
+1. Run `./paper install`
+
+And WGRegionEvents:
+
+1. Clone the repository: `git clone https://github.com/Paul19988/WorldGuard-Region-Events`
+1. Enter the project: `cd WorldGuard-Region-Events`
+1. Run `mvn install`
 
 ### Installation
 
