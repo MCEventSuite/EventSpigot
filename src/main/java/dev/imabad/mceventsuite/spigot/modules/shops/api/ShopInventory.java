@@ -13,7 +13,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.geysermc.floodgate.FloodgateAPI;
+import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -78,7 +78,7 @@ public class ShopInventory extends EventInventory {
         break;
       }
       ItemStack itemStack;
-      if(FloodgateAPI.isBedrockPlayer(player)){
+      if(FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId())){
         itemStack = product.getBedrockItemStack();
       } else {
         itemStack = product.getItemStack();

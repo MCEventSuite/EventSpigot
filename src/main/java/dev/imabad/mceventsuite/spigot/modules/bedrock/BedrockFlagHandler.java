@@ -16,7 +16,7 @@ import com.sk89q.worldguard.session.handler.EntryFlag;
 import com.sk89q.worldguard.session.handler.Handler;
 import net.citizensnpcs.api.CitizensAPI;
 import org.bukkit.entity.Player;
-import org.geysermc.floodgate.FloodgateAPI;
+import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,7 +49,7 @@ public class BedrockFlagHandler extends Handler {
             return true;
         }
         boolean allowed = toSet.testState(player, BedrockModule.getBedrockAllowed());
-        if(!allowed && moveType.isCancellable() && FloodgateAPI.isBedrockPlayer(bukkitPlayer)){
+        if(!allowed && moveType.isCancellable() && FloodgateApi.getInstance().isFloodgatePlayer(bukkitPlayer.getUniqueId())){
             String message = toSet.queryValue(player, Flags.ENTRY_DENY_MESSAGE);
             long now = System.currentTimeMillis();
 

@@ -31,7 +31,6 @@ import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.geysermc.floodgate.FloodgateAPI;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
 import java.util.Arrays;

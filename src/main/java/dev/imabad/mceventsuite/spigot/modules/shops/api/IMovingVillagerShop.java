@@ -11,7 +11,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.geysermc.floodgate.FloodgateAPI;
+import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ public interface IMovingVillagerShop extends IShop {
         EventSpigot.getInstance().getAudiences().player(player).sendMessage(comingUp);
         Runnable runnable = () -> {
             ItemStack itemStack;
-            if(FloodgateAPI.isBedrockPlayer(player)){
+            if(FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId())){
                 itemStack = product.getBedrockItemStack();
             } else {
                 itemStack = product.getItemStack();
