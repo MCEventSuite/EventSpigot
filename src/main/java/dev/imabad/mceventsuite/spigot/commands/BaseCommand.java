@@ -2,6 +2,7 @@ package dev.imabad.mceventsuite.spigot.commands;
 
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import net.kyori.adventure.audience.Audience;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.command.defaults.BukkitCommand;
@@ -25,6 +26,7 @@ public abstract class BaseCommand extends BukkitCommand implements TabCompleter 
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
         if(permission.length() > 0 && !sender.hasPermission(permission)){
+            sender.sendMessage(ChatColor.RED + "You don't have permission to perform this command.");
             return false;
         }
         return true;
