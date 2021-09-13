@@ -64,8 +64,8 @@ public class NewBoothPlotCommand extends BaseCommand {
             sender.sendMessage(ChatColor.RED + "Invalid region size");
             return false;
         }
-        String posOne = region.getBoundingBox().getPos1().toParserString();
-        String posTwo = region.getBoundingBox().getPos2().toParserString();
+        String posOne = region.getMinimumPoint().toParserString();
+        String posTwo = region.getMaximumPoint().toParserString();
         String type;
         if(width == 17){
             type = "small";
