@@ -2,7 +2,7 @@ package dev.imabad.mceventsuite.spigot.modules.booths;
 
 import com.google.common.eventbus.Subscribe;
 import com.plotsquared.bukkit.util.BukkitUtil;
-import com.plotsquared.core.PlotAPI;
+import com.plotsquared.core.api.PlotAPI;
 import com.plotsquared.core.events.PlayerClaimPlotEvent;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
@@ -159,7 +159,7 @@ public class BoothModule extends Module implements Listener {
             return true;
         }
         for(PlotArea area: plotAPI.getPlotAreas(location.getWorld().getName())){
-            Plot plot = area.getPlot(BukkitUtil.adapt(location));
+            Plot plot = area.getPlot(BukkitUtil.getLocation(location));
             if(plot != null && plot.isAdded(player.getUniqueId())){
                 return true;
             }
