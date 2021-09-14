@@ -161,6 +161,7 @@ public class EventSpigot extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new EventListener(), this);
             isEvent = true;
         }
+        EventCore.getInstance().getModuleRegistry().addAndEnableModule(new MapModule());
         if(isEvent){
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new WarpModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new ShopsModule());

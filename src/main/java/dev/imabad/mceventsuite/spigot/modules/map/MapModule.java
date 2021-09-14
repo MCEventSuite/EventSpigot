@@ -131,7 +131,7 @@ public class MapModule extends Module implements Listener {
 
     @Override
     public List<Class<? extends Module>> getDependencies() {
-        return Collections.singletonList(InfluxDBModule.class);
+        return Collections.emptyList();
     }
 
     public Material getMaterialForSize(String size){
