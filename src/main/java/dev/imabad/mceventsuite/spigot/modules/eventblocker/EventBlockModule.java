@@ -23,7 +23,7 @@ public class EventBlockModule extends Module implements IConfigProvider<EventBlo
         } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         }
-    }, EventPriority.NORMAL, EventSpigot.getInstance(), false);
+    }, EventPriority.HIGH, EventSpigot.getInstance(), false);
 
     @Override
     public String getName() {

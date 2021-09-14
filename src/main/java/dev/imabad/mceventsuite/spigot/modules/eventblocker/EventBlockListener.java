@@ -1,5 +1,7 @@
 package dev.imabad.mceventsuite.spigot.modules.eventblocker;
 
+import dev.imabad.mceventsuite.spigot.EventSpigot;
+import org.apache.logging.log4j.Level;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -31,7 +33,6 @@ public class EventBlockListener implements Listener {
             else if (Cancellable.class.isAssignableFrom(e.getClass())) {
                 //If there's a player involved, set the player
                 Optional<Player> player = checkPlayer(e);
-
                 // If there is no player, or the player does not have permissions to allow the event, cancel te event.
                 if (!player.isPresent() || (!player.get().hasPermission(cName))) ((Cancellable) e).setCancelled(true);
             }
@@ -44,6 +45,7 @@ public class EventBlockListener implements Listener {
 
             if (player instanceof Player) {
                 return Optional.of((Player) player);
+
             }
             else {
                 return Optional.empty();
