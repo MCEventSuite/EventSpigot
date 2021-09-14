@@ -20,7 +20,6 @@ public class DaylightCommand extends BaseCommand {
     public boolean execute(CommandSender commandSender, String label, String[] args) {
         TimeType type = TimeType.UTC;
         String typeString = args[0];
-        commandSender.sendMessage(ChatColor.AQUA + typeString);
 
         if (typeString.equalsIgnoreCase("LOCAL")) type = TimeType.LOCAL;
         else if (typeString.equalsIgnoreCase("ALWAYS_DAY")) type = TimeType.ALWAYS_DAY;
