@@ -27,6 +27,7 @@ import dev.imabad.mceventsuite.spigot.listeners.PlayerListener;
 import dev.imabad.mceventsuite.spigot.modules.bedrock.BedrockModule;
 import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
 import dev.imabad.mceventsuite.spigot.modules.daylight.DaylightModule;
+import dev.imabad.mceventsuite.spigot.modules.eventblocker.EventBlockModule;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.EventPassSpigotModule;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
 import dev.imabad.mceventsuite.spigot.modules.player.PlayerModule;
@@ -130,6 +131,7 @@ public class EventSpigot extends JavaPlugin {
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new EventSpigotModule());
         ServersModule serversModule = new ServersModule();
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(serversModule);
+        EventCore.getInstance().getModuleRegistry().addAndEnableModule(new EventBlockModule());
         EventCore.getInstance().setActionExecutor(new SpigotActionExecutor());
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new JoinModule());
         EventCore.getInstance().getEventRegistry().registerListener(MySQLLoadedEvent.class, (event) -> {
