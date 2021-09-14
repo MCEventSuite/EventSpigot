@@ -1,6 +1,7 @@
 package dev.imabad.mceventsuite.spigot.modules.daylight;
 
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.Command;
 import org.bukkit.entity.Player;
 import dev.imabad.mceventsuite.core.api.modules.Module;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
@@ -108,8 +109,7 @@ public class DaylightModule extends Module implements Listener {
         runnable.runTaskTimer(EventSpigot.getInstance(), 0, 20 * 60);
         EventSpigot.getInstance().getServer().getPluginManager().registerEvents(this, EventSpigot.getInstance());
         EventSpigot.getInstance().getCommandMap().register("daylight", new DaylightCommand());
-
-
+        EventSpigot.getInstance().getCommand("daylight").setTabCompleter(new DaylightCommand());
     }
 
     /**

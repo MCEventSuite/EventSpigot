@@ -6,9 +6,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class DaylightCommand extends BaseCommand {
@@ -31,7 +35,19 @@ public class DaylightCommand extends BaseCommand {
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
-        return null;
+    public List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+        List<String> completions = new ArrayList<>();
+        List<String> commands = new ArrayList<>();
+
+        if (args.length == 1) {
+            commands.add("utc");
+            commands.add("local");
+            commands.add("always_day");
+            commands.add("always_night");
+            commands.add("minecraft");
+            StringUtil.copyPartialMatches(args[0], commands, completions);
+        }
+        Collections.sort(completions);
+        return completions;
     }
 }
