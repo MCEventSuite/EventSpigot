@@ -26,6 +26,7 @@ import dev.imabad.mceventsuite.spigot.listeners.EventListener;
 import dev.imabad.mceventsuite.spigot.listeners.PlayerListener;
 import dev.imabad.mceventsuite.spigot.modules.bedrock.BedrockModule;
 import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
+import dev.imabad.mceventsuite.spigot.modules.daylight.DaylightModule;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.EventPassSpigotModule;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
 import dev.imabad.mceventsuite.spigot.modules.player.PlayerModule;
@@ -156,13 +157,14 @@ public class EventSpigot extends JavaPlugin {
             commandMap.register("fly", new FlyCommand());
         }
         if(getServer().getPluginManager().isPluginEnabled("PlotSquared")) {
-            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BoothModule());
+            //EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BoothModule());
         } else {
             getServer().getPluginManager().registerEvents(new EventListener(), this);
             isEvent = true;
         }
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new MapModule());
         if(isEvent){
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new DaylightModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new WarpModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new ShopsModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new StaffTrackModule());
