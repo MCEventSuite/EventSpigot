@@ -132,7 +132,7 @@ public class StageListener implements Listener {
   @EventHandler
   public void onPluginEnable(PluginEnableEvent event){
     if(event.getPlugin().getName().equalsIgnoreCase("HolographicDisplays")){
-      Hologram hologram = HologramsAPI.createHologram(EventSpigot.getInstance(), new Location(Bukkit.getWorld("venue"), 669.5, 83, 537.5));
+      Hologram hologram = HologramsAPI.createHologram(EventSpigot.getInstance(), new Location(Bukkit.getWorld("world"), 152.5, 31, 153.5));
       hologram.insertTextLine(0, ChatColor.GREEN + "NO BODY");
       hologram.insertTextLine(1, ChatColor.RED + "KING OF THE HILL");
       module.setKothHologram(hologram);
