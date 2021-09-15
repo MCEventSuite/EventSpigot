@@ -12,7 +12,7 @@ import java.util.List;
 
 public class PlayerHotbar {
 
-    private static final List<String> helpPages = Arrays.asList("&9&lCubed! 2020\n" +
+    private static final List<String> helpPages = Arrays.asList("&9&lCubed! 2021\n" +
                     "&7The In-Game Minecraft Convention\n" +
                     "\n" +
                     "&9Watch the livestream to hear panels and join in with games:\n" +
