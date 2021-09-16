@@ -64,7 +64,7 @@ public class BossBarModule extends Module implements IConfigProvider, Listener {
 
     @Override
     public String getFileName() {
-        return "blocked_events.json";
+        return "boss_bar.json";
     }
 
     @Override
