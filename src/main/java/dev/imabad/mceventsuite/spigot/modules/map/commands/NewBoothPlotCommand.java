@@ -69,9 +69,9 @@ public class NewBoothPlotCommand extends BaseCommand {
         String type;
         if(width == 17){
             type = "small";
-        } else if(width == 37){
+        } else if(width == 27){
             type = "medium";
-        } else if(width == 53){
+        } else if(width == 41){
             type = "large";
         } else {
             sender.sendMessage(ChatColor.RED + "Invalid region size");
