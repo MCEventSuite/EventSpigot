@@ -61,7 +61,7 @@ public class EventBlockModule extends Module implements IConfigProvider<EventBlo
 
     @Override
     public String getFileName() {
-        return "blocked_events.json";
+        return "boss_bar.json";
     }
 
     @Override
