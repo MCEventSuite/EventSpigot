@@ -74,10 +74,14 @@ public class PlayerListener implements Listener {
         }
         if(EventSpigot.getInstance().getRankTeams().size() < 1){
             EventSpigot.getInstance().getRanks().forEach(eventRank -> {
-                Team team = EventSpigot.getInstance().getScoreboard().registerNewTeam(eventRank.getName());
-                team.setPrefix(ChatColor.translateAlternateColorCodes('&', eventRank.getPrefix())+ (eventRank.getPrefix().length() > 0 ? " " : ""));
-                team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
-                EventSpigot.getInstance().getRankTeams().put(eventRank.getId(), team);
+                if (EventSpigot.getInstance().getScoreboard().getTeam(eventRank.getName()) == null) {
+                    Team team = EventSpigot.getInstance().getScoreboard().registerNewTeam(eventRank.getName());
+                    team.setPrefix(ChatColor.translateAlternateColorCodes('&', eventRank.getPrefix()) + (eventRank.getPrefix().length() > 0 ? " " : ""));
+                    team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
+                    EventSpigot.getInstance().getRankTeams().put(eventRank.getId(), team);
+                } else {
+                    EventSpigot.getInstance().getLogger().warning("Scoreboard team already exists: " + eventRank.getName());
+                }
             });
         }
         if(playerJoinEvent.getPlayer().getScoreboard() != EventSpigot.getInstance().getScoreboard()){
