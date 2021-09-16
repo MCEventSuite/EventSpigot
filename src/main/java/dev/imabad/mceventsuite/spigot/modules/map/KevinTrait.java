@@ -4,19 +4,23 @@ import net.citizensnpcs.api.trait.Trait;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 
+import java.util.List;
+import java.util.Random;
+
 public class KevinTrait extends Trait {
 
-    private String speech;
+    private List<String> voiceLines;
 
-    public KevinTrait(String speech) {
+    public KevinTrait(List<String> voiceLines) {
         super("kevin");
-        this.speech = speech;
+        this.voiceLines = voiceLines;
     }
 
     @EventHandler
     public void click(net.citizensnpcs.api.event.NPCRightClickEvent event){
         if(event.getNPC() == this.getNPC()){
-            event.getClicker().sendMessage(event.getNPC().getName() + ": " + ChatColor.translateAlternateColorCodes('&', speech));
+            String textLine = voiceLines.get(new Random().nextInt(voiceLines.size()));
+            event.getClicker().sendMessage(event.getNPC().getName() + ": " + ChatColor.translateAlternateColorCodes('&', textLine));
             event.setCancelled(true);
         }
     }

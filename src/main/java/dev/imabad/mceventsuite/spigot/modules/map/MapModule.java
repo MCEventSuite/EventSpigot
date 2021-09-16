@@ -15,6 +15,7 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.session.ClipboardHolder;
 import dev.imabad.mceventsuite.core.EventCore;
+import dev.imabad.mceventsuite.core.api.IConfigProvider;
 import dev.imabad.mceventsuite.core.api.modules.Module;
 import dev.imabad.mceventsuite.core.api.objects.EventBooth;
 import dev.imabad.mceventsuite.core.api.objects.EventBoothPlot;
@@ -45,7 +46,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import org.bukkit.event.world.WorldLoadEvent;
 
-public class MapModule extends Module implements Listener {
+public class MapModule extends Module implements Listener, IConfigProvider<MapConfig> {
 
     private List<EventBooth> booths = new ArrayList<>();
     private World mainWorld;
@@ -53,6 +54,8 @@ public class MapModule extends Module implements Listener {
     private EditSession editSession;
     private final Random random = new Random();
     private KevinManager kevinManager;
+
+    private MapConfig mapConfig;
 
     @Override
     public String getName() {
@@ -107,7 +110,7 @@ public class MapModule extends Module implements Listener {
     }
 
     public void initKevins(){
-        kevinManager = new KevinManager(mainWorld);
+        kevinManager = new KevinManager(mainWorld, mapConfig);
     }
 
     public List<EventBooth> getBooths() {
@@ -256,5 +259,35 @@ public class MapModule extends Module implements Listener {
             completableFuture.complete(true);
         });
         return completableFuture;
+    }
+
+    @Override
+    public Class<MapConfig> getConfigType() {
+        return MapConfig.class;
+    }
+
+    @Override
+    public MapConfig getConfig() {
+        return mapConfig;
+    }
+
+    @Override
+    public String getFileName() {
+        return "map.json";
+    }
+
+    @Override
+    public void loadConfig(MapConfig config) {
+        this.mapConfig = config;
+    }
+
+    @Override
+    public void saveConfig() {
+
+    }
+
+    @Override
+    public boolean saveOnQuit() {
+        return false;
     }
 }

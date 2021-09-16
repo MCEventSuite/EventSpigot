@@ -16,7 +16,7 @@ public class StarblocksShop implements IMovingVillagerShop {
     private World world;
     private ShopArea area;
     private ShopState shopState;
-    private ShopVillagerInfo sally;
+    private ShopVillagerInfo sally, jordan;
 
     public StarblocksShop(ShopsModule module){
         world = module.getMainWorld();
@@ -56,16 +56,24 @@ public class StarblocksShop implements IMovingVillagerShop {
 
     @Override
     public void registerEntities() {
-        Location spawnLocation = new Location(world, 856.5, 71, 523.5, 0, 0);
-        Location moveToBlock = new Location(world,  857.5, 71, 520.5, 180, 0);
-        this.sally = new ShopVillagerInfo(this, "Sally", "&3&lSally", spawnLocation, moveToBlock);
-        this.sally.setSkin("ewogICJ0aW1lc3RhbXAiIDogMTYwNTgxOTU4MDMzNCwKICAicHJvZmlsZUlkIiA6ICI3NzI3ZDM1NjY5Zjk0MTUxODAyM2Q2MmM2ODE3NTkxOCIsCiAgInByb2ZpbGVOYW1lIiA6ICJsaWJyYXJ5ZnJlYWsiLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjk1ZjZmNTFiNTVmYWM1Njk2MzUxMDg5MDJjNzM3MTZiYWIxZWJiMzVmYjEwNzhkYmFhY2IyNmU1MWViZDJkYyIKICAgIH0KICB9Cn0=", "C6NYTcdg6fRlBE7HtWh8wEzx9/gutiItwldZHEBfqI/cQNesqyNBaYQDImrtTpIyAiivxsO6/dZkKDxUun7E+Fqq4TA17HpB4iq0tKxL1Mv6+mIPl4hlTnxdBgClh5G4qEEmJwwvajuYFJ8zMBMIte9pio1QuPyBC2C6efKILZ6XLHe89Bq+v/jCQ3DmdhEAFsYEPiQt5Xg+QOwGZJjNUnz3WwltuAHTZaAguFP1fw/NYM52YoM7sTYeCnAeqsp8q95wVyTZEC0Bp2Rr8lRfqJ0s1j8iAyZ+xSW33aouYClTsexmhFLxtAzV1r810NjA1m830GNWz0gUFMxdom98ezciAU+k3XpVAeRx63SdhSIrvGHtgQtAbk7TwYTDepwuCcIZgOk9I8HpoQyGtgTsUUlbVNv6ff17mNuA5YKMG45sw7BRrgnbIJJsXEKKT3WtQrBdHq9kR83u3kLj0FMwHP+yQRw7fwJHqcJUxlaVIlgPsl6JLCLZ1v9ueJkCSqXx9J/1WeqcFZWw5Bm25N/ukr7NPiFeKZNXquf85B8yE4zi+M970/iefRPULNYzMcJ2mPkRFJut/Fxu2p4dhSNthj3SE/WLt1fTEPfPf7VQtt24xSAMUx4AhI/uQI4/c9jlEPHRhhRAXktQ25qewUYtxREIZ3EbGrBq5+2wJFs7ano=");
+        Location sallySpawnLocation = new Location(world, 30.5, 32.0, 78.5, 0, 0);
+        Location sallyMoveLocation = new Location(world,  857.5, 71, 520.5, 180, 0); // TODO: Update
+        this.sally = new ShopVillagerInfo(this, "Sally", "&3&lManager Sally", sallySpawnLocation, sallyMoveLocation);
+        this.sally.setSkin("ewogICJ0aW1lc3RhbXAiIDogMTYzMTM2MTI0ODY4MiwKICAicHJvZmlsZUlkIiA6ICJiNTM5NTkyMjMwY2I0MmE0OWY5YTRlYmYxNmRlOTYwYiIsCiAgInByb2ZpbGVOYW1lIiA6ICJtYXJpYW5hZmFnIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlL2MyOGI0NzI5YzNkOTY3MWU2Yzk5NTJmY2E0OWE3MTQ4MDJlYmNjYThmNTFhMDViNWM1YWUzNjE3NDlkZDM4MTciLAogICAgICAibWV0YWRhdGEiIDogewogICAgICAgICJtb2RlbCIgOiAic2xpbSIKICAgICAgfQogICAgfQogIH0KfQ==", "moDohh37TrMNvWKjHjnIIn9xCTPkZZD0mcVI+3bNnU7rv1/lj3efKje+2ceQ5t46Kk9V/sVkmcn1qNfXRvBABe5FgbraXQFYDpc5O3JC6j8faqQZF4vm5rfKK2yT0PxR+KQnBKKe+WkiYVxeblaeY5oPLKtAD5GxDg+XbTPW0U8WNR3QEhV6AiE4RheXklEwkOi9gzzWnQ5iyCk8DlkQp2hnTJ4sZdnT2hECQRHjkPlevbYEPXZgIPysI1bkwxzSD1LqWK3aQPwDA5uaNoZn/nsjEgWO/rspwhc/5LMLuJbD8lG9WiZQm5Ra7S7C8hSunp3heurmWz5bjhwdHC+iq4XxWYsHx5A7QRiqJzFBrMo9zhe/E3Nm1F0xEh8DY9tp18UBy2FdijlJ+4KEHEHqgUoIearJYTO8zU4w1TJVbDiJS5DVK0mXkPrXIdNj2cgs+BclTjkU4O1jJzMnB3cJJgzdrrAcv27t7J93cnvOIrhQNFbCEjWApf60i+QnUMeM1DEE9OfTJ15vhOVJrmXq6+B2BSFaOz83DqRW+/wRzPRO6K6sW6CW75VckozFs8Ii9g8l7PpAqU6UW9V3c86nXBY6Donih45z/8Pgh8OPLjRbKN+7uuNUKbv4M2G9LH2qNo4St5e2S5ADHG8gFr0DRqtRZ9yKgHJvxNM8ZJmYPLI=");
+
+        Location jordanSpawnLocation = new Location(world, 30.5, 32.0, 82.5, 0, 0);
+        Location jordanMoveLocation = new Location(world,  857.5, 71, 520.5, 180, 0); // TODO: Update
+        this.jordan = new ShopVillagerInfo(this, "Jordan", "&3&lJordan", jordanSpawnLocation, jordanMoveLocation);
+        this.jordan.setSkin("ewogICJ0aW1lc3RhbXAiIDogMTYzMTM2NDU2NzQ5MiwKICAicHJvZmlsZUlkIiA6ICJiMGQ3MzJmZTAwZjc0MDdlOWU3Zjc0NjMwMWNkOThjYSIsCiAgInByb2ZpbGVOYW1lIiA6ICJPUHBscyIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9jOWUyNTMyZWEwZTEzM2UzOWRlMjdkMDg2ODBmNWY1OGY0MzUzMjRkNWIwYjE3ZDA1OGRjZTllOTM5NTkyYjI5IiwKICAgICAgIm1ldGFkYXRhIiA6IHsKICAgICAgICAibW9kZWwiIDogInNsaW0iCiAgICAgIH0KICAgIH0KICB9Cn0=", "PfdbDHERgDN6QSV313GmoxE7uCaOpKqnP5b/pSl9rDkTw5kKjM5Gqa8d+MuGwRSYQikcz0JJOURqVbDom/42z4jlDnC5M6Awrb4cpxif2vEoRfTNoGWJu/chMmZbIcVBZAYx0zu/m/+2+RWLrjE0mlgPNULXABkgSVS61qp6hfzc17V5CvRN1zpllsPK3B2phmW0SBoOZeFn0E26ETwtNBLu1QbRLxNN1xJe+pVAhKqeILpetcg/4AWoEn77zwCIXqjFq0T+sgwN31Tt0Fv0/70d7vmJ/nbWinY8a/VM8bSpe/EXoo7OTclJX46BMg3XOXDyLtKARJvK94bBp7ajN5VjwINwaYz39lQr4VnK9J0EcQ0yM7clmFnoe87GQMVbLbCs71eFmawnwnss/HIgzZyP40SGPMOm3ef4vdM7aK6qPksZ4siBu3oqxE2NSsURBc8p8LyNZTMc5KHbBt9jExev8iyXBLLOe/Ih1rOV34IYj27bd4L1Qf0swRTH/CW/ahtXflumZp+FrTFOw451KSzhgTaEv+SGv3ZETzja+L5hWWbEtNPoQao3iXTxdbo5APWsHyoaCbvJJuCRqEY4w3tF7WDp9ZoDsNwfd3do2xT7OwdN5h0vVuXo0Pe5SFyUYnkCTGe9JfHGi55+caHWSGlX9ySdmdRW3/IS9bTmI9s=");
     }
 
     @Override
     public void removeEntities() {
         if(this.sally != null){
             this.sally.close();
+        }
+        if(this.jordan != null){
+            this.jordan.close();
         }
     }
 
