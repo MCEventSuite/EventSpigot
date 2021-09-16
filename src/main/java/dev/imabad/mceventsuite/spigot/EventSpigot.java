@@ -159,7 +159,7 @@ public class EventSpigot extends JavaPlugin {
             commandMap.register("fly", new FlyCommand());
         }
         if(getServer().getPluginManager().isPluginEnabled("PlotSquared")) {
-            //EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BoothModule());
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BoothModule());
         } else {
             getServer().getPluginManager().registerEvents(new EventListener(), this);
             isEvent = true;
