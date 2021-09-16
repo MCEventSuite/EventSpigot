@@ -58,7 +58,7 @@ public class StageModule extends Module {
     EventSpigot.getInstance().getServer().getPluginManager().registerEvents(new StageListener(this), EventSpigot.getInstance());
     flagRegistry = WorldGuard.getInstance().getFlagRegistry();
     try {
-      isNightVision = RegionUtils.getOrRegisterFlag(new StateFlag("is-night-vision", true));
+      isNightVision = RegionUtils.getOrRegisterFlag(new StateFlag("is-night-vision", false));
       allowParticles = RegionUtils.getOrRegisterFlag(new StateFlag("allow-particles", true));
     } catch (Exception ignored) {
     }

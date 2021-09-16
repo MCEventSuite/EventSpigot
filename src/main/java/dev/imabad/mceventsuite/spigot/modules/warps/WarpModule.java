@@ -58,9 +58,11 @@ public class WarpModule extends Module implements Listener {
 
     @EventHandler
     public void onWorldLoad(WorldLoadEvent worldLoadEvent){
-        if(worldLoadEvent.getWorld().getName().equalsIgnoreCase("venue")){
+        if(worldLoadEvent.getWorld().getName().equalsIgnoreCase("world")){
             mainWorld = worldLoadEvent.getWorld();
-            generateWarpItems();
+            if (plots != null) {
+                generateWarpItems();
+            }
         }
     }
 
