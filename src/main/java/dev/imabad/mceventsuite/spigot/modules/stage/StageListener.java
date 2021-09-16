@@ -10,7 +10,9 @@ import com.mewin.WGRegionEvents.events.RegionEnterEvent;
 import com.mewin.WGRegionEvents.events.RegionEnteredEvent;
 import com.mewin.WGRegionEvents.events.RegionLeftEvent;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
+import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
+import dev.imabad.mceventsuite.spigot.utils.BungeeUtils;
 import dev.imabad.mceventsuite.spigot.utils.ItemUtils;
 import dev.imabad.mceventsuite.spigot.utils.RegionUtils;
 import net.kyori.adventure.text.Component;
@@ -65,6 +67,10 @@ public class StageListener implements Listener {
     module.removeSeat(event.getPlayer().getUniqueId());
   }
 
+  private boolean isKothServer() {
+    return EventCore.getInstance().getIdentifier() == "venue1";
+  }
+
   @EventHandler
   public void onEnterRegion(RegionEnteredEvent regionEnterEvent){
     boolean isNightVision = regionEnterEvent.getRegion().getFlag(StageModule.getIsNightVision()) == State.ALLOW || regionEnterEvent.getRegion().getFlag(StageModule.getIsNightVision()) == null;
@@ -84,10 +90,15 @@ public class StageListener implements Listener {
       Arrays.asList(CosmeticItemCategory.BALLOONS, CosmeticItemCategory.GADGETS, CosmeticItemCategory.PARTICLES, CosmeticItemCategory.TRAILS).forEach(category -> CosmeticManager.getInstance().getCurrentCosmeticItemByCategory(regionEnterEvent.getPlayer().getUniqueId(), category).ifPresent(cosmeticItem -> CosmeticManager.getInstance().removeCosmeticItem(cosmeticItem)));
     }
     if(regionEnterEvent.getRegionId().equalsIgnoreCase("KOTH")){
-      regionEnterEvent.getPlayer().getInventory().setItem(5, KNOCK_STICK);
-      EventSpigot.getInstance().getAudiences().player(regionEnterEvent.getPlayer()).sendMessage(
-          Component.text("You have entered king of the hill!").color(NamedTextColor.GREEN));
-    } else if(regionEnterEvent.getRegionId().equalsIgnoreCase("KOTH-TOP")){
+      if (this.isKothServer()) {
+        regionEnterEvent.getPlayer().getInventory().setItem(5, KNOCK_STICK);
+        EventSpigot.getInstance().getAudiences().player(regionEnterEvent.getPlayer()).sendMessage(
+                Component.text("You have entered king of the hill!").color(NamedTextColor.GREEN));
+      } else {
+        // Save location and teleport to correct server
+        BungeeUtils.sendToServer(regionEnterEvent.getPlayer(), "venue1");
+      }
+    } else if(regionEnterEvent.getRegionId().equalsIgnoreCase("KOTH-TOP") && this.isKothServer()){
       List<Player> playersOnTop = Bukkit.getOnlinePlayers().stream().filter(player -> RegionUtils.isInRegion(player, "KOTH-TOP")).collect(Collectors.toList());
       List<Player> playersInKOTH = Bukkit.getOnlinePlayers().stream().filter(player -> RegionUtils.isInRegion(player, "KOTH")).collect(Collectors.toList());
       if(playersOnTop.size() > 1){
@@ -106,6 +117,7 @@ public class StageListener implements Listener {
 
   @EventHandler
   public void onRegionLeave(RegionLeftEvent leftEvent){
+    if (!this.isKothServer()) return;
     if(leftEvent.getRegionId().equalsIgnoreCase("KOTH") && !RegionUtils.isInRegion(leftEvent.getPlayer(), "KOTH-TOP")){
       if(leftEvent.getPlayer().getInventory().getItem(5).getType().equals(Material.STICK)){
         leftEvent.getPlayer().getInventory().setItem(5, new ItemStack(Material.AIR));
@@ -131,6 +143,7 @@ public class StageListener implements Listener {
 
   @EventHandler
   public void onPluginEnable(PluginEnableEvent event){
+    if (!this.isKothServer()) return;
     if(event.getPlugin().getName().equalsIgnoreCase("HolographicDisplays")){
       Hologram hologram = HologramsAPI.createHologram(EventSpigot.getInstance(), new Location(Bukkit.getWorld("world"), 152.5, 31, 153.5));
       hologram.insertTextLine(0, ChatColor.GREEN + "NO BODY");
