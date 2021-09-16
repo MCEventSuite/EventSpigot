@@ -4,6 +4,7 @@ import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.modules.redis.RedisChannel;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
 import dev.imabad.mceventsuite.core.modules.redis.messages.players.ChangePlayerServerMessage;
+import dev.imabad.mceventsuite.spigot.utils.BungeeUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -25,20 +26,17 @@ public class SendToServerCommand extends BaseCommand{
             if(sender instanceof Player) {
                 Player player = (Player) sender;
                 String server = args[0];
-                EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).publishMessage(RedisChannel.GLOBAL, new ChangePlayerServerMessage(player.getUniqueId(), server));
+                BungeeUtils.sendToServer(player, server);
+                return true;
             }
-        }
-        if(args.length > 2){
-            return false;
-        }
-        if(sender.hasPermission("eventsuite.goserver.other")) {
+        } else if (args.length == 2 && sender.hasPermission("eventsuite.goserver.other")) {
             String username = args[0];
             String server = args[1];
             Player player = Bukkit.getPlayer(username);
             if (player == null) {
                 return false;
             }
-            EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).publishMessage(RedisChannel.GLOBAL, new ChangePlayerServerMessage(player.getUniqueId(), server));
+            BungeeUtils.sendToServer(player, server);
             audience(sender).sendMessage(Component.text("Sent to server."));
             return true;
         }

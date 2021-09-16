@@ -93,16 +93,14 @@ public class MapModule extends Module implements Listener {
 
     @EventHandler
     public void onWorldLoad(WorldLoadEvent worldLoadEvent){
-        if(worldLoadEvent.getWorld().getName().equalsIgnoreCase("venue")){
+        if(worldLoadEvent.getWorld().getName().equalsIgnoreCase("world")){
             mainWorld = worldLoadEvent.getWorld();
-            spawnLocations.add(new Location(mainWorld, 367, 71 ,380, 180, 0));
-            spawnLocations.add(new Location(mainWorld, 373, 71 ,380, 180, 0));
-            spawnLocations.add(new Location(mainWorld, 387, 71 ,380, 180, 0));
-            spawnLocations.add(new Location(mainWorld, 393, 71 ,380, 180, 0));
-            spawnLocations.add(new Location(mainWorld, 407, 71 ,380, 180, 0));
-            spawnLocations.add(new Location(mainWorld, 413, 71 ,380, 180, 0));
-            spawnLocations.add(new Location(mainWorld, 427, 71 ,380, 180, 0));
-            spawnLocations.add(new Location(mainWorld, 433, 71 ,380, 180, 0));
+            spawnLocations.add(new Location(mainWorld, 19.5, 19 ,-209.5, 180, 90));
+            spawnLocations.add(new Location(mainWorld, 19.5, 19 ,-204.5, 180, 90));
+            spawnLocations.add(new Location(mainWorld, 19.5, 19 ,-198.5, 180, 90));
+            spawnLocations.add(new Location(mainWorld, -18.5, 19 ,-209.5, 180, 90));
+            spawnLocations.add(new Location(mainWorld, -18.5, 19 ,-203.5, 180, 90));
+            spawnLocations.add(new Location(mainWorld, -18.5, 19 ,-198.5, 180, 90));
         }
     }
 

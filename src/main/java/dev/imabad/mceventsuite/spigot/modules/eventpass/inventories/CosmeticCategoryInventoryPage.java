@@ -44,6 +44,7 @@ public class CosmeticCategoryInventoryPage extends EventInventory {
 
     private EventPlayer eventPlayer;
     private EventPassPlayer eventPassPlayer;
+    private List<EventPassReward> unlockedRewards;
     private List<CosmeticItemCategory> cosmeticItemCategory;
 
     public CosmeticCategoryInventoryPage(Player player, EventPlayer eventPlayer, String category, List<CosmeticItemCategory> ciC) {
@@ -53,7 +54,13 @@ public class CosmeticCategoryInventoryPage extends EventInventory {
         this.eventPlayer = eventPlayer;
         this.eventPassPlayer = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(
                 EventPassDAO.class).getOrCreateEventPass(eventPlayer);
+        this.unlockedRewards = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(
+                EventPassDAO.class).getUnlockedRewards(eventPlayer);
         this.cosmeticItemCategory = ciC;
+    }
+
+    public boolean hasUnlocked(EventPassReward reward) {
+        return unlockedRewards.stream().anyMatch(reward1 -> reward1.getId().equals(reward.getId()));
     }
 
     @Override
@@ -73,7 +80,7 @@ public class CosmeticCategoryInventoryPage extends EventInventory {
                     break;
                 }
                 EventPassReward eventPassReward = rewardList.get(rewardIndex);
-                if(eventPassPlayer.levelFromXP() >= eventPassReward.getRequiredLevel()){
+                if(hasUnlocked(eventPassReward)){
                     CosmeticItemType cosmeticItemType = CosmeticItemType.valueOf(eventPassReward.getId());
                     ItemStack icon = cosmeticItemType.getIcon().clone();
                     ItemMeta meta = icon.getItemMeta();
