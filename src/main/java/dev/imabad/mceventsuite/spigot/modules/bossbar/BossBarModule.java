@@ -9,6 +9,7 @@ import dev.imabad.mceventsuite.spigot.modules.eventblocker.EventBlockerConfig;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
+import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.libs.org.eclipse.sisu.Nullable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -25,10 +26,9 @@ public class BossBarModule extends Module implements IConfigProvider, Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        Component name = Component.text(config.getText());
+        Component name = Component.text(ChatColor.translateAlternateColorCodes('&', config.getText()));
         BossBar fullBar = BossBar.bossBar(name, 1, BossBar.Color.BLUE, BossBar.Overlay.NOTCHED_20);
-        Audience player = EventSpigot.getInstance().getAudiences().player(e.getPlayer());
-        player.showBossBar(fullBar);
+        e.getPlayer().showBossBar(fullBar);
     }
 
     @Override
