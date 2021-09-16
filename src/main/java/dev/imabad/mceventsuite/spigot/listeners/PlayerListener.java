@@ -16,11 +16,13 @@ import dev.imabad.mceventsuite.spigot.interactions.Interaction;
 import dev.imabad.mceventsuite.spigot.interactions.InteractionRegistry;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
 import dev.imabad.mceventsuite.spigot.modules.player.PlayerHotbar;
+import dev.imabad.mceventsuite.spigot.utils.BungeeUtils;
 import dev.imabad.mceventsuite.spigot.utils.PermissibleInjector;
 import fr.neatmonster.nocheatplus.NCPAPIProvider;
 import fr.neatmonster.nocheatplus.checks.CheckType;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -32,6 +34,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Team;
 import org.geysermc.floodgate.api.FloodgateApi;
+
+import java.util.Optional;
 
 public class PlayerListener implements Listener {
 
@@ -86,10 +90,13 @@ public class PlayerListener implements Listener {
         for(PotionEffect potionEffect : playerJoinEvent.getPlayer().getActivePotionEffects()){
             playerJoinEvent.getPlayer().removePotionEffect(potionEffect.getType());
         }
-        playerJoinEvent.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 1, true, false, false));
-        if(!playerJoinEvent.getPlayer().hasPlayedBefore()) {
-            playerJoinEvent.getPlayer().teleport(EventCore.getInstance().getModuleRegistry().getModule(MapModule.class).getRandomLocation());
-        }
+
+        Optional<Location> lastLocation = BungeeUtils.getLastLocation(playerJoinEvent.getPlayer());
+        lastLocation.ifPresentOrElse(
+                (location) -> playerJoinEvent.getPlayer().teleport(location),
+                () -> playerJoinEvent.getPlayer().teleport(EventCore.getInstance().getModuleRegistry().getModule(MapModule.class).getRandomLocation())
+        );
+
         PlayerHotbar.givePlayerInventory(playerJoinEvent.getPlayer());
         EventPassPlayer eventPassPlayer = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).getOrCreateEventPass(player);
         playerJoinEvent.getPlayer().setLevel(eventPassPlayer.levelFromXP());
