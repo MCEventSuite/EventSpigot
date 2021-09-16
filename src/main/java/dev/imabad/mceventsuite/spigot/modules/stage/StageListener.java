@@ -68,7 +68,7 @@ public class StageListener implements Listener {
   }
 
   private boolean isKothServer() {
-    return EventCore.getInstance().getIdentifier() == "venue1";
+    return EventCore.getInstance().getIdentifier().equals("venue1");
   }
 
   @EventHandler
