@@ -219,7 +219,7 @@ public class EventSpigot extends JavaPlugin {
 
     public Scoreboard getScoreboard() {
         if(scoreboard == null){
-            scoreboard = getServer().getScoreboardManager().getNewScoreboard();
+            scoreboard = getServer().getScoreboardManager().getMainScoreboard();
         }
         return scoreboard;
     }

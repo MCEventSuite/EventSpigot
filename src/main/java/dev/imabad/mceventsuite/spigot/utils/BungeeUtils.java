@@ -18,6 +18,20 @@ public class BungeeUtils {
         redis.storeData("location-" + player.getUniqueId(), LocationHelper.serializeLocation(player.getLocation()));
     }
 
+    public static void saveServer(Player player){
+        RedisModule redis = EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class);
+            redis.storeData("server-" + player.getUniqueId(), EventCore.getInstance().getIdentifier());
+    }
+
+    public static void sendBack(Player player) {
+        RedisModule redis = EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class);
+        String server = redis.getData("server-" + player.getUniqueId());
+        if(server != null) {
+            redis.storeData("location-" + player.getUniqueId(), LocationHelper.serializeLocation(player.getLocation()));
+            redis.publishMessage(RedisChannel.GLOBAL, new ChangePlayerServerMessage(player.getUniqueId(), server));
+        }
+    }
+
     public static void sendToServer(Player player, String server) {
         Bukkit.getScheduler().runTaskAsynchronously(EventSpigot.getInstance(), () -> {
             BungeeUtils.saveLocationSynchronously(player);

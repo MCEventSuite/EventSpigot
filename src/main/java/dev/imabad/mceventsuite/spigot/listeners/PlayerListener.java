@@ -6,6 +6,8 @@ import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
 import dev.imabad.mceventsuite.core.modules.eventpass.EventPassModule;
 import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassDAO;
 import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassPlayer;
+import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassReward;
+import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassUnlockedReward;
 import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
 import dev.imabad.mceventsuite.core.modules.mysql.dao.PlayerDAO;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
@@ -36,7 +38,10 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Team;
 import org.geysermc.floodgate.api.FloodgateApi;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PlayerListener implements Listener {
 
@@ -104,7 +109,14 @@ public class PlayerListener implements Listener {
 
         PlayerHotbar.givePlayerInventory(playerJoinEvent.getPlayer());
         EventPassPlayer eventPassPlayer = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).getOrCreateEventPass(player);
+
         int level = eventPassPlayer.levelFromXP();
+        List<EventPassReward> unlockedRewards = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).getUnlockedRewards(player).stream().map(EventPassUnlockedReward::getUnlockedReward).collect(Collectors.toList());
+        List<EventPassReward> rewards = EventCore.getInstance().getModuleRegistry().getModule(EventPassModule.class).getEventPassRewards().stream().filter(eventPassReward -> eventPassReward.getRequiredLevel() > 0 && eventPassReward.getRequiredLevel() <= level && !unlockedRewards.contains(eventPassReward)).sorted(Comparator.comparingInt(EventPassReward::getRequiredLevel)).collect(Collectors.toList());
+        for(EventPassReward reward : rewards) {
+            EventPassUnlockedReward unlockedReward = new EventPassUnlockedReward(reward, player);
+            EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).saveUnlockedReward(unlockedReward);
+        }
         float progressToNext = (float) EventPassModule.experience(level) / (float) EventPassModule.experience(level + 1);
         playerJoinEvent.getPlayer().setLevel(level);
         playerJoinEvent.getPlayer().setExp(progressToNext);
@@ -130,6 +142,7 @@ public class PlayerListener implements Listener {
             }
             EventCore.getInstance().getEventPlayerManager().removePlayer(eventPlayer);
         });
+        BungeeUtils.saveLocationSynchronously(playerQuitEvent.getPlayer());
         playerQuitEvent.setQuitMessage("");
     }
 
