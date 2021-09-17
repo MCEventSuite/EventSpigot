@@ -19,8 +19,10 @@ public class KevinTrait extends Trait {
     @EventHandler
     public void click(net.citizensnpcs.api.event.NPCRightClickEvent event){
         if(event.getNPC() == this.getNPC()){
-            String textLine = voiceLines.get(new Random().nextInt(voiceLines.size()));
-            event.getClicker().sendMessage(event.getNPC().getName() + ": " + ChatColor.translateAlternateColorCodes('&', textLine));
+            if(voiceLines.size() > 0) {
+                String textLine = voiceLines.get(new Random().nextInt(voiceLines.size()));
+                event.getClicker().sendMessage(event.getNPC().getName() + ": " + ChatColor.translateAlternateColorCodes('&', textLine));
+            }
             event.setCancelled(true);
         }
     }

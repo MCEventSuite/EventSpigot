@@ -3,6 +3,7 @@ package dev.imabad.mceventsuite.spigot.listeners;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.events.JoinEvent;
 import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
+import dev.imabad.mceventsuite.core.modules.eventpass.EventPassModule;
 import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassDAO;
 import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassPlayer;
 import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
@@ -103,7 +104,10 @@ public class PlayerListener implements Listener {
 
         PlayerHotbar.givePlayerInventory(playerJoinEvent.getPlayer());
         EventPassPlayer eventPassPlayer = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).getOrCreateEventPass(player);
-        playerJoinEvent.getPlayer().setLevel(eventPassPlayer.levelFromXP());
+        int level = eventPassPlayer.levelFromXP();
+        float progressToNext = (float) EventPassModule.experience(level) / (float) EventPassModule.experience(level + 1);
+        playerJoinEvent.getPlayer().setLevel(level);
+        playerJoinEvent.getPlayer().setExp(progressToNext);
         playerJoinEvent.setJoinMessage("");
         if(FloodgateApi.getInstance().isFloodgatePlayer(playerJoinEvent.getPlayer().getUniqueId())){
             NCPAPIProvider.getNoCheatPlusAPI().getPlayerDataManager().getPlayerData(playerJoinEvent.getPlayer()).exempt(CheckType.ALL);

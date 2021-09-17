@@ -109,7 +109,10 @@ public class EventSpigot extends JavaPlugin {
                 if(EventCore.getInstance().getEventPlayerManager().hasPlayer(msg.getUuid())){
                     Player player = Bukkit.getPlayer(msg.getUuid());
                     if(player != null) {
-                        player.setLevel(msg.getNewLevel());
+                        int level = msg.getNewLevel();
+                        float progressToNext = (float) EventPassModule.experience(level) / (float) EventPassModule.experience(level + 1);
+                        player.setLevel(level);
+                        player.setExp(progressToNext);
                         getAudiences().player(player).playSound(Sound.sound(Key.key("minecraft:ui.toast.challenge_complete"), Sound.Source.AMBIENT, 1f, 1f));
                     }
                 }
