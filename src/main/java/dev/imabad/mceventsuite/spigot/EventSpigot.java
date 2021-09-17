@@ -27,6 +27,7 @@ import dev.imabad.mceventsuite.spigot.listeners.EventListener;
 import dev.imabad.mceventsuite.spigot.listeners.PlayerListener;
 import dev.imabad.mceventsuite.spigot.modules.bedrock.BedrockModule;
 import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
+import dev.imabad.mceventsuite.spigot.modules.bossbar.BossBarModule;
 import dev.imabad.mceventsuite.spigot.modules.daylight.DaylightModule;
 import dev.imabad.mceventsuite.spigot.modules.eventblocker.EventBlockModule;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.EventPassSpigotModule;
@@ -179,6 +180,7 @@ public class EventSpigot extends JavaPlugin {
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new StageModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new PlayerModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BedrockModule());
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BossBarModule());
         }
         permissionAttachments = new HashMap<>();
         unRegisterBukkitCommand(getCommand("ban"));
