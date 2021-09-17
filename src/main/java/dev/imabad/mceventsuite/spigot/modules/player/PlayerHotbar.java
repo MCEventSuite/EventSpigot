@@ -31,6 +31,7 @@ public class PlayerHotbar {
                     "&2pass.cubedcon.com\n");
 
     public static ItemStack NAVIGATION = ItemUtils.createItemStack(Material.COMPASS, "&cNavigation");
+    public static ItemStack DAYLIGHT_SETTINGS = ItemUtils.createItemStack(Material.CLOCK, "&cDaylight Settings");
     public static ItemStack HELP_GUIDE = ItemUtils.createBook("&9Help Guide", Collections.emptyList(), helpPages);
     public static ItemStack GADGETS = ItemUtils.createItemStack(Material.CHEST, "&aCosmetics");
 
@@ -39,6 +40,7 @@ public class PlayerHotbar {
         Inventory inventory = player.getInventory();
         inventory.setItem(0, NAVIGATION);
         inventory.setItem(1, HELP_GUIDE);
+        inventory.setItem(2, DAYLIGHT_SETTINGS);
         inventory.setItem(7, GADGETS);
         ItemStack EVENT_PASS = ItemUtils.createItemStack(Material.PAPER, "&e" + player.getName() + "'s Event Pass");
         inventory.setItem(8, EVENT_PASS);

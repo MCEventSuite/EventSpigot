@@ -8,6 +8,7 @@ import dev.imabad.mceventsuite.core.modules.redis.messages.players.AwardPlayerXP
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.commands.BaseCommand;
 import dev.imabad.mceventsuite.spigot.utils.RegionUtils;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;

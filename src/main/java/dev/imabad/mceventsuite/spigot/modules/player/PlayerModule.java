@@ -13,6 +13,7 @@ import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.interactions.Interaction;
 import dev.imabad.mceventsuite.spigot.interactions.InteractionRegistry;
+import dev.imabad.mceventsuite.spigot.modules.daylight.DaylightInventory;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.inventories.CosmeticsInventoryPage;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.inventories.EventPassInventoryPage;
 import dev.imabad.mceventsuite.spigot.modules.warps.inventories.WarpInventoryPage;
@@ -108,6 +109,9 @@ public class PlayerModule extends Module implements Listener {
         EventCore.getInstance().getEventPlayerManager().getPlayer(player.getUniqueId()).ifPresent( eventPlayer -> {
           new EventPassInventoryPage(player, eventPlayer, 0, 1, 25, 1).open(player, null);
         });
+      } else if(itemStack.getType().equals(PlayerHotbar.DAYLIGHT_SETTINGS.getType())) {
+        playerInteractEvent.setCancelled(true);
+        new DaylightInventory(player).open(player, null);
       }
     }
   }

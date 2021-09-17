@@ -37,6 +37,11 @@ public abstract class EventInventory {
         player.openInventory(inventory);
     }
 
+
+    public Player getPlayer() {
+        return player;
+    }
+
     protected abstract void populate();
 
     protected final void repopulate() {

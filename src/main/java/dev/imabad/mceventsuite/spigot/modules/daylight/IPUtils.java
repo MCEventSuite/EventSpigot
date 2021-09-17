@@ -12,6 +12,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.TimeZone;
 
+import dev.imabad.mceventsuite.core.EventCore;
+import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -20,8 +22,20 @@ import org.json.simple.JSONValue;
  */
 public class IPUtils {
 
-    //Stores the IP adress and a bunch of info about them
+    //Stores the IP address and a bunch of info about them
     static HashMap<String,JSONObject> ipStorage = new HashMap<String,JSONObject>();
+
+    public IPUtils() {
+    }
+
+    public JSONObject getFromRedis(String ip) {
+        return EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).getFromHash("ipData", ip, JSONObject.class);
+    }
+
+    public void storeInRedis(String ip, JSONObject data) {
+        EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).addToHash("ipData", ip, data);
+    }
+
     public static String ipToTime(String ip) throws MalformedURLException {
         //offset from UTC
         int offset = 0;
@@ -52,59 +66,7 @@ public class IPUtils {
 
         return String.valueOf(time + offsetHours);
     }
-    public static String getCityName(String ip) throws MalformedURLException {
-        JSONObject obj=null;
-        if (ipStorage.containsKey(ip)){
-            obj = ipStorage.get(ip);
-        } else {
-            String url = "http://api.ipinfodb.com/v3/ip-city/?key=d7859a91e5346872d0378a2674821fbd60bc07ed63684c3286c083198f024138&ip=[/url]"+ip+"&format=json";
-            JSONObject object = stringToJSON(getUrlSource(url));
-            obj = object;
-            ipStorage.put(ip,object);
-        }
-        return (String) obj.get("cityName");
-    }
-    public static String getStateName(String ip) throws MalformedURLException {
-        JSONObject obj=null;
-        if (ipStorage.containsKey(ip)){
-            obj = ipStorage.get(ip);
-        } else {
-            String url = "http://api.ipinfodb.com/v3/ip-city/?key=d7859a91e5346872d0378a2674821fbd60bc07ed63684c3286c083198f024138&ip=[/url]"+ip+"&format=json";
-            JSONObject object = stringToJSON(getUrlSource(url));
-            obj = object;
-            ipStorage.put(ip,object);
-        }
-        return (String) obj.get("regionName");
-    }
-    public static String getCountryName(String ip) throws MalformedURLException {
-        JSONObject obj=null;
-        if (ipStorage.containsKey(ip)){
-            obj = ipStorage.get(ip);
-        } else {
-            String url = "http://api.ipinfodb.com/v3/ip-city/?key=d7859a91e5346872d0378a2674821fbd60bc07ed63684c3286c083198f024138&ip=[/url]"+ip+"&format=json";
-            JSONObject object = stringToJSON(getUrlSource(url));
-            obj = object;
-            ipStorage.put(ip,object);
-        }
-        String country = (String) obj.get("countryName");
-        if (country.contains(",")){
-            country = country.split(",")[0];
-        }
-        return country;
-    }
-    public static String getCountryCode(String ip) throws MalformedURLException {
-        JSONObject obj=null;
-        if (ipStorage.containsKey(ip)){
-            obj = ipStorage.get(ip);
-        } else {
-            String url = "http://api.ipinfodb.com/v3/ip-city/?key=d7859a91e5346872d0378a2674821fbd60bc07ed63684c3286c083198f024138&ip=[/url]"+ip+"&format=json";
-            JSONObject object = stringToJSON(getUrlSource(url));
-            obj = object;
-            ipStorage.put(ip,object);
-        }
-        String country = (String) obj.get("countryCode");
-        return country;
-    }
+
     public static JSONObject stringToJSON(String json){
         return (JSONObject) JSONValue.parse(json);
     }

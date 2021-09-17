@@ -1,5 +1,6 @@
 package dev.imabad.mceventsuite.spigot.modules.daylight;
 
+import dev.imabad.mceventsuite.core.EventCore;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.entity.Player;
@@ -18,7 +19,9 @@ import java.util.logging.Level;
 
 public class DaylightModule extends Module implements Listener {
 
-    Map<Player, TimeType> playerTime = new LinkedHashMap<>();
+    private static final int UTC_AWAY = (5 * (1000 * 60 * 60));
+
+    Map<UUID, TimeType> playerTime = new LinkedHashMap<>();
 
     //Runs every so often
     BukkitRunnable runnable = new BukkitRunnable() {
@@ -37,8 +40,10 @@ public class DaylightModule extends Module implements Listener {
      */
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        if (!playerTime.containsKey(e.getPlayer()))
-            playerTime.put(e.getPlayer(), TimeType.UTC);
+        EventCore.getInstance().getEventPlayerManager().getPlayer(e.getPlayer().getUniqueId()).ifPresent(player -> {
+            TimeType timeType = TimeType.valueOf(player.getStringProperty("time"));
+            playerTime.put(e.getPlayer().getUniqueId(), timeType);
+        });
         setTime(e.getPlayer());
     }
 
@@ -54,11 +59,11 @@ public class DaylightModule extends Module implements Listener {
         String time = "0";
 
         //Checks if we're using local times
-        if (!playerTime.containsKey(player)) {
-            playerTime.put(player, TimeType.UTC);
+        if (!playerTime.containsKey(player.getUniqueId())) {
+            playerTime.put(player.getUniqueId(), TimeType.UTC);
         }
-        if (!playerTime.get(player).equals(TimeType.MINECRAFT)) {
-            if (playerTime.get(player).equals(TimeType.LOCAL)) {
+        if (!playerTime.get(player.getUniqueId()).equals(TimeType.MINECRAFT)) {
+            if (playerTime.get(player.getUniqueId()).equals(TimeType.LOCAL)) {
                 changeable = true;
                 try {
                     time = IPUtils.ipToTime(Objects.requireNonNull(player.getAddress()).getHostString());
@@ -69,22 +74,21 @@ public class DaylightModule extends Module implements Listener {
                 //If IPUtils has any issues, notify console, and use global time.
                 if (time.startsWith("Error")) {
                     EventSpigot.getInstance().getLogger().log(Level.WARNING, "[DaylightModule] " + time + " for " + player.getAddress().getHostString());
-                    playerTime.remove(player);
-                    playerTime.put(player, TimeType.UTC);
+                    playerTime.put(player.getUniqueId(), TimeType.UTC);
                 }
             }
             //If global times are enabled, get the time
-            if (playerTime.get(player).equals(TimeType.UTC)) {
+            if (playerTime.get(player.getUniqueId()).equals(TimeType.UTC)) {
                 changeable = true;
-                time = String.valueOf(System.currentTimeMillis());
+                time = String.valueOf(System.currentTimeMillis() - UTC_AWAY);
             }
             //Convert real life timestamp to ticks and set user's time
             if (changeable)
                 serverTime = 18000 + (Long.parseLong(time) / (60 * 60));
 
             else {
-                if (playerTime.get(player).equals(TimeType.ALWAYS_DAY)) serverTime = 6000;
-                else if (playerTime.get(player).equals(TimeType.ALWAYS_NIGHT)) serverTime = 18000;
+                if (playerTime.get(player.getUniqueId()).equals(TimeType.ALWAYS_DAY)) serverTime = 6000;
+                else if (playerTime.get(player.getUniqueId()).equals(TimeType.ALWAYS_NIGHT)) serverTime = 18000;
             }
             player.setPlayerTime(serverTime, false);
         }
@@ -105,7 +109,6 @@ public class DaylightModule extends Module implements Listener {
      */
     @Override
     public void onEnable() {
-        EventSpigot.getInstance().getLogger().log(Level.WARNING, "It worked!");
         runnable.runTaskTimer(EventSpigot.getInstance(), 0, 20 * 60);
         EventSpigot.getInstance().getServer().getPluginManager().registerEvents(this, EventSpigot.getInstance());
         EventSpigot.getInstance().getCommandMap().register("daylight", new DaylightCommand());
@@ -135,8 +138,10 @@ public class DaylightModule extends Module implements Listener {
     }
 
     public void setPlayerTime(Player player, TimeType type) {
-        playerTime.remove(player);
-        playerTime.put(player, type);
+        playerTime.put(player.getUniqueId(), type);
+        EventCore.getInstance().getEventPlayerManager().getPlayer(player.getUniqueId()).ifPresent(player1 -> {
+            player1.setProperty("time", type.name());
+        });
         setTime(player);
     }
 }
