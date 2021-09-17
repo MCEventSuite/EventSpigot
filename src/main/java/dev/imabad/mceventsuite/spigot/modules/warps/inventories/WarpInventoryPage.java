@@ -1,12 +1,14 @@
 package dev.imabad.mceventsuite.spigot.modules.warps.inventories;
 
 import dev.imabad.mceventsuite.core.EventCore;
-import dev.imabad.mceventsuite.core.api.objects.EventBoothPlot;
 import dev.imabad.mceventsuite.spigot.api.EventInventory;
 import dev.imabad.mceventsuite.spigot.modules.warps.WarpCategory;
 import dev.imabad.mceventsuite.spigot.modules.warps.WarpItem;
 import dev.imabad.mceventsuite.spigot.modules.warps.WarpModule;
+import dev.imabad.mceventsuite.spigot.utils.ItemUtils;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -31,8 +33,13 @@ public class WarpInventoryPage extends EventInventory {
     @Override
     protected void populate() {
         warpItemHashMap.clear();
-        List<WarpItem> warpItems = EventCore.getInstance().getModuleRegistry().getModule(WarpModule.class).getWarpItems();
-        if(filter != WarpCategory.ALL){
+        List<WarpItem> warpItems = new ArrayList(EventCore.getInstance().getModuleRegistry().getModule(WarpModule.class).getWarpItems());
+        if (filter == WarpCategory.ALL) {
+            // Don't show small booths which may overflow - instead show a quick
+            // link to the small booths page
+            warpItems = warpItems.stream().filter(warpItem -> warpItem.getCategory() != WarpCategory.SMALL).collect(Collectors.toCollection(ArrayList::new));
+            this.inventory.setItem(19, ItemUtils.createItemStack(Material.GREEN_CONCRETE, ChatColor.BLUE + "" + ChatColor.BOLD + "Small Booths"));
+        } else {
             warpItems = warpItems.stream().filter(warpItem -> warpItem.getCategory() == filter).collect(Collectors.toCollection(ArrayList::new));
         }
         int prevLineNumber = 0;
@@ -66,6 +73,10 @@ public class WarpInventoryPage extends EventInventory {
             } else {
                 filter = WarpCategory.values()[filter.ordinal() + 1];
             }
+            repopulate();
+            return true;
+        } else if (slot == 19) {
+            filter = WarpCategory.SMALL;
             repopulate();
             return true;
         } else if(warpItemHashMap.containsKey(slot)) {

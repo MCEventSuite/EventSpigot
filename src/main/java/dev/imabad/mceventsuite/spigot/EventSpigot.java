@@ -28,6 +28,7 @@ import dev.imabad.mceventsuite.spigot.listeners.PlayerListener;
 import dev.imabad.mceventsuite.spigot.modules.bedrock.BedrockModule;
 import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
 import dev.imabad.mceventsuite.spigot.modules.bossbar.BossBarModule;
+import dev.imabad.mceventsuite.spigot.modules.daylight.DaylightModule;
 import dev.imabad.mceventsuite.spigot.modules.eventblocker.EventBlockModule;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.EventPassSpigotModule;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
@@ -168,6 +169,7 @@ public class EventSpigot extends JavaPlugin {
         }
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new MapModule());
         if(isEvent){
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new DaylightModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new WarpModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new ShopsModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new StaffTrackModule());

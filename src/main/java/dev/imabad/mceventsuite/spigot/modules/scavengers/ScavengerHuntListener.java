@@ -49,7 +49,7 @@ public class ScavengerHuntListener implements Listener {
             List<Location> locations = module.getLocations(venue);
             EventSpigot.getInstance().getServer().getScheduler().runTaskTimer(EventSpigot.getInstance(), () -> {
                 for (Location location : locations) {
-                    venue.spawnParticle(Particle.SPELL_INSTANT, location.clone().add(0.5, 0.5, 0.5), 5);
+                    venue.spawnParticle(Particle.VILLAGER_HAPPY, location.clone().add(0.5, 0.5, 0.5), 5);
                 }
             }, 0, 5 * 20);
         }

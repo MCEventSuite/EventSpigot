@@ -24,6 +24,8 @@ import dev.imabad.mceventsuite.core.modules.mysql.dao.BoothDAO;
 import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.modules.map.commands.*;
+import net.kyori.adventure.platform.bukkit.MinecraftComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minecraft.server.v1_16_R3.Block;
 import net.minecraft.server.v1_16_R3.BlockPosition;
 import net.minecraft.server.v1_16_R3.IBlockData;
@@ -95,12 +97,12 @@ public class MapModule extends Module implements Listener {
     public void onWorldLoad(WorldLoadEvent worldLoadEvent){
         if(worldLoadEvent.getWorld().getName().equalsIgnoreCase("world")){
             mainWorld = worldLoadEvent.getWorld();
-            spawnLocations.add(new Location(mainWorld, 19.5, 19 ,-209.5, 180, 90));
-            spawnLocations.add(new Location(mainWorld, 19.5, 19 ,-204.5, 180, 90));
-            spawnLocations.add(new Location(mainWorld, 19.5, 19 ,-198.5, 180, 90));
-            spawnLocations.add(new Location(mainWorld, -18.5, 19 ,-209.5, 180, 90));
-            spawnLocations.add(new Location(mainWorld, -18.5, 19 ,-203.5, 180, 90));
-            spawnLocations.add(new Location(mainWorld, -18.5, 19 ,-198.5, 180, 90));
+            spawnLocations.add(new Location(mainWorld, 19.5, 19 ,-209.5, 90, 0));
+            spawnLocations.add(new Location(mainWorld, 19.5, 19 ,-204.5, 90, 0));
+            spawnLocations.add(new Location(mainWorld, 19.5, 19 ,-198.5, 90, 0));
+            spawnLocations.add(new Location(mainWorld, -18.5, 19 ,-209.5, -90, 0));
+            spawnLocations.add(new Location(mainWorld, -18.5, 19 ,-203.5, -90, 0));
+            spawnLocations.add(new Location(mainWorld, -18.5, 19 ,-198.5, -90, 0));
         }
     }
 
