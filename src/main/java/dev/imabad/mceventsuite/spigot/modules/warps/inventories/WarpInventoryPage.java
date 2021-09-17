@@ -38,7 +38,7 @@ public class WarpInventoryPage extends EventInventory {
             // Don't show small booths which may overflow - instead show a quick
             // link to the small booths page
             warpItems = warpItems.stream().filter(warpItem -> warpItem.getCategory() != WarpCategory.SMALL).collect(Collectors.toCollection(ArrayList::new));
-            this.inventory.setItem(19, ItemUtils.createItemStack(Material.YELLOW_CONCRETE, ChatColor.BLUE + "" + ChatColor.BOLD + "Small Booths"));
+            this.inventory.setItem(19, ItemUtils.createItemStack(Material.GREEN_CONCRETE, ChatColor.BLUE + "" + ChatColor.BOLD + "Small Booths"));
         } else {
             warpItems = warpItems.stream().filter(warpItem -> warpItem.getCategory() == filter).collect(Collectors.toCollection(ArrayList::new));
         }
