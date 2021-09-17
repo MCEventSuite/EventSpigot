@@ -10,7 +10,10 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
 import org.bukkit.craftbukkit.libs.org.eclipse.sisu.Nullable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -21,15 +24,15 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import java.util.Collections;
 import java.util.List;
 
-public class BossBarModule extends Module implements IConfigProvider, Listener {
+public class BossBarModule extends Module implements IConfigProvider<BossBarConfig>, Listener {
 
     private BossBarConfig config;
+    private org.bukkit.boss.BossBar bossBar;
+    private int current = 0;
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        Component name = LegacyComponentSerializer.legacyAmpersand().deserialize(config.getText());
-        BossBar fullBar = BossBar.bossBar(name, 1, BossBar.Color.BLUE, BossBar.Overlay.NOTCHED_20);
-        e.getPlayer().showBossBar(fullBar);
+        bossBar.addPlayer(e.getPlayer());
     }
 
     @Override
@@ -39,8 +42,16 @@ public class BossBarModule extends Module implements IConfigProvider, Listener {
 
     @Override
     public void onEnable() {
+        bossBar = Bukkit.createBossBar(ChatColor.translateAlternateColorCodes('&', config.getText().get(current)), BarColor.BLUE, BarStyle.SEGMENTED_20);
+        EventSpigot.getInstance().getServer().getScheduler().runTaskTimer(EventSpigot.getInstance(), () -> {
+            if(current + 1 > (config.getText().size() - 1)){
+                current = 0;
+            } else {
+                current++;
+            }
+            bossBar.setTitle(ChatColor.translateAlternateColorCodes('&', config.getText().get(current)));
+        }, 10 * 20, 10 * 20);
         EventSpigot.getInstance().getServer().getPluginManager().registerEvents(this, EventSpigot.getInstance());
-
     }
 
     @Override
@@ -69,8 +80,8 @@ public class BossBarModule extends Module implements IConfigProvider, Listener {
     }
 
     @Override
-    public void loadConfig(BaseConfig config) {
-        this.config = (BossBarConfig)config;
+    public void loadConfig(BossBarConfig config) {
+        this.config = config;
     }
 
     @Override

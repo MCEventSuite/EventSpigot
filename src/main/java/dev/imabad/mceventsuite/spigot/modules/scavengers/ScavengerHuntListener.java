@@ -44,14 +44,6 @@ public class ScavengerHuntListener implements Listener {
     }
     @EventHandler
     public void onWorldLoad(WorldLoadEvent worldLoadEvent) {
-        if (worldLoadEvent.getWorld().getName().equalsIgnoreCase("world")) {
-            World venue = worldLoadEvent.getWorld();
-            List<Location> locations = module.getLocations(venue);
-            EventSpigot.getInstance().getServer().getScheduler().runTaskTimer(EventSpigot.getInstance(), () -> {
-                for (Location location : locations) {
-                    venue.spawnParticle(Particle.VILLAGER_HAPPY, location.clone().add(0.5, 0.5, 0.5), 5);
-                }
-            }, 0, 5 * 20);
-        }
+
     }
 }

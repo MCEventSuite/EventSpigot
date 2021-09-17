@@ -45,7 +45,7 @@ dependencies {
     compileOnly("net.citizensnpcs:citizens:2.0.27-SNAPSHOT")
     compileOnly 'com.mewin:WGRegionEvents:1.4'
     compileOnly 'com.gmail.filoghost.holographicdisplays:holographicdisplays-api:2.4.0'
-    implementation 'dev.imabad.mceventsuite:cubedcosmetics:1.0'
+    compileOnly 'dev.imabad.mceventsuite:cubedcosmetics:1.0'
     compileOnly 'org.geysermc.floodgate:api:2.0-SNAPSHOT'
     compileOnly 'fr.neatmonster:nocheatplus:3.16.1-SNAPSHOT'
     compileOnly "com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT"

@@ -2,16 +2,18 @@ package dev.imabad.mceventsuite.spigot.modules.bossbar;
 
 import dev.imabad.mceventsuite.core.api.BaseConfig;
 
+import java.util.List;
+
 public class BossBarConfig extends BaseConfig {
 
-    private String text;
+    private List<String> texts;
 
     @Override
     public String getName() {
         return "bossbar";
     }
 
-    public String getText() {
-        return text;
+    public List<String> getText() {
+        return texts;
     }
 }

@@ -19,7 +19,7 @@ import java.util.logging.Level;
 
 public class DaylightModule extends Module implements Listener {
 
-    private static final int UTC_AWAY = (5 * (1000 * 60 * 60));
+    private static final int UTC_AWAY = (5 * (1000 * (60 * 60)));
 
     Map<UUID, TimeType> playerTime = new LinkedHashMap<>();
 
@@ -41,7 +41,8 @@ public class DaylightModule extends Module implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         EventCore.getInstance().getEventPlayerManager().getPlayer(e.getPlayer().getUniqueId()).ifPresent(player -> {
-            TimeType timeType = TimeType.valueOf(player.getStringProperty("time"));
+            String property = Optional.ofNullable(player.getStringProperty("time")).orElse(TimeType.UTC.name());
+            TimeType timeType = TimeType.valueOf(property);
             playerTime.put(e.getPlayer().getUniqueId(), timeType);
         });
         setTime(e.getPlayer());
@@ -112,7 +113,6 @@ public class DaylightModule extends Module implements Listener {
         runnable.runTaskTimer(EventSpigot.getInstance(), 0, 20 * 60);
         EventSpigot.getInstance().getServer().getPluginManager().registerEvents(this, EventSpigot.getInstance());
         EventSpigot.getInstance().getCommandMap().register("daylight", new DaylightCommand());
-        EventSpigot.getInstance().getCommand("daylight").setTabCompleter(new DaylightCommand());
     }
 
     /**

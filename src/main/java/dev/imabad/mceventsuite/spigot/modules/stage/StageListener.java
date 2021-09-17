@@ -73,18 +73,6 @@ public class StageListener implements Listener {
 
   @EventHandler
   public void onEnterRegion(RegionEnteredEvent regionEnterEvent){
-    boolean isNightVision = regionEnterEvent.getRegion().getFlag(StageModule.getIsNightVision()) == State.ALLOW || regionEnterEvent.getRegion().getFlag(StageModule.getIsNightVision()) == null;
-    if(isNightVision){
-      if(regionEnterEvent.getPlayer().getActivePotionEffects().stream().noneMatch(potionEffect -> potionEffect.getType().equals(
-          PotionEffectType.NIGHT_VISION))){
-          regionEnterEvent.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 1, true, false, false));
-      }
-    } else {
-      if(regionEnterEvent.getPlayer().getActivePotionEffects().stream().anyMatch(potionEffect -> potionEffect.getType().equals(
-          PotionEffectType.NIGHT_VISION))) {
-        regionEnterEvent.getPlayer().removePotionEffect(PotionEffectType.NIGHT_VISION);
-      }
-    }
     boolean isAllowParticles = regionEnterEvent.getRegion().getFlag(StageModule.getAllowParticles()) == State.ALLOW || regionEnterEvent.getRegion().getFlag(StageModule.getAllowParticles()) == null;
     if(!isAllowParticles){
       Arrays.asList(CosmeticItemCategory.BALLOONS, CosmeticItemCategory.GADGETS, CosmeticItemCategory.PARTICLES, CosmeticItemCategory.TRAILS).forEach(category -> CosmeticManager.getInstance().getCurrentCosmeticItemByCategory(regionEnterEvent.getPlayer().getUniqueId(), category).ifPresent(cosmeticItem -> CosmeticManager.getInstance().removeCosmeticItem(cosmeticItem)));

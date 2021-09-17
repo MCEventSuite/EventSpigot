@@ -2,6 +2,7 @@ package dev.imabad.mceventsuite.spigot.modules.scavengers;
 
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.modules.Module;
+import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.core.modules.scavenger.ScavengerModule;
 import dev.imabad.mceventsuite.core.modules.scavenger.db.ScavengerLocation;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
@@ -23,13 +24,27 @@ public class ScavengerHuntSpigotModule extends Module {
         return "scavengerhuntspigot";
     }
 
+    private List<Location> actualLocations;
+
     @Override
     public void onEnable() {
         scavengerModule = EventCore.getInstance().getModuleRegistry().getModule(ScavengerModule.class);
         EventSpigot.getInstance().getServer().getPluginManager().registerEvents(new ScavengerHuntListener(this), EventSpigot.getInstance());
-        World venue = Bukkit.getWorld("world");
-        if(venue != null) {
-        }
+        EventCore.getInstance().getEventRegistry().registerListener(MySQLLoadedEvent.class, mySQLLoadedEvent -> {
+            World venue = Bukkit.getWorld("world");
+            System.out.println("Mysql loaded, getting locations");
+            if(venue != null) {
+                System.out.println("Venue is loaded.");
+                EventSpigot.getInstance().getServer().getScheduler().runTaskTimer(EventSpigot.getInstance(), () -> {
+                    List<Location> locations = getLocations(venue);
+                    if(locations == null)
+                        return;
+                    for (Location location : locations) {
+                        venue.spawnParticle(Particle.VILLAGER_HAPPY, location.clone().add(0.5, 0.5, 0.5), 5);
+                    }
+                }, 0, 5 * 20);
+            }
+        });
     }
 
     @Override
@@ -38,7 +53,14 @@ public class ScavengerHuntSpigotModule extends Module {
     }
 
     public List<Location> getLocations(World world){
-        return scavengerModule.getLocations().stream().map(location -> new Location(world, location.getX(), location.getY(), location.getZ())).collect(Collectors.toList());
+        if(actualLocations != null){
+            return actualLocations;
+        }
+        if(scavengerModule.getLocations() == null){
+            return null;
+        }
+        actualLocations = scavengerModule.getLocations().stream().map(location -> new Location(world, location.getX(), location.getY(), location.getZ())).collect(Collectors.toList());
+        return actualLocations;
     }
 
     public Optional<ScavengerLocation> getFromLocation(Location location) {

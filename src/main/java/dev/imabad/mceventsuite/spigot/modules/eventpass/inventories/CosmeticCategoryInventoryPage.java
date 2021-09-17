@@ -9,6 +9,7 @@ import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
 import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassDAO;
 import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassPlayer;
 import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassReward;
+import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassUnlockedReward;
 import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.api.EventInventory;
@@ -44,7 +45,7 @@ public class CosmeticCategoryInventoryPage extends EventInventory {
 
     private EventPlayer eventPlayer;
     private EventPassPlayer eventPassPlayer;
-    private List<EventPassReward> unlockedRewards;
+    private List<EventPassUnlockedReward> unlockedRewards;
     private List<CosmeticItemCategory> cosmeticItemCategory;
 
     public CosmeticCategoryInventoryPage(Player player, EventPlayer eventPlayer, String category, List<CosmeticItemCategory> ciC) {
@@ -60,7 +61,7 @@ public class CosmeticCategoryInventoryPage extends EventInventory {
     }
 
     public boolean hasUnlocked(EventPassReward reward) {
-        return unlockedRewards.stream().anyMatch(reward1 -> reward1.getId().equals(reward.getId()));
+        return unlockedRewards.stream().anyMatch(reward1 -> reward1.getUnlockedReward().getId().equals(reward.getId()));
     }
 
     @Override
@@ -73,7 +74,7 @@ public class CosmeticCategoryInventoryPage extends EventInventory {
         inventory.setItem(53, INFO);
         int rows = (int) Math.ceil(rewardList.size() / 7f);
         for(int i = 0; i < rows; i++){
-            int rowStart = 10 + (i * 9);
+            int rowStart = (category.equals("Clothing") ? 1 : 10) + (i * 9);
             for(int x = 0; x < 7; x++){
                 int rewardIndex = (i*7) + x;
                 if(rewardIndex >= rewardList.size()){
