@@ -84,18 +84,20 @@ public class WarpModule extends Module implements Listener {
             }
             warpItems.add(new WarpItem(name, item, l, fi));
         }
-        ItemStack STAGE_ITEM = ItemUtils.createItemStack(Material.NETHER_STAR, "&r&9&lStage");
-        warpItems.add(new WarpItem("Stage", STAGE_ITEM, new Location(world, 926,71, 529, -180, 0), WarpCategory.OTHER));
-        ItemStack GAMES_ITEM = ItemUtils.createItemStack(Material.TRIDENT, "&r&9&lGames");
-        warpItems.add(new WarpItem("Games", GAMES_ITEM, new Location(world, 977, 72, 535), WarpCategory.OTHER));
-        ItemStack STICKY_PISTON = ItemUtils.createItemStack(Material.STICKY_PISTON, "&r&a&lStickyPiston");
-        warpItems.add(new WarpItem("StickyPiston", STICKY_PISTON, new Location(world, 862, 66, 580, -80, 0), WarpCategory.OTHER));
         ItemStack ENTRANCE = ItemUtils.createItemStack(Material.OAK_DOOR, "&r&9&lEntrance");
-        warpItems.add(new WarpItem("Entrance", ENTRANCE, new Location(world, 408, 78, 538), WarpCategory.OTHER));
-        ItemStack STATION = ItemUtils.createItemStack(Material.MINECART, "&r&9&lStation");
-        warpItems.add(new WarpItem("Station", STATION, new Location(world, 409, 78, 374), WarpCategory.OTHER));
-        ItemStack MINIGAMEMASH = ItemUtils.createItemStack(Material.CROSSBOW, "&r&9&lMinigame Mash");
-        warpItems.add(new WarpItem("Minigame Mash", MINIGAMEMASH, new Location(world, 558, 66, 569), WarpCategory.OTHER));
+        warpItems.add(new WarpItem("Entrance", ENTRANCE, new Location(world, 1, 30, -99), WarpCategory.OTHER));
+        ItemStack EXPO_HALL = ItemUtils.createItemStack(Material.YELLOW_WOOL, "&r&9&lExpo Hall");
+        warpItems.add(new WarpItem("Expo Hall", EXPO_HALL, new Location(world, 18, 30, 153, -90, 0), WarpCategory.OTHER));
+        ItemStack STAGE_ITEM = ItemUtils.createItemStack(Material.NETHER_STAR, "&r&9&lMain Stage");
+        warpItems.add(new WarpItem("Main Stage", STAGE_ITEM, new Location(world, -27,30, 169, 21, 0), WarpCategory.OTHER));
+        ItemStack OUTDOOR_STAGE_ITEM = ItemUtils.createItemStack(Material.JUKEBOX, "&r&9&lOutdoor Stage");
+        warpItems.add(new WarpItem("Outdoor Stage", OUTDOOR_STAGE_ITEM, new Location(world, -75,30, 147, 90, 0), WarpCategory.OTHER));
+        ItemStack GAMES_ITEM = ItemUtils.createItemStack(Material.STICKY_PISTON, "&r&9&lStickyPiston Arcade Games");
+        warpItems.add(new WarpItem("StickyPiston Arcade Games", GAMES_ITEM, new Location(world, -45, 30, 23, 90, 0), WarpCategory.OTHER));
+        ItemStack STICKY_PISTON = ItemUtils.createItemStack(Material.OAK_BOAT, "&r&a&lVIP Yacht");
+        warpItems.add(new WarpItem("VIP Yacht", STICKY_PISTON, new Location(world, -206, 28, 279, 120, 0), WarpCategory.OTHER));
+        ItemStack STATION = ItemUtils.createItemStack(Material.GRASS, "&r&9&lBiome Tour Experience");
+        warpItems.add(new WarpItem("Biome Tour Experience", STATION, new Location(world, 42, 30, 12, -140, 0), WarpCategory.OTHER));
     }
 
     public List<WarpItem> getWarpItems() {
