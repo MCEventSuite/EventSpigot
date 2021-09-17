@@ -75,7 +75,7 @@ public class WarpInventoryPage extends EventInventory {
             }
             repopulate();
             return true;
-        } else if (slot == 19) {
+        } else if (slot == 19 && filter == WarpCategory.ALL) {
             filter = WarpCategory.SMALL;
             repopulate();
             return true;
