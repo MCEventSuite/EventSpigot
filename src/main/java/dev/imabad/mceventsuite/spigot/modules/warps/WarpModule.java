@@ -95,7 +95,7 @@ public class WarpModule extends Module implements Listener {
         ItemStack GAMES_ITEM = ItemUtils.createItemStack(Material.STICKY_PISTON, "&r&9&lStickyPiston Arcade Games");
         warpItems.add(new WarpItem("StickyPiston Arcade Games", GAMES_ITEM, new Location(world, -45, 30, 23, 90, 0), WarpCategory.OTHER));
         ItemStack STICKY_PISTON = ItemUtils.createItemStack(Material.OAK_BOAT, "&r&a&lVIP Yacht");
-        warpItems.add(new WarpItem("VIP Yacht", STICKY_PISTON, new Location(world, -206, 28, 279, 120, 0), WarpCategory.OTHER));
+        warpItems.add(new WarpItem("VIP Yacht", STICKY_PISTON, new Location(world, -206, 30, 298, 180, 0), WarpCategory.OTHER));
         ItemStack STATION = ItemUtils.createItemStack(Material.GRASS, "&r&9&lBiome Tour Experience");
         warpItems.add(new WarpItem("Biome Tour Experience", STATION, new Location(world, 42, 30, 12, -140, 0), WarpCategory.OTHER));
     }
