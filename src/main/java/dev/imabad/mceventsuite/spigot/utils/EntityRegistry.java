@@ -6,12 +6,10 @@ import com.google.common.collect.ImmutableSet;
 import dev.imabad.mceventsuite.spigot.api.EventInventory;
 import dev.imabad.mceventsuite.spigot.entities.EntityTypes;
 import dev.imabad.mceventsuite.spigot.entities.VillagerNPC;
-import net.minecraft.server.v1_16_R3.Activity;
-import net.minecraft.server.v1_16_R3.EntityVillager;
+import net.minecraft.world.entity.schedule.Activity;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_16_R3.entity.CraftVillager;
+import org.bukkit.craftbukkit.v1_18_R2.entity.CraftVillager;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -32,13 +30,10 @@ public class EntityRegistry {
 
     public static Villager registerVillager(Location location, String name) {
         Villager villager = (Villager) location.getWorld().spawnEntity(location, EntityType.VILLAGER);
-        Bukkit.getMobGoals().removeAllGoals(villager);
-        EntityVillager entityVillager = ((CraftVillager)villager).getHandle();
-        entityVillager.getBehaviorController().a(ImmutableSet.of(Activity.IDLE));
-        entityVillager.getBehaviorController().a(Collections.emptyList());
-        entityVillager.getBehaviorController().a(Activity.IDLE);
-        entityVillager.getBehaviorController().b(Activity.IDLE);
-        entityVillager.getBehaviorController().a(0, 0);
+//        Bukkit.getMobGoals().removeAllGoals(villager);
+        net.minecraft.world.entity.npc.Villager entityVillager = ((CraftVillager)villager).getHandle();
+        entityVillager.getBrain().setDefaultActivity(Activity.IDLE);
+        entityVillager.getBrain().setCoreActivities(ImmutableSet.of(Activity.IDLE));
         villager.setAdult();
         villager.setBreed(false);
         villager.setCustomName(StringUtils.colorizeMessage(name));

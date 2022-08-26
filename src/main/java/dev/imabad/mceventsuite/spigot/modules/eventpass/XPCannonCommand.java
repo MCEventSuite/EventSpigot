@@ -46,78 +46,78 @@ public class XPCannonCommand extends BaseCommand {
         if(!player.hasPermission("eventsuite.xpc")){
             return false;
         }
-        int countdown = 10;
-        int radius = 10;
-        int xp = 250;
-        if(args.length >= 1){
-            countdown = Integer.parseInt(args[0]);
-        }
-        if(args.length >= 2){
-            radius = Integer.parseInt(args[1]);
-        }
-        if(args.length == 3){
-            xp = Integer.parseInt(args[2]);
-        }
-        final int countDownTime = countdown;
-        final int finalRadius = radius;
-        final int xpAmount = xp;
-        Location location = player.getLocation();
-        Location primedTNT = location.clone();
-        Location hologramL = location.clone();
-        primedTNT.add(0.5, 0.5, 0.5);
-        hologramL.add(0.5, 2, 0.5);
-        Hologram hologram = HologramsAPI.createHologram(EventSpigot.getInstance(), hologramL);
-        final TextLine countdownLine = hologram.appendTextLine(ChatColor.RED + "" + ChatColor.BOLD + countdown);
-        hologram.appendTextLine(ChatColor.YELLOW + "" + ChatColor.BOLD + "XP Cannon");
-        TNTPrimed tntPrimed = (TNTPrimed) location.getWorld().spawnEntity(primedTNT, EntityType.PRIMED_TNT);
-        tntPrimed.setIsIncendiary(false);
-        tntPrimed.setFuseTicks(20 * countdown);
-        location.add(0.5, 0.5, 0.5);
-        new BukkitRunnable() {
-            int counter = 0;
-            @Override
-            public void run() {
-                counter++;
-                countdownLine.setText(ChatColor.RED + "" + ChatColor.BOLD + (countDownTime - counter));
-                for(int i = 0; i < 360; i++){
-                    double radians = Math.toRadians(i);
-                    double x = finalRadius * Math.cos(radians);
-                    double z = finalRadius * Math.sin(radians);
-                    location.add(x, 0, z);
-                    ParticleEffect.FLAME.display(location);
-                    location.subtract(x, 0, z);
-                }
-                location.getWorld().playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, SoundCategory.AMBIENT,1 ,1);
-                location.getWorld().playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, SoundCategory.AMBIENT,1 ,1);
-                if(counter >= countDownTime){
-                    cancel();
-                    ParticleEffect.EXPLOSION_HUGE.display(location);
-                    hologram.delete();
-                    location.getWorld().playSound(location, Sound.ENTITY_GENERIC_EXPLODE, SoundCategory.AMBIENT,1 ,1);
-                    location.getWorld().getNearbyEntitiesByType(Player.class, location, finalRadius).stream().filter(player1 -> !CitizensAPI.getNPCRegistry().isNPC(player1)).forEach(player1 -> EventCore.getInstance().getModuleRegistry().getModule(
-                        RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(player1.getUniqueId(), xpAmount, "Earned from XP Cannon!")));
-                    new BukkitRunnable(){
-                        float r = 0;
-                        final float per3Ticks = finalRadius / 20f;
-                        @Override
-                        public void run() {
-                            r += per3Ticks;
-                            for (int i = 0; i < 360; i++) {
-                                double radians = Math.toRadians(i);
-                                double x = r * Math.cos(radians);
-                                double z = r * Math.sin(radians);
-                                location.add(x, 0, z);
-                                ParticleEffect.REDSTONE.display(location, new RegularColor(Color.YELLOW));
-                                location.subtract(x, 0, z);
-                            }
-                            if(r >= finalRadius){
-                                cancel();
-                            }
-                        }
-                    }.runTaskTimer(EventSpigot.getInstance(), 0, 1);
-                }
-            }
-        }.runTaskTimer(EventSpigot.getInstance(), 0, 20);
+//        int countdown = 10;
+//        int radius = 10;
+//        int xp = 250;
+//        if(args.length >= 1){
+//            countdown = Integer.parseInt(args[0]);
+//        }
+//        if(args.length >= 2){
+//            radius = Integer.parseInt(args[1]);
+//        }
+//        if(args.length == 3){
+//            xp = Integer.parseInt(args[2]);
+//        }
+//        final int countDownTime = countdown;
+//        final int finalRadius = radius;
+//        final int xpAmount = xp;
+//        Location location = player.getLocation();
+//        Location primedTNT = location.clone();
+//        Location hologramL = location.clone();
+//        primedTNT.add(0.5, 0.5, 0.5);
+//        hologramL.add(0.5, 2, 0.5);
+//        Hologram hologram = HologramsAPI.createHologram(EventSpigot.getInstance(), hologramL);
+//        final TextLine countdownLine = hologram.appendTextLine(ChatColor.RED + "" + ChatColor.BOLD + countdown);
+//        hologram.appendTextLine(ChatColor.YELLOW + "" + ChatColor.BOLD + "XP Cannon");
+//        TNTPrimed tntPrimed = (TNTPrimed) location.getWorld().spawnEntity(primedTNT, EntityType.PRIMED_TNT);
+//        tntPrimed.setIsIncendiary(false);
+//        tntPrimed.setFuseTicks(20 * countdown);
+//        location.add(0.5, 0.5, 0.5);
+//        new BukkitRunnable() {
+//            int counter = 0;
+//            @Override
+//            public void run() {
+//                counter++;
+//                countdownLine.setText(ChatColor.RED + "" + ChatColor.BOLD + (countDownTime - counter));
+//                for(int i = 0; i < 360; i++){
+//                    double radians = Math.toRadians(i);
+//                    double x = finalRadius * Math.cos(radians);
+//                    double z = finalRadius * Math.sin(radians);
+//                    location.add(x, 0, z);
+//                    ParticleEffect.FLAME.display(location);
+//                    location.subtract(x, 0, z);
+//                }
+//                location.getWorld().playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, SoundCategory.AMBIENT,1 ,1);
+//                location.getWorld().playSound(location, Sound.BLOCK_NOTE_BLOCK_BASS, SoundCategory.AMBIENT,1 ,1);
+//                if(counter >= countDownTime){
+//                    cancel();
+//                    ParticleEffect.EXPLOSION_HUGE.display(location);
+//                    hologram.delete();
+//                    location.getWorld().playSound(location, Sound.ENTITY_GENERIC_EXPLODE, SoundCategory.AMBIENT,1 ,1);
+//                    location.getWorld().getNearbyEntitiesByType(Player.class, location, finalRadius).stream().filter(player1 -> !CitizensAPI.getNPCRegistry().isNPC(player1)).forEach(player1 -> EventCore.getInstance().getModuleRegistry().getModule(
+//                        RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(player1.getUniqueId(), xpAmount, "Earned from XP Cannon!")));
+//                    new BukkitRunnable(){
+//                        float r = 0;
+//                        final float per3Ticks = finalRadius / 20f;
+//                        @Override
+//                        public void run() {
+//                            r += per3Ticks;
+//                            for (int i = 0; i < 360; i++) {
+//                                double radians = Math.toRadians(i);
+//                                double x = r * Math.cos(radians);
+//                                double z = r * Math.sin(radians);
+//                                location.add(x, 0, z);
+//                                ParticleEffect.REDSTONE.display(location, new RegularColor(Color.YELLOW));
+//                                location.subtract(x, 0, z);
+//                            }
+//                            if(r >= finalRadius){
+//                                cancel();
+//                            }
+//                        }
+//                    }.runTaskTimer(EventSpigot.getInstance(), 0, 1);
+//                }
+//            }
+//        }.runTaskTimer(EventSpigot.getInstance(), 0, 20);
         return false;
     }
 

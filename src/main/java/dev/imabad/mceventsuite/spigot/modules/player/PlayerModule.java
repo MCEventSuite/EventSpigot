@@ -9,8 +9,6 @@ import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.modules.Module;
-import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
-import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.interactions.Interaction;
 import dev.imabad.mceventsuite.spigot.interactions.InteractionRegistry;
 import dev.imabad.mceventsuite.spigot.modules.daylight.DaylightInventory;
@@ -24,14 +22,11 @@ import java.util.List;
 import dev.imabad.mceventsuite.spigot.utils.RegionUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class PlayerModule extends Module implements Listener {
@@ -98,7 +93,7 @@ public class PlayerModule extends Module implements Listener {
       ItemStack itemStack = playerInteractEvent.getItem();
       if(itemStack.getType().equals(PlayerHotbar.GADGETS.getType())){
         if(!RegionUtils.isInRegion(player, "stage") && !RegionUtils.isInRegion(player, "sticky")){
-          new CosmeticsInventoryPage(player).open(player, null);
+//          new CosmeticsInventoryPage(player).open(player, null);
         } else {
           player.sendMessage(ChatColor.RED + "Sorry but you cannot use that here.");
         }

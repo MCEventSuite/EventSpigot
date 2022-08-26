@@ -30,10 +30,11 @@ public class SignLinkCommand extends BaseCommand{
     public boolean execute(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
         String link = args[0];
         String text = getLastArgs(args, 1);
-        Player player = (Player) sender;
-        Component component = Component.text("Click here to go to ").append(LegacyComponentSerializer.legacyAmpersand().deserialize(text)).color(NamedTextColor.DARK_GREEN);
-        component = component.clickEvent(ClickEvent.openUrl(link));
-        EventSpigot.getInstance().getAudiences().player(player).openBook(Book.builder().addPage(component).author(Component.text("Cubed! 2021")).build());
+        BaseComponent[] textComponent = TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', text));
+        for (BaseComponent baseComponent : textComponent) {
+            baseComponent.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link));
+        }
+//        sender.sendMessage(textComponent);
         return true;
     }
 
