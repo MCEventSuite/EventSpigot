@@ -6,15 +6,19 @@ import java.util.*;
 import com.destroystokyo.paper.entity.ai.MobGoalHelper;
 import com.destroystokyo.paper.entity.ai.PaperMobGoals;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
-import net.minecraft.server.v1_16_R3.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.goal.GoalSelector;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.pathfinder.Path;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_18_R2.CraftWorld;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 
-public class VillagerNPC extends EntityVillager {
+public class VillagerNPC extends net.minecraft.world.entity.npc.Villager {
 
     public static final String busyTag = "&c&lBusy";
     private String name;
@@ -24,19 +28,19 @@ public class VillagerNPC extends EntityVillager {
     private Location spawnLocation = null;
     private boolean isBusy = false;
 
-    public VillagerNPC(net.minecraft.server.v1_16_R3.EntityTypes<EntityVillager> entitytypes, World world){
-        super(entitytypes, world);
+    public VillagerNPC(EntityType<VillagerNPC> type, Level world){
+        super(type, world);
         System.out.println("C1 Removing goals");
-        Bukkit.getMobGoals().removeAllGoals((Villager)this.getBukkitCreature());
+//        Bukkit.getMobGoals().removeAllGoals((Villager)this.getBukkitCreature());
 //        this.goalSelector.a(8, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 3.0F));
     }
 
-    public VillagerNPC(World world, Location spawnLocation, String name) {
-        super(net.minecraft.server.v1_16_R3.EntityTypes.VILLAGER, world);
+    public VillagerNPC(Level world, Location spawnLocation, String name) {
+        super(EntityType.VILLAGER, world);
         this.spawnLocation = spawnLocation;
         this.name = name;
         System.out.println("C2 Removing goals");
-        Bukkit.getMobGoals().removeAllGoals((Villager)this.getBukkitCreature());
+//        Bukkit.getMobGoals().removeAllGoals((Villager)this.getBukkitCreature());
 //        this.goalSelector.a(8, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 3.0F));
     }
 
@@ -54,10 +58,10 @@ public class VillagerNPC extends EntityVillager {
     }
 
     private void clearGoals() {
-        Collection<?> goalC = (Collection<?>) getPrivateField("d", PathfinderGoalSelector.class,
+        Collection<?> goalC = (Collection<?>) getPrivateField("d", GoalSelector.class,
                 goalSelector);
         goalC.clear();
-        Collection<?> targetC = (Collection<?>) getPrivateField("d", PathfinderGoalSelector.class,
+        Collection<?> targetC = (Collection<?>) getPrivateField("d", GoalSelector.class,
                 targetSelector);
         targetC.clear();
     }
@@ -65,8 +69,9 @@ public class VillagerNPC extends EntityVillager {
     public VillagerNPC spawn(Location loc, String name) {
         spawn = loc;
         spawnLocation = loc;
-        World nmsWorld = ((CraftWorld) loc.getWorld()).getHandle();
-        setPositionRotation(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
+        Level nmsWorld = ((CraftWorld) loc.getWorld()).getHandle();
+        setPos(loc.getX(), loc.getY(), loc.getZ());
+        setRot(loc.getYaw(), loc.getPitch());
         Villager merchant = (Villager) this.getBukkitEntity();
         merchant.setAdult();
         merchant.setBreed(false);
@@ -75,21 +80,22 @@ public class VillagerNPC extends EntityVillager {
         merchant.setCustomNameVisible(true);
         merchant.setHealth(20D);
         merchant.setRemoveWhenFarAway(false);
-        nmsWorld.addEntity(this, SpawnReason.CUSTOM);
+        nmsWorld.addFreshEntity(this, SpawnReason.CUSTOM);
         return this;
     }
 
     public void moveToBlock(Location l, float speed) {
         clearGoals();
-        setNoAI(false);
+        setNoAi(false);
         moving = true;
         currentlyMovingTo = l;
-        setPositionRotation(locX(), locY(), locZ(), l.getYaw(), l.getPitch());
+        setPos(getX(), getY(), getZ());
+        setRot(l.getYaw(), l.getPitch());
         Villager merchant = (Villager) this.getBukkitEntity();
         merchant.getLocation().setDirection(l.getDirection());
-        PathEntity pathEntity = this.navigation.a(new BlockPosition(l.getX(), l.getY(), l.getZ()), 0);
+        Path pathEntity = this.navigation.createPath(new BlockPos(l.getX(), l.getY(), l.getZ()), 0);
 
-        getNavigation().a(pathEntity, speed);
+        getNavigation().moveTo(pathEntity, speed);
     }
 
     public String getNormalName() {

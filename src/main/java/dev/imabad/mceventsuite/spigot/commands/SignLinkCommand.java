@@ -24,7 +24,7 @@ public class SignLinkCommand extends BaseCommand{
         for (BaseComponent baseComponent : textComponent) {
             baseComponent.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, link));
         }
-        sender.sendMessage(textComponent);
+//        sender.sendMessage(textComponent);
         return true;
     }
 

@@ -1,17 +1,19 @@
 package dev.imabad.mceventsuite.spigot.commands;
 
+import com.sk89q.worldedit.blocks.SignBlock;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
-import net.minecraft.server.v1_16_R3.BlockPosition;
-import net.minecraft.server.v1_16_R3.IChatBaseComponent;
-import net.minecraft.server.v1_16_R3.TileEntitySign;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.BaseComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_18_R2.CraftWorld;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,7 +48,7 @@ public class LinkSignCommand extends BaseCommand{
                 return false;
             }
             ;
-            TileEntitySign tileEntitySign = (TileEntitySign)((CraftWorld)block.getWorld()).getHandle().getTileEntity(new BlockPosition(block.getX(), block.getY(), block.getZ()));
+            SignBlockEntity tileEntitySign = (SignBlockEntity)((CraftWorld)block.getWorld()).getHandle().getBlockEntity(new BlockPos(block.getX(), block.getY(), block.getZ()));
 
             Sign sign = (Sign)block.getState();
             String link = args[0];
@@ -59,7 +61,7 @@ public class LinkSignCommand extends BaseCommand{
                 newLine = new TextComponent();
             }
             newLine.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "slink " + link + " " + text));
-            tileEntitySign.a(0, IChatBaseComponent.ChatSerializer.jsonToComponent(ComponentSerializer.toString(newLine)));
+            tileEntitySign.setMessage(0, Component.Serializer.fromJson(ComponentSerializer.toString(newLine)));
             sender.sendMessage(ChatColor.GREEN + "DONE!");
             return true;
         }

@@ -1,7 +1,5 @@
 package dev.imabad.mceventsuite.spigot.modules.map;
 
-import com.influxdb.client.domain.WritePrecision;
-import com.influxdb.client.write.Point;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -24,13 +22,8 @@ import dev.imabad.mceventsuite.core.modules.mysql.dao.BoothDAO;
 import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.modules.map.commands.*;
-import net.minecraft.server.v1_16_R3.Block;
-import net.minecraft.server.v1_16_R3.BlockPosition;
-import net.minecraft.server.v1_16_R3.IBlockData;
 import org.bukkit.*;
 import org.bukkit.command.SimpleCommandMap;
-import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_16_R3.block.data.CraftBlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -70,14 +63,14 @@ public class MapModule extends Module implements Listener {
         EventCore.getInstance().getEventRegistry().registerListener(MySQLLoadedEvent.class, this::onMysqlLoad);
         if(EventCore.getInstance().getModuleRegistry().isModuleEnabled(InfluxDBModule.class)) {
             EventSpigot.getInstance().getServer().getScheduler().runTaskTimerAsynchronously(EventSpigot.getInstance(), () -> {
-                List<Point> dataPoints = new ArrayList<>();
-                for (Player p : EventSpigot.getInstance().getServer().getOnlinePlayers()) {
-                    Location l = p.getLocation();
-                    Point dataPoint = Point.measurement("playerLocations").addTag("server", EventCore.getInstance().getIdentifier())
-                            .addTag("world", "venue").addField("value", l.getX() + "," + l.getZ()).time(Instant.now().toEpochMilli(), WritePrecision.MS);
-                    dataPoints.add(dataPoint);
-                }
-                EventCore.getInstance().getModuleRegistry().getModule(InfluxDBModule.class).writePoints(dataPoints);
+//                List<Point> dataPoints = new ArrayList<>();
+//                for (Player p : EventSpigot.getInstance().getServer().getOnlinePlayers()) {
+//                    Location l = p.getLocation();
+//                    Point dataPoint = Point.measurement("playerLocations").addTag("server", EventCore.getInstance().getIdentifier())
+//                            .addTag("world", "venue").addField("value", l.getX() + "," + l.getZ()).time(Instant.now().toEpochMilli(), WritePrecision.MS);
+//                    dataPoints.add(dataPoint);
+//                }
+//                EventCore.getInstance().getModuleRegistry().getModule(InfluxDBModule.class).writePoints(dataPoints);
             }, 0, 5 * (60 * 20));
         }
         EventSpigot
@@ -220,21 +213,21 @@ public class MapModule extends Module implements Listener {
                         int wz = 16 * chunk.getZ() + z;
                         int y = world.getHighestBlockAt(wx, wz).getY();
                         Optional<EventBoothPlot> plot = plots.stream().filter(eventBoothPlot -> eventBoothPlot.blockInBooth(wx, wz)).findFirst();
-                        IBlockData blockData;
-                        if(plot.isPresent()){
-                            EventBoothPlot plot1 = plot.get();
-                            Material material = getMaterialForSize(plot1.getBoothType());
-                            blockData = ((CraftBlockData) Bukkit.createBlockData(material)).getState();
-                        } else {
-                            blockData = ((CraftWorld) world).getHandle().getType(new BlockPosition(wx, y, wz));
-                        }
-                        Block nmsBlock = blockData.getBlock();
-                        int px = 16 * (chunk.getX() - cx) + x;
-                        int pz = 16 * (chunk.getZ() - cz) + z;
-                        if (pixels[px] == null) {
-                            pixels[pz] = new int[chunkRadiusZ * 16];
-                        }
-                        pixels[px][pz] = nmsBlock.s().rgb;
+//                        IBlockData blockData;
+//                        if(plot.isPresent()){
+//                            EventBoothPlot plot1 = plot.get();
+//                            Material material = getMaterialForSize(plot1.getBoothType());
+//                            blockData = ((CraftBlockData) Bukkit.createBlockData(material)).getState();
+//                        } else {
+//                            blockData = ((CraftWorld) world).getHandle().getType(new BlockPosition(wx, y, wz));
+//                        }
+//                        Block nmsBlock = blockData.getBlock();
+//                        int px = 16 * (chunk.getX() - cx) + x;
+//                        int pz = 16 * (chunk.getZ() - cz) + z;
+//                        if (pixels[px] == null) {
+//                            pixels[pz] = new int[chunkRadiusZ * 16];
+//                        }
+//                        pixels[px][pz] = nmsBlock.s().rgb;
                     }
                 }
             }
