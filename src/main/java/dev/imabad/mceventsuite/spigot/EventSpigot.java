@@ -74,6 +74,10 @@ public class EventSpigot extends JavaPlugin {
     public void onEnable() {
         eventSpigot = this;
         new EventCore(getDataFolder());
+        if(!getConfig().isBoolean("isopen")) {
+            getConfig().set("isopen", false);
+            saveConfig();
+        }
         EventCore.getInstance().getEventRegistry().registerListener(RedisConnectionEvent.class, redisConnectionEvent -> {
             System.out.println("[EventSpigot] Connected to Redis");
             EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).registerListener(UpdatedPlayerMessage.class, new RedisMessageListener<>((msg) -> {

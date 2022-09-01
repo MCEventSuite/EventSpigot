@@ -3,6 +3,7 @@ package dev.imabad.mceventsuite.spigot.modules.booths;
 import java.util.*;
 
 import com.google.common.eventbus.Subscribe;
+import com.plotsquared.bukkit.player.BukkitPlayer;
 import com.plotsquared.core.PlotAPI;
 import com.plotsquared.core.events.PlayerAutoPlotEvent;
 import com.plotsquared.core.events.PlayerClaimPlotEvent;
@@ -27,6 +28,7 @@ import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.WorldLoadEvent;
@@ -86,7 +88,34 @@ public class BoothModule extends Module implements Listener {
             booths.stream().filter(eventBooth -> eventBooth.getOwner().equals(player)).filter(eventBooth -> eventBooth.getStatus().equalsIgnoreCase("un-assigned")).forEach(eventBooth -> {
                 EventSpigot.getInstance().getLogger().info("Adding permissions for " + bukkitPlayer.getName());
                 player.getPermissions().add("multiverse.access." + eventBooth.getBoothType());
+                player.getPermissions().add("booths." + eventBooth.getBoothType());
                 EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(PlayerDAO.class).saveOrUpdatePlayer(player);
+
+//                if(EventSpigot.getInstance().getConfig().isBoolean("isopen")) {
+//                    if (EventSpigot.getInstance().getConfig().getBoolean("isopen")) {
+//                        if(Bukkit.getWorld("Medium") != null) {
+//                            if(!eventBooth.getBoothType().equalsIgnoreCase("medium")) {
+//                                if(!eventBooth.getOwner().getUUID().equals(player.getUUID())) {
+//                                    if (!eventBooth.getMembers().contains(player)) {
+//                                        if(!player.hasPermission("eventsuite.staffchat")) {
+//                                            bukkitPlayer.kickPlayer("You are not attached to a booth!");
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }else if(Bukkit.getWorld("Large") != null) {
+//                            if(!eventBooth.getBoothType().equalsIgnoreCase("large")) {
+//                                if(!eventBooth.getOwner().getUUID().equals(player.getUUID())) {
+//                                    if (!eventBooth.getMembers().contains(player)) {
+//                                        if(!player.hasPermission("eventsuite.staffchat")) {
+//                                            bukkitPlayer.kickPlayer("You are not attached to a booth!");
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
 
                 EventSpigot.getInstance().getLogger().info("Teleporting " + bukkitPlayer.getName() + " to relevant booth world.");
                 bukkitPlayer.teleport(Bukkit.getWorld(eventBooth.getBoothType()).getSpawnLocation());
@@ -119,8 +148,13 @@ public class BoothModule extends Module implements Listener {
             });
         } else {
             if (plotPlayer == null || plotAPI.getPlayerPlots(plotPlayer).size() == 0 || (BOOTHS_CLOSED && BOOTH_WORLDS.contains(bukkitPlayer.getWorld().getName()))) {
-                World world = Bukkit.getWorld("creative");
-                bukkitPlayer.teleport(new Location(world, 0.5, 52, -1.5, 0, 0));
+                if(Bukkit.getWorld("Small") != null) {
+                    bukkitPlayer.teleport(new Location(Bukkit.getWorld("Small"), -11.5, 64, -11.5, 180, -1));
+                }else if(Bukkit.getWorld("Medium") != null) {
+                    bukkitPlayer.teleport(new Location(Bukkit.getWorld("Medium"), -17.5, 64, -17.5, 180, -1));
+                }else if(Bukkit.getWorld("Large") != null) {
+                    bukkitPlayer.teleport(new Location(Bukkit.getWorld("Large"), -25.5, 64, -25.5, 180, -1));
+                }
             }
         }
 
@@ -142,7 +176,34 @@ public class BoothModule extends Module implements Listener {
 
     @Subscribe
     public void onAutoCommand(PlayerAutoPlotEvent event) {
-        if (canClaimPlots(event.getPlayer())) return;
+        System.out.println("PLOT AUTO EVENT");
+        if (canClaimPlots(event.getPlayer())) {
+            System.out.println("CAN CLAIM");
+            if(event.getPlayer().getLocation().getWorldName().equalsIgnoreCase("Small")) {
+                if (EventCore.getInstance().getBoothsManager().getBooths().stream().anyMatch(eventBooth -> eventBooth.getBoothType().equalsIgnoreCase("Small"))) {
+                    System.out.println("SMALL MATCH");
+                }else{
+                    event.setEventResult(Result.DENY);
+                    ((BukkitPlayer) event.getPlayer().getPlatformPlayer()).getPlatformPlayer().sendMessage(ChatColor.RED + "You are not on a team with a small booth!");
+                }
+            }else if(event.getPlayer().getLocation().getWorldName().equalsIgnoreCase("Medium")) {
+                if (EventCore.getInstance().getBoothsManager().getBooths().stream().anyMatch(eventBooth -> eventBooth.getBoothType().equalsIgnoreCase("Medium"))) {
+                    System.out.println("MEDIUM MATCH");
+                }else{
+                    event.setEventResult(Result.DENY);
+                    ((BukkitPlayer) event.getPlayer().getPlatformPlayer()).getPlatformPlayer().sendMessage(ChatColor.RED + "You are not on a team with a medium booth!");
+                }
+            }else if(event.getPlayer().getLocation().getWorldName().equalsIgnoreCase("Large")) {
+                if (EventCore.getInstance().getBoothsManager().getBooths().stream().anyMatch(eventBooth -> eventBooth.getBoothType().equalsIgnoreCase("Large"))) {
+                    System.out.println("LARGE MATCH");
+                }else{
+                    event.setEventResult(Result.DENY);
+                    ((BukkitPlayer) event.getPlayer().getPlatformPlayer()).getPlatformPlayer().sendMessage(ChatColor.RED + "You are not on a team with a large booth!");
+                }
+            }
+        }else{
+            System.out.println("CAN'T CLAIM");
+        }
         if (BOOTH_WORLDS.contains(event.getPlotArea().getWorldName())) {
             event.setEventResult(Result.DENY);
         }

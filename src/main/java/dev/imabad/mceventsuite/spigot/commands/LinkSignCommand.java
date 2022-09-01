@@ -5,8 +5,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.BaseComponent;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
@@ -61,7 +59,7 @@ public class LinkSignCommand extends BaseCommand{
                 newLine = new TextComponent();
             }
             newLine.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "slink " + link + " " + text));
-            tileEntitySign.setMessage(0, Component.Serializer.fromJson(ComponentSerializer.toString(newLine)));
+//            tileEntitySign.setMessage(0, Component.Serializer.fromJson(ComponentSerializer.toString(newLine)));
             sender.sendMessage(ChatColor.GREEN + "DONE!");
             return true;
         }

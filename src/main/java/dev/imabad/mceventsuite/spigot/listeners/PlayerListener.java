@@ -2,10 +2,12 @@ package dev.imabad.mceventsuite.spigot.listeners;
 
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.events.JoinEvent;
+import dev.imabad.mceventsuite.core.api.objects.EventBooth;
 import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
 import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassDAO;
 import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassPlayer;
 import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
+import dev.imabad.mceventsuite.core.modules.mysql.dao.BoothDAO;
 import dev.imabad.mceventsuite.core.modules.mysql.dao.PlayerDAO;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.api.EventInventory;
@@ -33,6 +35,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Team;
 import org.geysermc.floodgate.FloodgateAPI;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -42,6 +45,14 @@ public class PlayerListener implements Listener {
     public void onPlayerLogin(PlayerLoginEvent playerJoinEvent){
         if(EventCore.getInstance().getEventPlayerManager() == null){
             playerJoinEvent.disallow(PlayerLoginEvent.Result.KICK_OTHER, "Server is still loading....");
+        }
+
+        if(playerJoinEvent.getResult() == PlayerLoginEvent.Result.KICK_WHITELIST) {
+            if(EventSpigot.getInstance().getConfig().isBoolean("isopen")) {
+                if (EventSpigot.getInstance().getConfig().getBoolean("isopen")) {
+                    playerJoinEvent.setResult(PlayerLoginEvent.Result.ALLOWED);
+                }
+            }
         }
     }
 
