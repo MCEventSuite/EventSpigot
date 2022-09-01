@@ -2,19 +2,13 @@ package dev.imabad.mceventsuite.spigot.modules.booths;
 
 import com.google.common.eventbus.Subscribe;
 import com.plotsquared.bukkit.util.BukkitUtil;
-import com.plotsquared.core.api.PlotAPI;
+import com.plotsquared.core.PlotAPI;
 import com.plotsquared.core.events.PlayerClaimPlotEvent;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotArea;
 import com.plotsquared.core.plot.PlotId;
-import com.plotsquared.core.util.MainUtil;
-import com.plotsquared.core.util.SchematicHandler;
-import com.plotsquared.core.util.task.RunnableVal;
-import com.plotsquared.core.util.task.TaskManager;
 import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.EditSessionBuilder;
-import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
@@ -159,7 +153,7 @@ public class BoothModule extends Module implements Listener {
             return true;
         }
         for(PlotArea area: plotAPI.getPlotAreas(location.getWorld().getName())){
-            Plot plot = area.getPlot(BukkitUtil.getLocation(location));
+            Plot plot = area.getPlot(BukkitUtil.adapt(location));
             if(plot != null && plot.isAdded(player.getUniqueId())){
                 return true;
             }
@@ -231,10 +225,11 @@ public class BoothModule extends Module implements Listener {
         List<EventBooth> booths = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(BoothDAO.class).getPlayerBooths(player);
         booths.stream().filter(eventBooth -> eventBooth.getOwner().equals(player)).filter(eventBooth -> eventBooth.getStatus().equalsIgnoreCase("un-assigned")).forEach(eventBooth -> {
             bukkitPlayer.teleport(Bukkit.getWorld(eventBooth.getBoothType()).getSpawnLocation());
+            String worldName = eventBooth.getBoothType();
             plotAPI.getPlotAreas(eventBooth.getBoothType()).stream().findFirst().ifPresent(plotArea -> {
                 PlotPlayer plotPlayer = PlotPlayer.from(bukkitPlayer);
                 Plot plot = plotArea.getNextFreePlot(plotPlayer, null);
-                plot.claim(plotPlayer, true, null, true);
+                plot.claim(plotPlayer, true, null, true, true);
                 eventBooth.setStatus("assigned");
                 eventBooth.getMembers().forEach(eventPlayer -> {
                     plot.addTrusted(eventPlayer.getUUID());

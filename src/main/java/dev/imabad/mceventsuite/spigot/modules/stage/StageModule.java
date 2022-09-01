@@ -29,6 +29,8 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 public class StageModule extends Module {
@@ -78,7 +80,7 @@ public class StageModule extends Module {
           cLocation.add(0.5, 0, 0.5);
           Chicken c = (Chicken) playerInteractEvent.getPlayer().getWorld().spawnEntity(cLocation,
               EntityType.CHICKEN);
-          c.setInvisible(true);
+          c.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, Integer.MAX_VALUE, false, false));
           c.setInvulnerable(true);
           c.setSilent(true);
           c.setAI(false);

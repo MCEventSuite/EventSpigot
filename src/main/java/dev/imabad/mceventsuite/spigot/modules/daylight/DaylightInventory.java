@@ -62,8 +62,8 @@ public class DaylightInventory extends EventInventory {
         itemStack.addUnsafeEnchantment(Enchantment.LUCK, 1);
         ItemMeta meta = itemStack.getItemMeta();
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+        meta.setLore(Collections.singletonList(ChatColor.GREEN + "Selected"));
         itemStack.setItemMeta(meta);
-        itemStack.setLore(Collections.singletonList(ChatColor.GREEN + "Selected"));
         return itemStack;
     }
 

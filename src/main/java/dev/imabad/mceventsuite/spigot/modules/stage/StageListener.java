@@ -1,12 +1,9 @@
 package dev.imabad.mceventsuite.spigot.modules.stage;
 
-import com.cubedcon.cosmetics.CosmeticItemCategory;
-import com.cubedcon.cosmetics.CubedCosmetics;
-import com.cubedcon.cosmetics.managers.CosmeticManager;
+
 import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import com.gmail.filoghost.holographicdisplays.api.line.TextLine;
-import com.mewin.WGRegionEvents.events.RegionEnterEvent;
 import com.mewin.WGRegionEvents.events.RegionEnteredEvent;
 import com.mewin.WGRegionEvents.events.RegionLeftEvent;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
@@ -29,10 +26,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.PluginEnableEvent;
-import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
 import java.util.Arrays;
@@ -75,7 +69,7 @@ public class StageListener implements Listener {
   public void onEnterRegion(RegionEnteredEvent regionEnterEvent){
     boolean isAllowParticles = regionEnterEvent.getRegion().getFlag(StageModule.getAllowParticles()) == State.ALLOW || regionEnterEvent.getRegion().getFlag(StageModule.getAllowParticles()) == null;
     if(!isAllowParticles){
-      Arrays.asList(CosmeticItemCategory.BALLOONS, CosmeticItemCategory.GADGETS, CosmeticItemCategory.PARTICLES, CosmeticItemCategory.TRAILS).forEach(category -> CosmeticManager.getInstance().getCurrentCosmeticItemByCategory(regionEnterEvent.getPlayer().getUniqueId(), category).ifPresent(cosmeticItem -> CosmeticManager.getInstance().removeCosmeticItem(cosmeticItem)));
+//      Arrays.asList(CosmeticItemCategory.BALLOONS, CosmeticItemCategory.GADGETS, CosmeticItemCategory.PARTICLES, CosmeticItemCategory.TRAILS).forEach(category -> CosmeticManager.getInstance().getCurrentCosmeticItemByCategory(regionEnterEvent.getPlayer().getUniqueId(), category).ifPresent(cosmeticItem -> CosmeticManager.getInstance().removeCosmeticItem(cosmeticItem)));
     }
     if(regionEnterEvent.getRegionId().equalsIgnoreCase("KOTH")){
       if (this.isKothServer()) {
