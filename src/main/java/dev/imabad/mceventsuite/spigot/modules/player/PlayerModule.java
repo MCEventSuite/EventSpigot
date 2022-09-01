@@ -12,7 +12,6 @@ import dev.imabad.mceventsuite.core.api.modules.Module;
 import dev.imabad.mceventsuite.spigot.interactions.Interaction;
 import dev.imabad.mceventsuite.spigot.interactions.InteractionRegistry;
 import dev.imabad.mceventsuite.spigot.modules.daylight.DaylightInventory;
-import dev.imabad.mceventsuite.spigot.modules.eventpass.inventories.CosmeticsInventoryPage;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.inventories.EventPassInventoryPage;
 import dev.imabad.mceventsuite.spigot.modules.warps.inventories.WarpInventoryPage;
 import dev.imabad.mceventsuite.spigot.utils.ItemUtils;

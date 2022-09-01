@@ -46,6 +46,6 @@ public class EventPassSpigotModule extends Module {
     }
 
     public Optional<EventPassReward> getRewardForLevel(int level){
-        return rewards.stream().filter(eventPassReward -> eventPassReward.getYear() == EventCore.getInstance().getConfig().getCurrentYearAsInt() && eventPassReward.getRequiredLevel() == level).findFirst();
+        return rewards.stream().filter(eventPassReward -> eventPassReward.getRequiredLevel() == level).findFirst();
     }
 }

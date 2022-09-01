@@ -10,8 +10,9 @@ import java.util.function.Consumer;
 
 public class InteractionRegistry {
 
-  private static final ConcurrentHashMap<Interaction, Queue<Consumer<Event>>> interactions = new ConcurrentHashMap<>();
-  public static void registerInteraction(Interaction type, Consumer<Event> eventConsumer) {
+  private static final ConcurrentHashMap<dev.imabad.mceventsuite.spigot.interactions.Interaction, Queue<Consumer<Event>>> interactions = new ConcurrentHashMap<>();
+
+  public static void registerInteraction(dev.imabad.mceventsuite.spigot.interactions.Interaction type, Consumer<Event> eventConsumer) {
     if(interactions.containsKey(type)){
       Queue<Consumer<Event>> consumers = interactions.get(type);
       consumers.add(eventConsumer);
