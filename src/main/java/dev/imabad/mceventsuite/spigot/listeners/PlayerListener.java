@@ -143,8 +143,8 @@ public class PlayerListener implements Listener {
 
             event.setFormat(
                     (rank.getPrefix() == null || rank.getPrefix().isBlank() ? "" : ChatColor.translateAlternateColorCodes('&', rank.getPrefix() + " "))
-                    + "%s "
-                    + (rank.getSuffix() == null || rank.getSuffix().isBlank() ? "" : ChatColor.translateAlternateColorCodes('&', rank.getSuffix()))
+                    + "%s"
+                    + (rank.getSuffix() == null || rank.getSuffix().isBlank() ? "" : " " + ChatColor.translateAlternateColorCodes('&', rank.getSuffix()))
                     + ": " + chatColor + "%s"
             );
         }
