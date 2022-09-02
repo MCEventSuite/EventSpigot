@@ -94,10 +94,10 @@ public class PlayerListener implements Listener {
         }
         if(playerJoinEvent.getPlayer().getScoreboard() != EventSpigot.getInstance().getScoreboard()){
             playerJoinEvent.getPlayer().setScoreboard(EventSpigot.getInstance().getScoreboard());
-            Team team = EventSpigot.getInstance().getScoreboard().getTeam(player.getRank().getName());
-            if(!team.hasEntry(playerJoinEvent.getPlayer().getDisplayName())) {
-                team.addEntry(playerJoinEvent.getPlayer().getDisplayName());
-            }
+        }
+        Team team = EventSpigot.getInstance().getScoreboard().getTeam(player.getRank().getName());
+        if(!team.hasEntry(playerJoinEvent.getPlayer().getDisplayName())) {
+            team.addEntry(playerJoinEvent.getPlayer().getDisplayName());
         }
         for(PotionEffect potionEffect : playerJoinEvent.getPlayer().getActivePotionEffects()){
             playerJoinEvent.getPlayer().removePotionEffect(potionEffect.getType());
