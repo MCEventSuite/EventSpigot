@@ -1,5 +1,6 @@
 package dev.imabad.mceventsuite.spigot.commands;
 
+import com.github.puregero.multilib.MultiLib;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
@@ -10,6 +11,7 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.utils.RegionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -20,6 +22,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.plaf.multi.MultiListUI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -79,6 +82,10 @@ public class TpacceptCommand extends BaseCommand {
                 if (!expired) {
                     latestRequest = senderUuid;
                     latestRequestTime = requestTime;
+                } else {
+                    playerRequests.remove(senderUuid);
+                    if(playerRequests.isEmpty())
+                        requests.remove(uuid);
                 }
             }
         }
@@ -130,7 +137,12 @@ public class TpacceptCommand extends BaseCommand {
         }
 
         subject.teleport(sender, PlayerTeleportEvent.TeleportCause.PLUGIN);
+
+        MultiLib.notify("eventspigot:tpaccept", sender.getUniqueId() + ":" + subject.getUniqueId());
         requests.remove(subject.getUniqueId().toString());
+        if(requests.isEmpty())
+            TpaCommand.getTeleportRequests().remove(sender.getUniqueId().toString());
+
         return true;
     }
 
