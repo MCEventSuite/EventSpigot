@@ -3,6 +3,7 @@ package dev.imabad.mceventsuite.spigot.listeners;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.events.JoinEvent;
 import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
+import dev.imabad.mceventsuite.core.api.objects.EventRank;
 import dev.imabad.mceventsuite.core.modules.eventpass.EventPassModule;
 import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassDAO;
 import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassPlayer;
@@ -23,6 +24,7 @@ import dev.imabad.mceventsuite.spigot.utils.BungeeUtils;
 import dev.imabad.mceventsuite.spigot.utils.PermissibleInjector;
 import fr.neatmonster.nocheatplus.NCPAPIProvider;
 import fr.neatmonster.nocheatplus.checks.CheckType;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -92,10 +94,10 @@ public class PlayerListener implements Listener {
         }
         if(playerJoinEvent.getPlayer().getScoreboard() != EventSpigot.getInstance().getScoreboard()){
             playerJoinEvent.getPlayer().setScoreboard(EventSpigot.getInstance().getScoreboard());
-            Team team = EventSpigot.getInstance().getScoreboard().getTeam(player.getRank().getName());
-            if(!team.hasEntry(playerJoinEvent.getPlayer().getDisplayName())) {
-                team.addEntry(playerJoinEvent.getPlayer().getDisplayName());
-            }
+        }
+        Team team = EventSpigot.getInstance().getScoreboard().getTeam(player.getRank().getName());
+        if(!team.hasEntry(playerJoinEvent.getPlayer().getDisplayName())) {
+            team.addEntry(playerJoinEvent.getPlayer().getDisplayName());
         }
         for(PotionEffect potionEffect : playerJoinEvent.getPlayer().getActivePotionEffects()){
             playerJoinEvent.getPlayer().removePotionEffect(potionEffect.getType());
@@ -125,6 +127,27 @@ public class PlayerListener implements Listener {
             NCPAPIProvider.getNoCheatPlusAPI().getPlayerDataManager().getPlayerData(playerJoinEvent.getPlayer()).exempt(CheckType.ALL);
         }
         NCPAPIProvider.getNoCheatPlusAPI().getPlayerDataManager().getPlayerData(playerJoinEvent.getPlayer()).exempt(CheckType.MOVING_SURVIVALFLY);
+    }
+
+    @EventHandler
+    public void onPlayerChat(AsyncPlayerChatEvent event) {
+        Optional<EventPlayer> eventPlayer = EventCore.getInstance().getEventPlayerManager().getPlayer(event.getPlayer().getUniqueId());
+        if(eventPlayer.isPresent()) {
+            final EventRank rank = eventPlayer.get().getRank();
+
+            //TODO tidy this
+            ChatColor chatColor = ChatColor.GRAY;
+            String chatColorHex = rank.getChatColor().substring(1);
+            if (chatColorHex.equalsIgnoreCase("fff"))
+                chatColor = ChatColor.WHITE;
+
+            event.setFormat(
+                    (rank.getPrefix() == null || rank.getPrefix().isBlank() ? "" : ChatColor.translateAlternateColorCodes('&', rank.getPrefix() + " "))
+                    + "%s"
+                    + (rank.getSuffix() == null || rank.getSuffix().isBlank() ? "" : " " + ChatColor.translateAlternateColorCodes('&', rank.getSuffix()))
+                    + ": " + chatColor + "%s"
+            );
+        }
     }
 
     @EventHandler
