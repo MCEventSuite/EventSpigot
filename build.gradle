@@ -24,7 +24,7 @@ repositories {
         name "Bungeecord"
         url "https://oss.sonatype.org/content/repositories/snapshots"
     }
-    if(System.getenv("GITHUB_USERNAME") != null){
+    if(System.getenv("GITHUB_USERNAME") != null || project.findProperty("gpr.user") != null){
         maven {
             url = uri("https://maven.pkg.github.com/MCEventSuite/EventCore")
             credentials {
