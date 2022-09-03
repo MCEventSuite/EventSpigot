@@ -9,7 +9,7 @@ import dev.imabad.mceventsuite.spigot.entities.VillagerNPC;
 import net.minecraft.world.entity.schedule.Activity;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_18_R2.entity.CraftVillager;
+import org.bukkit.craftbukkit.v1_19_R1.entity.CraftVillager;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.entity.CreatureSpawnEvent;
