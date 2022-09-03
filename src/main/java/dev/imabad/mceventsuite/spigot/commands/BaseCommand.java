@@ -6,6 +6,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.command.defaults.BukkitCommand;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -61,5 +62,9 @@ public abstract class BaseCommand extends BukkitCommand implements TabCompleter 
 
     public Audience audience(CommandSender sender){
         return EventSpigot.getInstance().getAudiences().sender(sender);
+    }
+
+    public Audience playerAudience(Player player) {
+        return EventSpigot.getInstance().getAudiences().player(player);
     }
 }
