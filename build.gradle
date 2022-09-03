@@ -1,11 +1,11 @@
 plugins {
     id 'java'
-    id "com.github.johnrengelman.shadow" version "7.0.0"
+    id "com.github.johnrengelman.shadow" version "7.1.2"
     id("io.papermc.paperweight.userdev")
 }
 
 group 'dev.imabad.mceventsuite'
-version '1.0'
+version '1.0-SNAPSHOT'
 
 java {
     toolchain {
@@ -24,6 +24,15 @@ repositories {
         name "Bungeecord"
         url "https://oss.sonatype.org/content/repositories/snapshots"
     }
+    if(System.getenv("GITHUB_USERNAME") != null){
+        maven {
+            url = uri("https://maven.pkg.github.com/MCEventSuite/EventCore")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
     maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
     maven { url 'https://jitpack.io' }
     maven { url = 'https://repo.md-5.net/content/repositories/snapshots/' } // NCP
@@ -40,7 +49,7 @@ dependencies {
     implementation(platform("com.intellectualsites.bom:bom-1.18.x:1.13"))
 //    testCompile group: 'junit', name: 'junit', version: '4.12'
     implementation("org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final")
-    implementation 'dev.imabad.mceventsuite:eventcore'
+    implementation 'dev.imabad.mceventsuite:eventcore:1.0-SNAPSHOT'
     compileOnly "com.github.MilkBowl:VaultAPI:1.7"
     compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.2.0-SNAPSHOT")
     compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.4-SNAPSHOT")
@@ -62,3 +71,4 @@ dependencies {
 shadowJar {
     relocate 'net.kyori.adventure', 'shadow.adventure'
 }
+tasks.build.dependsOn tasks.shadowJar
