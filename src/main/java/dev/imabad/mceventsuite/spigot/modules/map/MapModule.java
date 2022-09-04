@@ -119,7 +119,9 @@ public class MapModule extends Module implements Listener, IConfigProvider<MapCo
     @Override
     public void onDisable() {
         booths.clear();
-        editSession.close();
+        if(editSession != null){
+            editSession.close();
+        }
         kevinManager.byeKevins();
     }
 
