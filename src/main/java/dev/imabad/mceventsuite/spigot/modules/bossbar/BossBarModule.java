@@ -9,6 +9,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
+import org.bukkit.entity.Boss;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -39,21 +40,29 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
 
     @Override
     public void onEnable() {
+        if(config.getText().size() == 0) {
+            throw new RuntimeException("No strings set for bossbar!");
+        }
         bossBar = Bukkit.createBossBar(ChatColor.translateAlternateColorCodes('&', config.getText().get(current)), BarColor.BLUE, BarStyle.SEGMENTED_20);
         EventSpigot.getInstance().getServer().getScheduler().runTaskTimer(EventSpigot.getInstance(), () -> {
             final List<BossBarConfig.Event> currentEvents = config.getCurrentEvents();
             final List<BossBarConfig.Event> soon = config.getSoonEvents();
             final List<String> strings = config.getText();
 
+            if(stage.getSize(this) == 0) {
+                stage = stage.ordinal() + 1 >= Stage.values ().length ? Stage.CURRENT : Stage.values()[stage.ordinal() + 1];
+                return;
+            }
+
             if(stage == Stage.CURRENT) {
-                final BossBarConfig.Event event = soon.size() != 0 ? currentEvents.get(current) : new BossBarConfig.Event("No event configured!", BossBarConfig.Event.Location.NONE, System.currentTimeMillis() - 1000, System.currentTimeMillis() + 20000);
+                final BossBarConfig.Event event = currentEvents.get(current);
                 bossBar.setTitle(event.name + " is currently on at the " + event.location);
-                bossBar.setProgress(Math.min(event.getProgress(), 1.0));
+                bossBar.setProgress(Math.max(0.0D, Math.min(1.0D, event.getProgress())));
                 bossBar.setColor(BarColor.GREEN);
             } else if(stage == Stage.COMING) {
-                final BossBarConfig.Event event = soon.size() != 0 ? soon.get(current) : new BossBarConfig.Event("No event configured!", BossBarConfig.Event.Location.NONE, System.currentTimeMillis()-20000, System.currentTimeMillis() + 20000);
+                final BossBarConfig.Event event = soon.get(current);
                 bossBar.setTitle(event.name + " will soon be starting at the " + event.location);
-                bossBar.setProgress(Math.min(event.getProgress(), 1.0));
+                bossBar.setProgress(Math.max(0.0D, Math.min(1.0D, event.getProgress())));
                 bossBar.setColor(BarColor.YELLOW);
             } else {
                 final String text = strings.get(current);
@@ -128,5 +137,13 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
 
     public enum Stage {
         CURRENT, COMING, STRINGS;
+
+        public int getSize(BossBarModule module) {
+            if(this == Stage.STRINGS)
+                return module.getConfig().getText().size();
+            if(this == Stage.COMING)
+                return module.getConfig().getSoonEvents().size();
+            return module.getConfig().getCurrentEvents().size();
+        }
     }
 }
