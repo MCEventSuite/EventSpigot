@@ -59,10 +59,12 @@ public class BossBarConfig extends BaseConfig {
         public double getProgress() {
             final long time = System.currentTimeMillis();
             if(time > start) {
-                return (double)time - start / (double)end;
+                double progress = ((double) time - (double) start) / ((double) end - (double) start);
+                System.out.println((double) time + " - " + (double) start + " / " + (double)end + " = " + progress);
+                return progress;
             }
-
-            return (double) time / (double) start;
+            // work this out later
+            return 0.5;
         }
 
         public static enum Location {
