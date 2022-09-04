@@ -2,6 +2,8 @@ package dev.imabad.mceventsuite.spigot.commands;
 
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
+import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
+import dev.imabad.mceventsuite.core.modules.mysql.dao.PlayerDAO;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -20,13 +22,20 @@ public class TptoggleCommand extends BaseCommand {
     }
 
     public static boolean isDisabledForPlayer(Player player) {
-        Optional<EventPlayer> eventPlayer = EventCore.getInstance().getEventPlayerManager().getPlayer(player.getUniqueId());
+        Optional<EventPlayer> eventPlayerOptional = EventCore.getInstance().getEventPlayerManager().getPlayer(player.getUniqueId());
+        EventPlayer eventPlayer;
 
-        if (!eventPlayer.isPresent()) {
-            return false;
+        if(eventPlayerOptional.isEmpty()) {
+            eventPlayer = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase()
+                    .getDAO(PlayerDAO.class).getPlayer(player.getUniqueId());
+        } else {
+            eventPlayer = eventPlayerOptional.get();
         }
 
-        return isDisabledForPlayer(eventPlayer.get());
+        if(eventPlayer == null)
+            return false;
+
+        return isDisabledForPlayer(eventPlayer);
     }
 
     public static boolean isDisabledForPlayer(EventPlayer player) {
