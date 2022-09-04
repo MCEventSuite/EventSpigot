@@ -57,16 +57,16 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
             if(stage == Stage.CURRENT) {
                 final BossBarConfig.Event event = currentEvents.get(current);
                 bossBar.setTitle(ChatColor.translateAlternateColorCodes('&',
-                        "&b&l" + event.location.getHumanName().toUpperCase()
-                        + " &r&a&l- HAPPENING NOW - &r" + event.name
+                        "&" + event.location.color + "&l" + event.location.human.toUpperCase()
+                        + " &r&a&l▪ ON NOW ▪ &r" + event.name
                 ));
                 bossBar.setProgress(Math.max(0.0D, Math.min(1.0D, event.getProgress())));
                 bossBar.setColor(BarColor.GREEN);
             } else if(stage == Stage.COMING) {
                 final BossBarConfig.Event event = soon.get(current);
                 bossBar.setTitle(ChatColor.translateAlternateColorCodes('&',
-                        "&d&l" + event.location.getHumanName().toUpperCase()
-                                + " &r&6&l- STARTING SOON - &r" + event.name
+                        "&" + event.location.color + "&l" + event.location.human.toUpperCase()
+                                + " &r&6&l▪ UP NEXT ▪ &r" + event.name
                 ));
                 bossBar.setProgress(Math.max(0.0D, Math.min(1.0D, event.getProgress())));
                 bossBar.setColor(BarColor.YELLOW);

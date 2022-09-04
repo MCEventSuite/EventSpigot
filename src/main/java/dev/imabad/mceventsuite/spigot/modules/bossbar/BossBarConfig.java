@@ -69,12 +69,14 @@ public class BossBarConfig extends BaseConfig {
         }
 
         public static enum Location {
-            MAIN_STAGE("Main Stage"), SIDE_STAGE("Outdoor Stage"), OUTSIDE("Outside"), NONE("None");
+            MAIN_STAGE('d', "Main Stage"), SIDE_STAGE('b', "Outdoor Stage"), OUTSIDE('e', "Outside"), NONE('7', "None");
 
-            private String human;
+            public final String human;
+            public final char color;
 
-            Location(String name) {
+            Location(char color, String name) {
                 this.human = name;
+                this.color= color;
             }
 
             public String getHumanName() {
