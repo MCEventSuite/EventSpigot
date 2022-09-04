@@ -8,18 +8,22 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 public class BossBarModule extends Module implements IConfigProvider<BossBarConfig>, Listener {
 
     private BossBarConfig config;
     private org.bukkit.boss.BossBar bossBar;
+
+    private Stage stage = Stage.STRINGS;
     private int current = 0;
 
     @EventHandler
@@ -36,13 +40,48 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
     public void onEnable() {
         bossBar = Bukkit.createBossBar(ChatColor.translateAlternateColorCodes('&', config.getText().get(current)), BarColor.BLUE, BarStyle.SEGMENTED_20);
         EventSpigot.getInstance().getServer().getScheduler().runTaskTimer(EventSpigot.getInstance(), () -> {
-            if(current + 1 > (config.getText().size() - 1)){
+            final List<BossBarConfig.Event> currentEvents = config.getCurrentEvents();
+            final List<BossBarConfig.Event> soon = config.getSoonEvents();
+            final List<String> strings = config.getText();
+
+            if(stage == Stage.CURRENT) {
+                final BossBarConfig.Event event = currentEvents.get(current);
+                bossBar.setTitle(event.name + " is currently on at the " + event.location);
+                bossBar.setProgress(event.getProgress());
+                bossBar.setColor(BarColor.GREEN);
+            } else if(stage == Stage.COMING) {
+                final BossBarConfig.Event event = soon.get(current);
+                bossBar.setTitle(event.name + " will soon be starting at the " + event.location);
+                bossBar.setProgress(event.getProgress());
+                bossBar.setColor(BarColor.YELLOW);
+            } else {
+                final String text = strings.get(current);
+                bossBar.setTitle(ChatColor.translateAlternateColorCodes('&', text));
+                bossBar.setProgress(100);
+                bossBar.setColor(BarColor.BLUE);
+            }
+        }, 0, 5);
+
+        EventSpigot.getInstance().getServer().getScheduler().runTaskTimer(EventSpigot.getInstance(), () -> {
+            final List<BossBarConfig.Event> currentEvents = config.getCurrentEvents();
+            final List<BossBarConfig.Event> soon = config.getSoonEvents();
+            final List<String> strings = config.getText();
+            int max = 0;
+
+            if(stage == Stage.CURRENT)
+                max = currentEvents.size();
+            else if(stage == Stage.COMING)
+                max = soon.size();
+            else if(stage == Stage.STRINGS)
+                max = strings.size();
+
+            if(current > max) {
+                stage = Stage.values().length >= stage.ordinal() + 1 ? Stage.CURRENT : Stage.values()[stage.ordinal() + 1];
                 current = 0;
             } else {
                 current++;
             }
-            bossBar.setTitle(ChatColor.translateAlternateColorCodes('&', config.getText().get(current)));
-        }, 10 * 20, 10 * 20);
+        }, 0, 20 * 5);
         EventSpigot.getInstance().getServer().getPluginManager().registerEvents(this, EventSpigot.getInstance());
     }
 
@@ -84,5 +123,9 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
     @Override
     public boolean saveOnQuit() {
         return false;
+    }
+
+    public enum Stage {
+        CURRENT, COMING, STRINGS;
     }
 }
