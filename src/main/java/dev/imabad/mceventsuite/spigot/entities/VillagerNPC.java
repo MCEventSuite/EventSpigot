@@ -9,12 +9,15 @@ import dev.imabad.mceventsuite.spigot.utils.StringUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.pathfinder.Path;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_19_R1.CraftWorld;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 
@@ -31,8 +34,8 @@ public class VillagerNPC extends net.minecraft.world.entity.npc.Villager {
     public VillagerNPC(EntityType<VillagerNPC> type, Level world){
         super(type, world);
         System.out.println("C1 Removing goals");
-//        Bukkit.getMobGoals().removeAllGoals((Villager)this.getBukkitCreature());
-//        this.goalSelector.a(8, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 3.0F));
+        Bukkit.getMobGoals().removeAllGoals((Villager)this.getBukkitCreature());
+        this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 3.0F));
     }
 
     public VillagerNPC(Level world, Location spawnLocation, String name) {
@@ -40,8 +43,8 @@ public class VillagerNPC extends net.minecraft.world.entity.npc.Villager {
         this.spawnLocation = spawnLocation;
         this.name = name;
         System.out.println("C2 Removing goals");
-//        Bukkit.getMobGoals().removeAllGoals((Villager)this.getBukkitCreature());
-//        this.goalSelector.a(8, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 3.0F));
+        Bukkit.getMobGoals().removeAllGoals((Villager)this.getBukkitCreature());
+        this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 3.0F));
     }
 
     public static Object getPrivateField(String fieldName, Class clazz, Object object) {
