@@ -60,7 +60,6 @@ public class BossBarConfig extends BaseConfig {
             final long time = System.currentTimeMillis();
             if(time > start) {
                 double progress = ((double) time - (double) start) / ((double) end - (double) start);
-                System.out.println((double) time + " - " + (double) start + " / " + (double)end + " = " + progress);
                 return progress;
             }
 
