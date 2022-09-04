@@ -17,6 +17,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class BossBarModule extends Module implements IConfigProvider<BossBarConfig>, Listener {
 
@@ -75,7 +76,7 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
             else if(stage == Stage.STRINGS)
                 max = strings.size();
 
-            if(current >= max) {
+            if(current + 1 >= max) {
                 stage = Stage.values().length >= stage.ordinal() + 1 ? Stage.CURRENT : Stage.values()[stage.ordinal() + 1];
                 current = 0;
             } else {
