@@ -48,17 +48,17 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
             if(stage == Stage.CURRENT) {
                 final BossBarConfig.Event event = soon.size() != 0 ? currentEvents.get(current) : new BossBarConfig.Event("No event configured!", BossBarConfig.Event.Location.NONE, System.currentTimeMillis() - 1000, System.currentTimeMillis() + 20000);
                 bossBar.setTitle(event.name + " is currently on at the " + event.location);
-                bossBar.setProgress(event.getProgress());
+                bossBar.setProgress(Math.min(event.getProgress(), 1.0));
                 bossBar.setColor(BarColor.GREEN);
             } else if(stage == Stage.COMING) {
                 final BossBarConfig.Event event = soon.size() != 0 ? soon.get(current) : new BossBarConfig.Event("No event configured!", BossBarConfig.Event.Location.NONE, System.currentTimeMillis()-20000, System.currentTimeMillis() + 20000);
                 bossBar.setTitle(event.name + " will soon be starting at the " + event.location);
-                bossBar.setProgress(event.getProgress());
+                bossBar.setProgress(Math.min(event.getProgress(), 1.0));
                 bossBar.setColor(BarColor.YELLOW);
             } else {
                 final String text = strings.get(current);
                 bossBar.setTitle(ChatColor.translateAlternateColorCodes('&', text));
-                bossBar.setProgress(100);
+                bossBar.setProgress(1.0);
                 bossBar.setColor(BarColor.BLUE);
             }
         }, 0, 5);
@@ -77,7 +77,7 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
                 max = strings.size();
 
             if(current + 1 >= max) {
-                stage = Stage.values().length >= stage.ordinal() + 1 ? Stage.CURRENT : Stage.values()[stage.ordinal() + 1];
+                stage = stage.ordinal() + 1 >= Stage.values().length ? Stage.CURRENT : Stage.values()[stage.ordinal() + 1];
                 current = 0;
             } else {
                 current++;
