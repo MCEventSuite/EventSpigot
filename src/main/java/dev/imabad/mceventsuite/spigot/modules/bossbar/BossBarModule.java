@@ -45,12 +45,12 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
             final List<String> strings = config.getText();
 
             if(stage == Stage.CURRENT) {
-                final BossBarConfig.Event event = currentEvents.get(current);
+                final BossBarConfig.Event event = soon.size() != 0 ? currentEvents.get(current) : new BossBarConfig.Event("No event configured!", BossBarConfig.Event.Location.NONE, System.currentTimeMillis(), System.currentTimeMillis() + 20000);
                 bossBar.setTitle(event.name + " is currently on at the " + event.location);
                 bossBar.setProgress(event.getProgress());
                 bossBar.setColor(BarColor.GREEN);
             } else if(stage == Stage.COMING) {
-                final BossBarConfig.Event event = soon.get(current);
+                final BossBarConfig.Event event = soon.size() != 0 ? soon.get(current) : new BossBarConfig.Event("No event configured!", BossBarConfig.Event.Location.NONE, System.currentTimeMillis(), System.currentTimeMillis() + 20000);
                 bossBar.setTitle(event.name + " will soon be starting at the " + event.location);
                 bossBar.setProgress(event.getProgress());
                 bossBar.setColor(BarColor.YELLOW);
@@ -75,7 +75,7 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
             else if(stage == Stage.STRINGS)
                 max = strings.size();
 
-            if(current > max) {
+            if(current >= max) {
                 stage = Stage.values().length >= stage.ordinal() + 1 ? Stage.CURRENT : Stage.values()[stage.ordinal() + 1];
                 current = 0;
             } else {
