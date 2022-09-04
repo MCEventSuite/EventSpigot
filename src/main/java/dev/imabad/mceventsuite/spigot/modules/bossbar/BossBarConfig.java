@@ -65,7 +65,7 @@ public class BossBarConfig extends BaseConfig {
             }
 
             double timeLeft = (double) start - (double) System.currentTimeMillis();
-            return timeLeft / ((double) start + (60 * 1000 * 10));
+            return timeLeft / (((double) 60 * 1000 * 10));
         }
 
         public static enum Location {
