@@ -3,6 +3,13 @@ package dev.imabad.mceventsuite.spigot.modules.hidenseek;
 import com.github.puregero.multilib.MultiLib;
 import com.sk89q.worldedit.util.formatting.text.format.TextColor;
 import com.sk89q.worldguard.WorldGuard;
+import dev.imabad.mceventsuite.core.EventCore;
+import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
+import dev.imabad.mceventsuite.core.modules.eventpass.EventPassModule;
+import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassDAO;
+import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassPlayer;
+import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
+import dev.imabad.mceventsuite.core.modules.mysql.dao.PlayerDAO;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
 import net.kyori.adventure.text.Component;
@@ -136,7 +143,7 @@ public class HideNSeekGame {
             if(hider.isLocalPlayer()) {
                 hider.sendMessage(ChatColor.GREEN + "YOU ARE NOW A HIDER!");
                 hider.sendMessage(ChatColor.YELLOW + "You are hidden from the seekers until the game begins!");
-                hider.sendMessage(ChatColor.RED + "You have " + Math.round(counter / 60) + " minutes to hide!");
+                hider.sendMessage(ChatColor.RED + "You have " + Math.round((counter - gameStartTime) / 60) + " minutes to hide!");
             }
 
             for(Player player : Bukkit.getAllOnlinePlayers()) {
@@ -257,10 +264,32 @@ public class HideNSeekGame {
             countdown.cancel();
 
         if (!remote) {
-            if(hiders.size() == 0) {
-                Bukkit.broadcast(Component.text("The seekers win!").color(NamedTextColor.GREEN));
-            } else {
-                Bukkit.broadcast(Component.text("The hiders win!").color(NamedTextColor.GREEN));
+            final PlayerDAO playerDAO = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class)
+                    .getMySQLDatabase().getDAO(PlayerDAO.class);
+            final EventPassModule eventPassModule = EventCore.getInstance().getModuleRegistry().getModule(EventPassModule.class);
+
+            String winners = "seeker";
+            List<UUID> winnersUUIDs = seekers;
+
+            if(hiders.size() != 0) {
+                winners = "hider";
+                winnersUUIDs = hiders;
+            }
+
+            for(UUID uuid : winnersUUIDs) {
+                Player player = Bukkit.getPlayer(uuid);
+                if(player == null)
+                    continue;
+                EventPlayer eventPlayer = playerDAO.getPlayer(uuid);
+                if(eventPlayer == null)
+                    continue;
+                eventPassModule.awardXP(eventPlayer, 1000, player, "Winning Hide & Seek as a " + winners, true);
+            }
+
+            //Bukkit.broadcast() doesn't seem to be working, use this hack for now.
+            for(Player player : Bukkit.getAllOnlinePlayers()) {
+                player.sendMessage(ChatColor.GREEN + "Hide & Seek has ended! The " + ChatColor.YELLOW + (winners + "s")
+                        + ChatColor.GREEN + " have won!");
             }
         }
     }
