@@ -72,6 +72,6 @@ dependencies {
 }
 
 shadowJar {
-    relocate 'net.kyori.adventure', 'shadow.adventure'
+    //relocate 'net.kyori.adventure', 'shadow.adventure'
 }
 tasks.build.dependsOn tasks.shadowJar
