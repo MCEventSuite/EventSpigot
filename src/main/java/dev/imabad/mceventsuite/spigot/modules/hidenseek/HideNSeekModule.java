@@ -127,7 +127,7 @@ public class HideNSeekModule extends Module {
     public void leaveSeeker(Player player) {
         if(this.currentGame == null || this.currentGame.getStatus() == HideNSeekGame.GameStatus.ENDED)
             return;
-        this.getGame().leave(player.getUniqueId());
+        this.getGame().leaveSeeker(player.getUniqueId());
         MultiLib.notify("eventspigot:hns", "rmseeker:" + player.getUniqueId());
     }
 

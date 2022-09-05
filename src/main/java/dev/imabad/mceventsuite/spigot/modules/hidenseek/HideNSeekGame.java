@@ -181,7 +181,7 @@ public class HideNSeekGame {
                 return;
             }
 
-            if(counter == this.gameStartTime) {
+            if(counter == this.gameStartTime && getStatus() == GameStatus.WAITING) {
                 MultiLib.notify("eventspigot:hns", "start");
                 this.start(false);
                 return;

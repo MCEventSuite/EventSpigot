@@ -60,12 +60,33 @@ public class HideSeekCommand extends BaseCommand {
             } else if(subCommand.equalsIgnoreCase("addseeker")) {
                 String target = args[1];
                 Player targetPlayer = Bukkit.getPlayer(target);
-                if(targetPlayer == null) {
+                if (targetPlayer == null) {
                     player.sendMessage(ChatColor.RED + "Could not find a player with that name!");
                     return false;
                 }
                 module.joinAsSeeker(targetPlayer);
                 player.sendMessage(ChatColor.GREEN + "Made " + targetPlayer.getName() + " a seeker!");
+                return true;
+            } else if(subCommand.equalsIgnoreCase("kick")) {
+                String target = args[1];
+                Player targetPlayer = Bukkit.getPlayer(target);
+                if (targetPlayer == null) {
+                    player.sendMessage(ChatColor.RED + "Could not find a player with that name!");
+                    return false;
+                }
+
+                if(!module.getGame().getAllPlayers().contains(targetPlayer.getUniqueId())) {
+                    player.sendMessage(ChatColor.RED + targetPlayer.getName() + " is not playing Hide & Seek!");
+                    return false;
+                }
+
+                if(module.getGame().getHiders().contains(targetPlayer.getUniqueId())) {
+                    module.leave(targetPlayer);
+                    targetPlayer.sendMessage(ChatColor.RED + "You have been removed from the Hide & Seek game by " + player.getName() + "!");
+                } else if(module.getGame().getSeekers().contains(targetPlayer.getUniqueId())) {
+                    module.leaveSeeker(targetPlayer);
+                    targetPlayer.sendMessage(ChatColor.RED + "You have been removed from the Hide & Seek game by " + player.getName() + "!");
+                }
                 return true;
             } else if(subCommand.equalsIgnoreCase("end")) {
                 module.getGame().runEnd();
