@@ -7,6 +7,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentBuilder;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +18,7 @@ public class HideNSeekModule extends Module {
     private HideNSeekGame currentGame;
 
     public HideNSeekModule() {
+        EventSpigot.getInstance().getServer().getPluginManager().registerEvents(new HideNSeekListener(), EventSpigot.getInstance());
         MultiLib.onString(EventSpigot.getInstance(), "eventspigot:hns", (data) -> {
             if(data.equalsIgnoreCase("end")) {
                 this.currentGame.end(true);
@@ -78,6 +80,41 @@ public class HideNSeekModule extends Module {
             return true;
         }
         return false;
+    }
+
+    public void joinAsHider(Player player) {
+        if(this.currentGame == null || this.currentGame.getStatus() != HideNSeekGame.GameStatus.WAITING)
+            return;
+        this.getGame().join(player.getUniqueId());
+        MultiLib.notify("eventspigot:hns", "join:" + player.getUniqueId());
+    }
+
+    public void joinAsSeeker(Player player) {
+        if(this.currentGame == null || this.currentGame.getStatus() == HideNSeekGame.GameStatus.ENDED)
+            return;
+        this.getGame().addSeeker(player.getUniqueId());
+        MultiLib.notify("eventspigot:hns", "addseeker:" + player.getUniqueId());
+    }
+
+    public void leave(Player player) {
+        if(this.currentGame == null || this.currentGame.getStatus() == HideNSeekGame.GameStatus.ENDED)
+            return;
+        this.getGame().leave(player.getUniqueId());
+        MultiLib.notify("eventspigot:hns", "leave:" + player.getUniqueId());
+    }
+
+    public void leaveSeeker(Player player) {
+        if(this.currentGame == null || this.currentGame.getStatus() == HideNSeekGame.GameStatus.ENDED)
+            return;
+        this.getGame().leave(player.getUniqueId());
+        MultiLib.notify("eventspigot:hns", "rmseeker:" + player.getUniqueId());
+    }
+
+    public void catchHider(Player hider, Player seeker) {
+        if(this.currentGame == null || this.currentGame.getStatus() != HideNSeekGame.GameStatus.STARTED)
+            return;
+        MultiLib.notify("eventspigot:hns", "caught:" + hider.getUniqueId() + ":" + seeker.getName());
+        this.getGame().convertToSeeker(hider.getUniqueId(), seeker.getName());
     }
 
     @Override

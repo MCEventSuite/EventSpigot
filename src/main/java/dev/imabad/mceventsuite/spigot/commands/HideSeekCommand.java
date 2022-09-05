@@ -34,7 +34,7 @@ public class HideSeekCommand extends BaseCommand {
         final String subCommand = args[0];
 
         if(player.hasPermission("eventsuite.admin.hns")) {
-            if (subCommand.equalsIgnoreCase("start")) {
+            if (subCommand.equalsIgnoreCase("create")) {
                 module.startGame(new HideNSeekGame(player.getUniqueId()));
             } else if(subCommand.equalsIgnoreCase("addseeker")) {
                 String target = args[1];
@@ -43,7 +43,7 @@ public class HideSeekCommand extends BaseCommand {
                     player.sendMessage(ChatColor.RED + "Could not find a player with that name!");
                     return false;
                 }
-                module.getGame().addSeeker(targetPlayer.getUniqueId());
+                module.joinAsSeeker(targetPlayer);
                 player.sendMessage(ChatColor.GREEN + "Made " + targetPlayer.getName() + " a seeker!");
             } else if(subCommand.equalsIgnoreCase("end")) {
                 module.getGame().runEnd();
@@ -51,9 +51,15 @@ public class HideSeekCommand extends BaseCommand {
                 for(Player player1 : Bukkit.getAllOnlinePlayers()) {
                     if(!module.getGame().getSeekers().contains(player1.getUniqueId())
                         && !module.getGame().getHiders().contains(player1.getUniqueId())) {
-                        module.getGame().addSeeker(player1.getUniqueId());
+                        module.joinAsSeeker(player1);
                     }
                 }
+            } else if(subCommand.equalsIgnoreCase("start")) {
+                if(module.getGame() == null || module.getGame().getStatus() != HideNSeekGame.GameStatus.WAITING) {
+                    player.sendMessage(ChatColor.RED + "Cannot start game! Is there a game in progress already or have you not ran /hns create?");
+                    return true;
+                }
+                module.getGame().start(false);
             }
         }
 
@@ -64,15 +70,15 @@ public class HideSeekCommand extends BaseCommand {
 
         if(subCommand.equalsIgnoreCase("join")) {
             if(module.getGame().getStatus() == HideNSeekGame.GameStatus.WAITING) {
-                module.getGame().join(player.getUniqueId());
+                module.joinAsHider(player);
             } else {
                 player.sendMessage(ChatColor.RED + "It's too late to join - the game has already started!");
             }
         } else if(subCommand.equalsIgnoreCase("leave")) {
             if(module.getGame().getHiders().contains(player.getUniqueId())) {
-                module.getGame().leave(player.getUniqueId());
+                module.leave(player);
             } else if(module.getGame().getSeekers().contains(player.getUniqueId())) {
-                module.getGame().leaveSeeker(player.getUniqueId());
+                module.leaveSeeker(player);
             } else {
                 player.sendMessage(ChatColor.RED + "You're not currently playing!");
             }

@@ -163,6 +163,7 @@ public class EventSpigot extends JavaPlugin {
             commandMap.register("tptoggle", new TptoggleCommand());
             commandMap.register("fly", new FlyCommand());
             commandMap.register("bbd", new BossBarDebugCommand());
+            commandMap.register("hns", new HideSeekCommand());
         }
         if(getServer().getPluginManager().isPluginEnabled("PlotSquared")) {
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BoothModule());

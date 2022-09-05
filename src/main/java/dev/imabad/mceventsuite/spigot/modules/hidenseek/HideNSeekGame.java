@@ -4,6 +4,7 @@ import com.github.puregero.multilib.MultiLib;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.md_5.bungee.api.ChatMessageType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -26,6 +27,7 @@ public class HideNSeekGame {
     private List<UUID> hiders;
 
     private BukkitTask countdown;
+    int counter = 600;
 
     public HideNSeekGame(UUID starter){
         this.status = GameStatus.WAITING;
@@ -44,6 +46,12 @@ public class HideNSeekGame {
 
     public List<UUID> getHiders() {
         return this.hiders;
+    }
+
+    public List<UUID> getAllPlayers() {
+        List<UUID> players = new ArrayList<>(getSeekers());
+        players.addAll(getHiders());
+        return players;
     }
 
     public void addSeeker(UUID uuid) {
@@ -162,19 +170,41 @@ public class HideNSeekGame {
                 continue;
             }
 
-            for(UUID hiderUuid : hiders) {
-                Player hider = Bukkit.getPlayer(hiderUuid);
-                if(hider == null) {
-                    hiders.remove(hiderUuid);
-                    continue;
-                }
+            if(player.isLocalPlayer()) {
+                for (UUID hiderUuid : hiders) {
+                    Player hider = Bukkit.getPlayer(hiderUuid);
+                    if (hider == null) {
+                        hiders.remove(hiderUuid);
+                        continue;
+                    }
 
-                player.showPlayer(EventSpigot.getInstance(), hider);
+                    player.showPlayer(EventSpigot.getInstance(), hider);
+                }
             }
         }
 
         if(!remote) {
-            countdown = Bukkit.getScheduler().runTaskLater(EventSpigot.getInstance(), this::runEnd, 20 * 60 * 10);
+            countdown = Bukkit.getScheduler().runTaskTimer(EventSpigot.getInstance(), () -> {
+                final Component component = Component.text("Time remaining: ").color(NamedTextColor.GREEN)
+                        .append(Component.text(counter)).color(NamedTextColor.YELLOW);
+
+                if(counter < 0) {
+                    this.runEnd();
+                    return;
+                }
+
+                for(UUID uuid : getAllPlayers()) {
+                    Player player = Bukkit.getPlayer(uuid);
+                    if(player == null) {
+                        hiders.remove(uuid);
+                        continue;
+                    }
+
+                    player.sendActionBar(component);
+                }
+
+                counter--;
+            }, 0, 20);
         }
     }
 
