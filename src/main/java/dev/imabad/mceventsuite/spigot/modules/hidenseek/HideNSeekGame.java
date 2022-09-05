@@ -48,10 +48,6 @@ public class HideNSeekGame {
         this.gameStartTime = duration;
     }
 
-    public UUID getStarter() {
-        return this.seekers.get(0);
-    }
-
     public List<UUID> getSeekers() {
         return this.seekers;
     }

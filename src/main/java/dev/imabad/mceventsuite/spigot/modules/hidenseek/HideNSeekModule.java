@@ -78,7 +78,7 @@ public class HideNSeekModule extends Module {
     public boolean startGame(HideNSeekGame game) {
         if (currentGame == null || currentGame.getStatus() == HideNSeekGame.GameStatus.ENDED) {
             this.currentGame = game;
-            MultiLib.notify("eventspigot:hns", "init:" + game.getStarter());
+            MultiLib.notify("eventspigot:hns", "init");
 
             Component component = Component.text("----------------------------").color(NamedTextColor.BLUE)
                     .append(Component.text("\n\nHIDE & SEEK\n\n").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD))
