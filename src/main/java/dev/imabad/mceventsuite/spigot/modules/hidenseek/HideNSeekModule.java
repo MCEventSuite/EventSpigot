@@ -31,13 +31,12 @@ public class HideNSeekModule extends Module {
             } else if(data.equalsIgnoreCase("start")) {
                 this.currentGame.start(true);
                 return;
+            } else if(data.equalsIgnoreCase("init")) {
+                this.currentGame = new HideNSeekGame();
+                return;
             }
 
             final String[] parts = data.split(":");
-            if (parts[0].equalsIgnoreCase("init")) {
-                this.currentGame = new HideNSeekGame(UUID.fromString(parts[1]));
-                return;
-            }
 
             if(this.currentGame != null && this.currentGame.getStatus() != HideNSeekGame.GameStatus.ENDED) {
                 if(parts[0].equalsIgnoreCase("addseeker")) {

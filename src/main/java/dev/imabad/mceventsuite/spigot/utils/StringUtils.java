@@ -1,6 +1,8 @@
 package dev.imabad.mceventsuite.spigot.utils;
 
 import org.bukkit.ChatColor;
+
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -77,5 +79,11 @@ public class StringUtils {
 
     public static String trim(String string, int size) {
         return string.length() > size ? string.substring(0, size - 1) : string;
+    }
+
+    public static String formatSeconds(int seconds) {
+        int minutes = seconds / 60;
+        int secs = seconds % 60;
+        return String.format("%d:%02d", minutes, secs);
     }
 }

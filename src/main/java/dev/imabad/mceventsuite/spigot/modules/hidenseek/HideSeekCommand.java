@@ -4,6 +4,8 @@ import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.spigot.commands.BaseCommand;
 import dev.imabad.mceventsuite.spigot.modules.hidenseek.HideNSeekGame;
 import dev.imabad.mceventsuite.spigot.modules.hidenseek.HideNSeekModule;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -37,7 +39,10 @@ public class HideSeekCommand extends BaseCommand {
 
         if(player.hasPermission("eventsuite.admin.hns")) {
             if (subCommand.equalsIgnoreCase("create")) {
-                module.startGame(new HideNSeekGame(player.getUniqueId()));
+                if(module.startGame(new HideNSeekGame()))
+                    module.joinAsSeeker(player);
+                else
+                    player.sendMessage(Component.text("Game failed to start! Is there already in progress?").color(NamedTextColor.RED));
                 return true;
             } else if(subCommand.equalsIgnoreCase("seek")) {
                 module.joinAsSeeker(player);

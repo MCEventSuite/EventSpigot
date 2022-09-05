@@ -3,6 +3,7 @@ package dev.imabad.mceventsuite.spigot.modules.hidenseek;
 import com.github.puregero.multilib.MultiLib;
 import com.sk89q.worldguard.WorldGuard;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
+import dev.imabad.mceventsuite.spigot.utils.StringUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.md_5.bungee.api.ChatMessageType;
@@ -31,10 +32,9 @@ public class HideNSeekGame {
     private BukkitTask countdown;
     int counter = 600;
 
-    public HideNSeekGame(UUID starter){
+    public HideNSeekGame(){
         this.status = GameStatus.WAITING;
         this.seekers = new ArrayList<>();
-        this.seekers.add(starter);
         this.hiders = new ArrayList<>();
     }
 
@@ -121,6 +121,9 @@ public class HideNSeekGame {
         if (hider == null)
             return;
 
+        if(this.seekers.contains(uuid))
+            return;
+
         if (status == GameStatus.WAITING) {
             this.hiders.add(uuid);
 
@@ -188,7 +191,7 @@ public class HideNSeekGame {
         if(!remote) {
             countdown = Bukkit.getScheduler().runTaskTimer(EventSpigot.getInstance(), () -> {
                 final Component component = Component.text("Time remaining: ").color(NamedTextColor.GREEN)
-                        .append(Component.text(counter)).color(NamedTextColor.YELLOW);
+                        .append(Component.text(StringUtils.formatSeconds(counter))).color(NamedTextColor.YELLOW);
 
                 if(counter < 0) {
                     this.runEnd();
@@ -216,7 +219,7 @@ public class HideNSeekGame {
     }
 
     public void end(boolean remote) {
-        if (status == GameStatus.STARTED)
+        if (status != GameStatus.STARTED)
             return;
         this.status = GameStatus.ENDED;
 
