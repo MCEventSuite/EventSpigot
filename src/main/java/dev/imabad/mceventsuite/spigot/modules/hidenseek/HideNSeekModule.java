@@ -23,6 +23,7 @@ public class HideNSeekModule extends Module {
 
     public HideNSeekModule() {
         EventSpigot.getInstance().getServer().getPluginManager().registerEvents(new HideNSeekListener(), EventSpigot.getInstance());
+        EventSpigot.getInstance().getCommandMap().register("hns", new HideSeekCommand());
         MultiLib.onString(EventSpigot.getInstance(), "eventspigot:hns", (data) -> {
             if(data.equalsIgnoreCase("end")) {
                 this.currentGame.end(true);

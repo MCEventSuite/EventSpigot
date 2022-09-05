@@ -1,6 +1,7 @@
-package dev.imabad.mceventsuite.spigot.commands;
+package dev.imabad.mceventsuite.spigot.modules.hidenseek;
 
 import dev.imabad.mceventsuite.core.EventCore;
+import dev.imabad.mceventsuite.spigot.commands.BaseCommand;
 import dev.imabad.mceventsuite.spigot.modules.hidenseek.HideNSeekGame;
 import dev.imabad.mceventsuite.spigot.modules.hidenseek.HideNSeekModule;
 import org.bukkit.Bukkit;
