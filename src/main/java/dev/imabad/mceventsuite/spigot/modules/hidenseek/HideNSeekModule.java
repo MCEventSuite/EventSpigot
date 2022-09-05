@@ -1,11 +1,15 @@
 package dev.imabad.mceventsuite.spigot.modules.hidenseek;
 
 import com.github.puregero.multilib.MultiLib;
+import com.sk89q.worldedit.util.formatting.text.format.TextColor;
 import dev.imabad.mceventsuite.core.api.modules.Module;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentBuilder;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -72,11 +76,23 @@ public class HideNSeekModule extends Module {
     }
 
     public boolean startGame(HideNSeekGame game) {
-        if(currentGame == null || currentGame.getStatus() == HideNSeekGame.GameStatus.ENDED) {
+        if (currentGame == null || currentGame.getStatus() == HideNSeekGame.GameStatus.ENDED) {
             this.currentGame = game;
             MultiLib.notify("eventspigot:hns", "init:" + game.getStarter());
-            Bukkit.broadcast(Component.text("A new game of Hide and Seek is starting! Run ").color(NamedTextColor.GREEN)
-                    .append(Component.text("/hns join").color(NamedTextColor.RED).append(Component.text(" to join!").color(NamedTextColor.GREEN))));
+
+            Component component = Component.text("----------------------------").color(NamedTextColor.BLUE)
+                    .append(Component.text("\n\nHIDE & SEEK").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD))
+                    .append(Component.text("A game of ").color(NamedTextColor.LIGHT_PURPLE))
+                    .append(Component.text("Hide & Seek").color(NamedTextColor.YELLOW))
+                    .append(Component.text(" has been started!").color(NamedTextColor.LIGHT_PURPLE))
+                    .append(Component.text("\nClick here").color(NamedTextColor.GREEN)
+                            .decorate(TextDecoration.BOLD, TextDecoration.UNDERLINED)
+                            .clickEvent(ClickEvent.runCommand("/hns join"))
+                            .hoverEvent(HoverEvent.showText(Component.text("Click to join!").color(NamedTextColor.GREEN))))
+                    .append(Component.text(" to join the game.").color(NamedTextColor.AQUA))
+                    .append(Component.text("\n\n----------------------------").color(NamedTextColor.BLUE));
+
+            Bukkit.broadcast(component);
             return true;
         }
         return false;

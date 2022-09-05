@@ -1,12 +1,14 @@
 package dev.imabad.mceventsuite.spigot.modules.hidenseek;
 
 import com.github.puregero.multilib.MultiLib;
+import com.sk89q.worldguard.WorldGuard;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.md_5.bungee.api.ChatMessageType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 

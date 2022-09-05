@@ -36,6 +36,10 @@ public class HideSeekCommand extends BaseCommand {
         if(player.hasPermission("eventsuite.admin.hns")) {
             if (subCommand.equalsIgnoreCase("create")) {
                 module.startGame(new HideNSeekGame(player.getUniqueId()));
+                return true;
+            } else if(subCommand.equalsIgnoreCase("seek")) {
+                module.joinAsSeeker(player);
+                return true;
             } else if(subCommand.equalsIgnoreCase("addseeker")) {
                 String target = args[1];
                 Player targetPlayer = Bukkit.getPlayer(target);
@@ -45,8 +49,10 @@ public class HideSeekCommand extends BaseCommand {
                 }
                 module.joinAsSeeker(targetPlayer);
                 player.sendMessage(ChatColor.GREEN + "Made " + targetPlayer.getName() + " a seeker!");
+                return true;
             } else if(subCommand.equalsIgnoreCase("end")) {
                 module.getGame().runEnd();
+                return true;
             } else if(subCommand.equalsIgnoreCase("addall")) {
                 for(Player player1 : Bukkit.getAllOnlinePlayers()) {
                     if(!module.getGame().getSeekers().contains(player1.getUniqueId())
@@ -54,12 +60,14 @@ public class HideSeekCommand extends BaseCommand {
                         module.joinAsSeeker(player1);
                     }
                 }
+                return true;
             } else if(subCommand.equalsIgnoreCase("start")) {
                 if(module.getGame() == null || module.getGame().getStatus() != HideNSeekGame.GameStatus.WAITING) {
                     player.sendMessage(ChatColor.RED + "Cannot start game! Is there a game in progress already or have you not ran /hns create?");
                     return true;
                 }
                 module.getGame().start(false);
+                return true;
             }
         }
 
@@ -69,6 +77,10 @@ public class HideSeekCommand extends BaseCommand {
         }
 
         if(subCommand.equalsIgnoreCase("join")) {
+            if(player.getName().equalsIgnoreCase("cubedcam")) {
+                module.joinAsSeeker(player);
+                return true;
+            }
             if(module.getGame().getStatus() == HideNSeekGame.GameStatus.WAITING) {
                 module.joinAsHider(player);
             } else {
