@@ -22,8 +22,8 @@ public class HideNSeekModule extends Module {
     private HideNSeekGame currentGame;
 
     public HideNSeekModule() {
-        EventSpigot.getInstance().getServer().getPluginManager().registerEvents(new HideNSeekListener(), EventSpigot.getInstance());
-        EventSpigot.getInstance().getCommandMap().register("hns", new HideSeekCommand());
+        EventSpigot.getInstance().getServer().getPluginManager().registerEvents(new HideNSeekListener(this), EventSpigot.getInstance());
+        EventSpigot.getInstance().getCommandMap().register("hns", new HideSeekCommand(this));
         MultiLib.onString(EventSpigot.getInstance(), "eventspigot:hns", (data) -> {
             if(data.equalsIgnoreCase("end")) {
                 this.currentGame.end(true);

@@ -16,10 +16,11 @@ import java.util.List;
 
 public class HideSeekCommand extends BaseCommand {
 
-   final HideNSeekModule module = EventCore.getInstance().getModuleRegistry().getModule(HideNSeekModule.class);
+   final HideNSeekModule module;
 
-    public HideSeekCommand() {
+    public HideSeekCommand(HideNSeekModule module) {
         super("hns");
+        this.module = module;
     }
 
     @Override

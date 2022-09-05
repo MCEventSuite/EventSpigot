@@ -8,7 +8,11 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 
 public class HideNSeekListener implements Listener {
-    private final HideNSeekModule module = EventCore.getInstance().getModuleRegistry().getModule(HideNSeekModule.class);
+    private final HideNSeekModule module;
+
+    public HideNSeekListener(HideNSeekModule module) {
+        this.module = module;
+    }
 
     @EventHandler
     public void onPlayerInteractEvent(PlayerInteractAtEntityEvent event) {
