@@ -96,6 +96,8 @@ public class HideNSeekModule extends Module {
             for(Player player : Bukkit.getAllOnlinePlayers())
                 player.sendMessage(component);
 
+            this.currentGame.startCountdown();
+
             return true;
         }
         return false;

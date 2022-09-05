@@ -1,11 +1,13 @@
 package dev.imabad.mceventsuite.spigot.modules.hidenseek;
 
 import com.github.puregero.multilib.MultiLib;
+import com.sk89q.worldedit.util.formatting.text.format.TextColor;
 import com.sk89q.worldguard.WorldGuard;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.md_5.bungee.api.ChatMessageType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -30,12 +32,20 @@ public class HideNSeekGame {
     private List<UUID> hiders;
 
     private BukkitTask countdown;
-    int counter = 600;
 
-    public HideNSeekGame(){
+    int counter;
+    final int gameStartTime;
+
+    public HideNSeekGame() {
+        this(0, 0);
+    }
+
+    public HideNSeekGame(int startCountdown, int duration){
         this.status = GameStatus.WAITING;
         this.seekers = new ArrayList<>();
         this.hiders = new ArrayList<>();
+        this.counter = startCountdown + duration;
+        this.gameStartTime = duration;
     }
 
     public UUID getStarter() {
@@ -110,7 +120,7 @@ public class HideNSeekGame {
         if(this.hiders.contains(uuid)) {
             this.hiders.remove(uuid);
             if(player.isLocalPlayer()) {
-                player.sendMessage(ChatColor.RED + nameOfFinder.toUpperCase() + "HAS CAUGHT YOU!");
+                player.sendMessage(ChatColor.RED + nameOfFinder.toUpperCase() + " HAS CAUGHT YOU!");
             }
             addSeeker(uuid);
         }
@@ -130,6 +140,7 @@ public class HideNSeekGame {
             if(hider.isLocalPlayer()) {
                 hider.sendMessage(ChatColor.GREEN + "YOU ARE NOW A HIDER!");
                 hider.sendMessage(ChatColor.YELLOW + "You are hidden from the seekers until the game begins!");
+                hider.sendMessage(ChatColor.RED + "You have " + Math.round(counter / 60) + " minutes to hide!");
             }
 
             for(Player player : Bukkit.getAllOnlinePlayers()) {
@@ -163,6 +174,37 @@ public class HideNSeekGame {
         }
     }
 
+    public void startCountdown() {
+        countdown = Bukkit.getScheduler().runTaskTimer(EventSpigot.getInstance(), () -> {
+            final int time = (getStatus() == GameStatus.WAITING ? this.counter - this.gameStartTime : this.counter);
+            final Component component = Component.text("Time remaining: ").color(NamedTextColor.GREEN)
+                    .append(Component.text(StringUtils.formatSeconds(time))).color(NamedTextColor.YELLOW);
+
+            if(counter < 0) {
+                this.runEnd();
+                return;
+            }
+
+            if(counter == this.gameStartTime) {
+                MultiLib.notify("eventspigot:hns", "start");
+                this.start(false);
+                return;
+            }
+
+            for(UUID uuid : getAllPlayers()) {
+                Player player = Bukkit.getPlayer(uuid);
+                if(player == null) {
+                    hiders.remove(uuid);
+                    continue;
+                }
+
+                player.sendActionBar(component);
+            }
+
+            counter--;
+        }, 0, 20);
+    }
+
     public void start(boolean remote) {
         if(this.status != GameStatus.WAITING)
             return;
@@ -189,27 +231,13 @@ public class HideNSeekGame {
         }
 
         if(!remote) {
-            countdown = Bukkit.getScheduler().runTaskTimer(EventSpigot.getInstance(), () -> {
-                final Component component = Component.text("Time remaining: ").color(NamedTextColor.GREEN)
-                        .append(Component.text(StringUtils.formatSeconds(counter))).color(NamedTextColor.YELLOW);
-
-                if(counter < 0) {
-                    this.runEnd();
-                    return;
-                }
-
-                for(UUID uuid : getAllPlayers()) {
-                    Player player = Bukkit.getPlayer(uuid);
-                    if(player == null) {
-                        hiders.remove(uuid);
-                        continue;
-                    }
-
-                    player.sendActionBar(component);
-                }
-
-                counter--;
-            }, 0, 20);
+            final Component component = Component.text("The game has started! All hiders are now ").color(NamedTextColor.GREEN)
+                    .append(Component.text("VISIBLE!").color(NamedTextColor.RED).decorate(TextDecoration.BOLD, TextDecoration.UNDERLINED));
+            for(UUID uuid : getAllPlayers()) {
+                Player player = Bukkit.getPlayer(uuid);
+                if(player != null)
+                    player.sendMessage(component);
+            }
         }
     }
 

@@ -39,7 +39,17 @@ public class HideSeekCommand extends BaseCommand {
 
         if(player.hasPermission("eventsuite.admin.hns")) {
             if (subCommand.equalsIgnoreCase("create")) {
-                if(module.startGame(new HideNSeekGame()))
+                int countdown = 5;
+                int duration = 10;
+                if(args.length >= 2)
+                    countdown = Integer.parseInt(args[1]);
+                if(args.length == 3)
+                    duration = Integer.parseInt(args[2]);
+
+                countdown = countdown * 60;
+                duration = duration * 60;
+
+                if(module.startGame(new HideNSeekGame(countdown, duration)))
                     module.joinAsSeeker(player);
                 else
                     player.sendMessage(Component.text("Game failed to start! Is there already in progress?").color(NamedTextColor.RED));
