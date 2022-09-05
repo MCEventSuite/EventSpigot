@@ -82,18 +82,21 @@ public class HideNSeekModule extends Module {
             MultiLib.notify("eventspigot:hns", "init:" + game.getStarter());
 
             Component component = Component.text("----------------------------").color(NamedTextColor.BLUE)
-                    .append(Component.text("\n\nHIDE & SEEK").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD))
-                    .append(Component.text("A game of ").color(NamedTextColor.LIGHT_PURPLE))
+                    .append(Component.text("\n\nHIDE & SEEK\n\n").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD))
+                    .append(Component.text("A game of ").color(NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.BOLD, false))
                     .append(Component.text("Hide & Seek").color(NamedTextColor.YELLOW))
                     .append(Component.text(" has been started!").color(NamedTextColor.LIGHT_PURPLE))
                     .append(Component.text("\nClick here").color(NamedTextColor.GREEN)
                             .decorate(TextDecoration.BOLD, TextDecoration.UNDERLINED)
                             .clickEvent(ClickEvent.runCommand("/hns join"))
                             .hoverEvent(HoverEvent.showText(Component.text("Click to join!").color(NamedTextColor.GREEN))))
-                    .append(Component.text(" to join the game.").color(NamedTextColor.AQUA))
+                    .append(Component.text(" to join the game.").color(NamedTextColor.AQUA).decoration(TextDecoration.BOLD, false).decoration(TextDecoration.UNDERLINED, false))
                     .append(Component.text("\n\n----------------------------").color(NamedTextColor.BLUE));
 
-            Bukkit.broadcast(component);
+            // Bukkit.broadcast() only seems to be sending to console
+            for(Player player : Bukkit.getAllOnlinePlayers())
+                player.sendMessage(component);
+
             return true;
         }
         return false;
