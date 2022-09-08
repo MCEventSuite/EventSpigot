@@ -33,6 +33,7 @@ import dev.imabad.mceventsuite.spigot.modules.eventblocker.EventBlockModule;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.EventPassSpigotModule;
 import dev.imabad.mceventsuite.spigot.modules.hidenseek.HideNSeekModule;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
+import dev.imabad.mceventsuite.spigot.modules.npc.NPCModule;
 import dev.imabad.mceventsuite.spigot.modules.player.PlayerModule;
 import dev.imabad.mceventsuite.spigot.modules.scavengers.ScavengerHuntSpigotModule;
 import dev.imabad.mceventsuite.spigot.modules.shops.ShopsModule;
@@ -186,6 +187,7 @@ public class EventSpigot extends JavaPlugin {
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BedrockModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BossBarModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new HideNSeekModule());
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new NPCModule());
         }
         permissionAttachments = new HashMap<>();
         unRegisterBukkitCommand(getCommand("ban"));
