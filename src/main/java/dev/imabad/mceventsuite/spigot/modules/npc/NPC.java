@@ -7,14 +7,15 @@ import org.bukkit.craftbukkit.v1_19_R1.entity.CraftEntity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class NPC {
     private final String displayName;
     private final Entity entity;
-    private final Consumer<Player> interactEvent;
+    private final BiConsumer<Player, NPC> interactEvent;
 
-    public NPC(String displayName, Entity entity, Consumer<Player> runnable) {
+    public NPC(String displayName, Entity entity, BiConsumer<Player, NPC> runnable) {
         this.displayName = displayName;
         this.entity = entity;
         this.interactEvent = runnable;
@@ -34,7 +35,7 @@ public class NPC {
         return this.entity;
     }
 
-    public Consumer<Player> getInteractEvent() {
+    public BiConsumer<Player, NPC> getInteractEvent() {
         return this.interactEvent;
     }
 }
