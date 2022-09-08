@@ -61,6 +61,8 @@ public class PacketListener implements Listener {
                 EventSpigot.getInstance().getServer().getScheduler().runTaskLater(EventSpigot.getInstance(), () -> {
                     connection.send(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER, npcPlayer));
                 }, 1000);
+            } else {
+                connection.send(new ClientboundAddEntityPacket(npc.getEntity()));
             }
         }
 
