@@ -14,6 +14,8 @@ import com.sk89q.worldguard.session.MoveType;
 import com.sk89q.worldguard.session.Session;
 import com.sk89q.worldguard.session.handler.EntryFlag;
 import com.sk89q.worldguard.session.handler.Handler;
+import dev.imabad.mceventsuite.core.EventCore;
+import dev.imabad.mceventsuite.spigot.EventSpigot;
 import net.citizensnpcs.api.CitizensAPI;
 import org.bukkit.entity.Player;
 import org.geysermc.floodgate.api.FloodgateApi;
@@ -45,8 +47,10 @@ public class BedrockFlagHandler extends Handler {
             return super.onCrossBoundary(player, from, to, toSet, entered, exited, moveType);
         }
         Player bukkitPlayer = BukkitAdapter.adapt(player);
-        if(CitizensAPI.getNPCRegistry().isNPC(bukkitPlayer)){
-            return true;
+        if(EventSpigot.getInstance().getServer().getPluginManager().getPlugin("Citizens") != null) {
+            if (CitizensAPI.getNPCRegistry().isNPC(bukkitPlayer)) {
+                return true;
+            }
         }
         boolean allowed = toSet.testState(player, BedrockModule.getBedrockAllowed());
         if(!allowed && moveType.isCancellable() && FloodgateApi.getInstance().isFloodgatePlayer(bukkitPlayer.getUniqueId())){
