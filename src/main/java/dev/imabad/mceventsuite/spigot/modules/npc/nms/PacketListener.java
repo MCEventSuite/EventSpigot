@@ -8,10 +8,7 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
-import net.minecraft.network.protocol.game.ClientboundAddPlayerPacket;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
+import net.minecraft.network.protocol.game.*;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
@@ -60,13 +57,22 @@ public class PacketListener implements Listener {
                 connection.send(new ClientboundAddPlayerPacket(npcPlayer));
                 EventSpigot.getInstance().getServer().getScheduler().runTaskLater(EventSpigot.getInstance(), () -> {
                     connection.send(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER, npcPlayer));
-                }, 20);
+                }, 20 * 2);
             } else {
                 connection.send(new ClientboundAddEntityPacket(npc.getEntity()));
+                connection.send(new ClientboundSetEntityDataPacket(npc.getEntity().getId(), npc.getEntity().getEntityData(), true));
             }
+
+            connection.send(new ClientboundRotateHeadPacket(npc.getEntity(), (byte)(npc.getEntity().getYHeadRot() * 256 / 360)));
+            connection.send(new ClientboundMoveEntityPacket.Rot(
+                    npc.getEntity().getId(),
+                    (byte)(npc.getEntity().getYRot() * 256 / 360),
+                    (byte)(npc.getEntity().getXRot() * 256 / 360), true));
         }
 
         ChannelPipeline pipeline = serverPlayer.connection.connection.channel.pipeline();
+        if(pipeline.get("eventspigot_npc") != null)
+            pipeline.remove("eventspigot_npc");
         pipeline.addBefore("packet_handler", "eventspigot_npc", channelDuplexHandler);
     }
 

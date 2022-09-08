@@ -2,20 +2,17 @@ package dev.imabad.mceventsuite.spigot.modules.npc;
 
 import com.mojang.authlib.properties.Property;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
-import org.bukkit.craftbukkit.v1_19_R1.entity.CraftEntity;
-import org.bukkit.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class NPC {
     private final String displayName;
-    private final Entity entity;
-    private final BiConsumer<Player, NPC> interactEvent;
+    private final LivingEntity entity;
+    private final NPCInteraction interactEvent;
 
-    public NPC(String displayName, Entity entity, BiConsumer<Player, NPC> runnable) {
+    public NPC(String displayName, LivingEntity entity, NPCInteraction runnable) {
         this.displayName = displayName;
         this.entity = entity;
         this.interactEvent = runnable;
@@ -31,11 +28,11 @@ public class NPC {
         return this.displayName;
     }
 
-    public Entity getEntity() {
+    public LivingEntity getEntity() {
         return this.entity;
     }
 
-    public BiConsumer<Player, NPC> getInteractEvent() {
+    public NPCInteraction getInteractEvent() {
         return this.interactEvent;
     }
 }
