@@ -1,15 +1,11 @@
 package dev.imabad.mceventsuite.spigot.modules.map;
 
-import dev.imabad.mceventsuite.spigot.EventSpigot;
-import dev.imabad.mceventsuite.spigot.entities.VillagerNPC;
+import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.spigot.modules.map.objects.Kevin;
-import dev.imabad.mceventsuite.spigot.modules.shops.starblocks.StarblocksTrait;
+import dev.imabad.mceventsuite.spigot.modules.npc.NPC;
+import dev.imabad.mceventsuite.spigot.modules.npc.NPCManager;
+import dev.imabad.mceventsuite.spigot.modules.npc.NPCModule;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
-import net.citizensnpcs.api.CitizensAPI;
-import net.citizensnpcs.api.npc.NPC;
-import net.citizensnpcs.api.trait.trait.Speech;
-import net.citizensnpcs.trait.LookClose;
-import net.citizensnpcs.trait.SkinTrait;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
@@ -19,7 +15,11 @@ import java.util.List;
 
 public class KevinManager {
 
+    private final NPCManager npcManager;
+
     public KevinManager(World world, MapConfig mapConfig){
+        this.npcManager = EventCore.getInstance().getModuleRegistry()
+                .getModule(NPCModule.class).getNpcManager();
         addKevins(world, mapConfig);
     }
 
@@ -50,37 +50,25 @@ public class KevinManager {
     }
 
     public void byeKevins(){
-        villagerNPCList.forEach(npc -> {
-            npc.despawn();
-            npc.destroy();
-        });
         villagerNPCList.clear();
     }
 
-    private void addKevin(World world, Kevin kevin){
-        if(EventSpigot.getInstance().getServer().getPluginManager().isPluginEnabled("Citizens")){
-            NPC npc = null;
-            if(kevin.getModel().equalsIgnoreCase("villager")) {
-                npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.VILLAGER, StringUtils.colorizeMessage(kevin.getName()));
-            } else if(kevin.getModel().equalsIgnoreCase("player")) {
-                npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER, StringUtils.colorizeMessage(kevin.getName()));
-                SkinTrait trait = npc.getTrait(SkinTrait.class);
-                if(trait == null){
-                    trait = new SkinTrait();
-                    npc.addTrait(trait);
-                }
-                trait.setSkinPersistent(kevin.getName(), kevin.getSkin().getSignature(), kevin.getSkin().getValue());
-            } else if(kevin.getModel().equals("iron_golem")) {
-                npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.IRON_GOLEM, StringUtils.colorizeMessage(kevin.getName()));
-            }
-            if(npc != null){
-                Location location = new Location(world, kevin.getPosX(), kevin.getPosY(), kevin.getPosZ(), kevin.getFacing(), 0);
-                npc.addTrait(new KevinTrait(kevin.getVoiceLines()));
-                LookClose lookClose = npc.getOrAddTrait(LookClose.class);
-                lookClose.lookClose(kevin.isTrackPlayer());
-                npc.spawn(location);
-                villagerNPCList.add(npc);
-            }
+    private void addKevin(World world, Kevin kevin) {
+        NPC npc = null;
+        Location location = new Location(world, kevin.getPosX(), kevin.getPosY(), kevin.getPosZ(), kevin.getFacing(), 0);
+        if (kevin.getModel().equalsIgnoreCase("villager")) {
+            npc = npcManager.createNpc(StringUtils.colorizeMessage(kevin.getName()), EntityType.VILLAGER,
+                    new KevinInteraction(kevin), location);
+        } else if (kevin.getModel().equalsIgnoreCase("player")) {
+            npc = npcManager.createNpc(StringUtils.colorizeMessage(kevin.getName()), EntityType.PLAYER,
+                    new KevinInteraction(kevin), location);
+            npc.setSkin(kevin.getSkin().getSignature(), kevin.getSkin().getValue());
+        } else if (kevin.getModel().equals("iron_golem")) {
+            npc = npcManager.createNpc(StringUtils.colorizeMessage(kevin.getName()), EntityType.IRON_GOLEM,
+                    new KevinInteraction(kevin), location);
+        }
+        if (npc != null) {
+            villagerNPCList.add(npc);
         }
     }
 

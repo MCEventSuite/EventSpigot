@@ -23,6 +23,7 @@ import dev.imabad.mceventsuite.core.modules.mysql.dao.BoothDAO;
 import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.modules.map.commands.*;
+import dev.imabad.mceventsuite.spigot.modules.npc.NPCModule;
 import org.bukkit.*;
 import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.entity.Player;
@@ -78,9 +79,6 @@ public class MapModule extends Module implements Listener, IConfigProvider<MapCo
         }
         EventSpigot
             .getInstance().getServer().getPluginManager().registerEvents(this, EventSpigot.getInstance());
-        if(EventSpigot.getInstance().getServer().getPluginManager().getPlugin("Citizens") != null){
-            EventSpigot.getInstance().getServer().getPluginManager().registerEvents(new dev.imabad.mceventsuite.spigot.modules.map.CitizensListener(), EventSpigot.getInstance());
-        }
     }
 
     private void onMysqlLoad(MySQLLoadedEvent t) {
@@ -97,6 +95,8 @@ public class MapModule extends Module implements Listener, IConfigProvider<MapCo
             spawnLocations.add(new Location(mainWorld, -18.5, 19 ,-209.5, -90, 0));
             spawnLocations.add(new Location(mainWorld, -18.5, 19 ,-203.5, -90, 0));
             spawnLocations.add(new Location(mainWorld, -18.5, 19 ,-198.5, -90, 0));
+
+            this.initKevins();
         }
     }
 
@@ -127,7 +127,7 @@ public class MapModule extends Module implements Listener, IConfigProvider<MapCo
 
     @Override
     public List<Class<? extends Module>> getDependencies() {
-        return Collections.emptyList();
+        return Collections.singletonList(NPCModule.class);
     }
 
     public Material getMaterialForSize(String size){
