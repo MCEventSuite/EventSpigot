@@ -62,7 +62,7 @@ public class KevinManager {
         } else if (kevin.getModel().equalsIgnoreCase("player")) {
             npc = npcManager.createNpc(StringUtils.colorizeMessage(kevin.getName()), EntityType.PLAYER,
                     new KevinInteraction(kevin), location);
-            npc.setSkin(kevin.getSkin().getSignature(), kevin.getSkin().getValue());
+            npc.setSkin(kevin.getSkin().getValue(), kevin.getSkin().getSignature());
         } else if (kevin.getModel().equals("iron_golem")) {
             npc = npcManager.createNpc(StringUtils.colorizeMessage(kevin.getName()), EntityType.IRON_GOLEM,
                     new KevinInteraction(kevin), location);
