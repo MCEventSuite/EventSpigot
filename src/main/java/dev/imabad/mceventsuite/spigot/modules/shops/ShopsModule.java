@@ -5,10 +5,12 @@ import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.entities.VillagerNPC;
 import dev.imabad.mceventsuite.spigot.interactions.Interaction;
 import dev.imabad.mceventsuite.spigot.interactions.InteractionRegistry;
+import dev.imabad.mceventsuite.spigot.modules.npc.NPCModule;
 import dev.imabad.mceventsuite.spigot.modules.shops.api.IMovingVillagerShop;
 import dev.imabad.mceventsuite.spigot.modules.shops.api.IProduct;
 import dev.imabad.mceventsuite.spigot.modules.shops.api.IShop;
 import dev.imabad.mceventsuite.spigot.modules.shops.api.ShopVillagerInfo;
+import dev.imabad.mceventsuite.spigot.modules.shops.squareways.SquarewayShop;
 import dev.imabad.mceventsuite.spigot.modules.shops.starblocks.StarblocksShop;
 import dev.imabad.mceventsuite.spigot.utils.ItemUtils;
 import org.bukkit.Bukkit;
@@ -60,15 +62,15 @@ public class ShopsModule extends Module implements Listener {
     public void onEnable() {
         EventSpigot.getInstance().getServer().getPluginManager().registerEvents(this, EventSpigot.getInstance());
         registerInteractions();
-        if(EventSpigot.getInstance().getServer().getPluginManager().getPlugin("Citizens") != null){
-            EventSpigot.getInstance().getServer().getPluginManager().registerEvents(new dev.imabad.mceventsuite.spigot.modules.shops.CitizensListener(), EventSpigot.getInstance());
-        }
     }
 
     @EventHandler
     public void onWorldLoad(WorldLoadEvent worldLoadEvent){
         if(worldLoadEvent.getWorld().getName().equalsIgnoreCase("world")){
             mainWorld = worldLoadEvent.getWorld();
+
+            this.registerShop(new SquarewayShop(this));
+            this.registerShop(new StarblocksShop(this));
         }
     }
 
@@ -79,7 +81,7 @@ public class ShopsModule extends Module implements Listener {
 
     @Override
     public List<Class<? extends Module>> getDependencies() {
-        return Collections.emptyList();
+        return Collections.singletonList(NPCModule.class);
     }
 
     public World getMainWorld() {
