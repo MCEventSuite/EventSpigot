@@ -41,15 +41,19 @@ public class HideSeekCommand extends BaseCommand {
             if (subCommand.equalsIgnoreCase("create")) {
                 int countdown = 5;
                 int duration = 10;
+                int warmup = 1;
                 if(args.length >= 2)
                     countdown = Integer.parseInt(args[1]);
-                if(args.length == 3)
+                if(args.length >= 3)
                     duration = Integer.parseInt(args[2]);
+                if(args.length == 4)
+                    warmup = Integer.parseInt(args[3]);
 
                 countdown = countdown * 60;
                 duration = duration * 60;
+                warmup = warmup * 60;
 
-                if(module.startGame(new HideNSeekGame(countdown, duration)))
+                if(module.startGame(new HideNSeekGame(countdown, duration, warmup, module.getEventScoreboard())))
                     module.joinAsSeeker(player);
                 else
                     player.sendMessage(Component.text("Game failed to start! Is there already in progress?").color(NamedTextColor.RED));
@@ -119,7 +123,8 @@ public class HideSeekCommand extends BaseCommand {
                 module.joinAsSeeker(player);
                 return true;
             }
-            if(module.getGame().getStatus() == HideNSeekGame.GameStatus.WAITING) {
+            if(module.getGame().getStatus() == HideNSeekGame.GameStatus.WAITING ||
+                    module.getGame().getStatus() == HideNSeekGame.GameStatus.JOINING) {
                 module.joinAsHider(player);
             } else {
                 player.sendMessage(ChatColor.RED + "It's too late to join - the game has already started!");

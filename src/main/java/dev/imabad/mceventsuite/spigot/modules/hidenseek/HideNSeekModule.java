@@ -2,8 +2,13 @@ package dev.imabad.mceventsuite.spigot.modules.hidenseek;
 
 import com.github.puregero.multilib.MultiLib;
 import com.sk89q.worldedit.util.formatting.text.format.TextColor;
+import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.modules.Module;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
+import dev.imabad.mceventsuite.spigot.modules.scoreboards.EventScoreboard;
+import dev.imabad.mceventsuite.spigot.modules.scoreboards.Row;
+import dev.imabad.mceventsuite.spigot.modules.scoreboards.ScoreboardModule;
+import dev.imabad.mceventsuite.spigot.utils.StringUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentBuilder;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -12,6 +17,14 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.RenderType;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,6 +33,8 @@ import java.util.UUID;
 public class HideNSeekModule extends Module {
 
     private HideNSeekGame currentGame;
+    private Scoreboard scoreboard;
+    private EventScoreboard eventScoreboard;
 
     public HideNSeekModule() {
         EventSpigot.getInstance().getServer().getPluginManager().registerEvents(new HideNSeekListener(this), EventSpigot.getInstance());
@@ -32,7 +47,10 @@ public class HideNSeekModule extends Module {
                 this.currentGame.start(true);
                 return;
             } else if(data.equalsIgnoreCase("init")) {
-                this.currentGame = new HideNSeekGame();
+                this.currentGame = new HideNSeekGame(this.eventScoreboard);
+                return;
+            } else if(data.equalsIgnoreCase("wait")) {
+                this.currentGame.startWait(true);
                 return;
             }
 
@@ -49,11 +67,77 @@ public class HideNSeekModule extends Module {
                     }
                 } else if(parts[0].equalsIgnoreCase("leave")) {
                     this.currentGame.leave(UUID.fromString(parts[1]));
+                } else if(parts[0].equalsIgnoreCase("silentset")) {
+                    String side = parts[1];
+                    UUID uuid = UUID.fromString(parts[2]);
+                    this.currentGame.getHiders().remove(uuid);
+                    this.currentGame.getSeekers().remove(uuid);
+
+                    if(side.equalsIgnoreCase("hiders"))
+                        this.currentGame.getHiders().add(uuid);
+                    else
+                        this.currentGame.getSeekers().add(uuid);
                 } else if(parts[0].equalsIgnoreCase("caught")) {
                     this.currentGame.convertToSeeker(UUID.fromString(parts[1]), parts[2]);
                 }
             }
         });
+    }
+
+    public EventScoreboard getEventScoreboard() {
+        return this.eventScoreboard;
+    }
+
+    public void onWorldLoad(WorldLoadEvent worldLoadEvent) {
+        this.scoreboard = EventSpigot.getInstance().getServer().getScoreboardManager().getNewScoreboard();
+        final Team seekers = scoreboard.registerNewTeam("Seeker");
+        seekers.color(NamedTextColor.GOLD);
+        seekers.prefix(Component.text("[Seeker] ").color(NamedTextColor.GOLD));
+
+        final Team hiders = scoreboard.registerNewTeam("Hider");
+        hiders.color(NamedTextColor.BLUE);
+        hiders.prefix(Component.text("[Hider] ").color(NamedTextColor.BLUE));
+        hiders.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.FOR_OWN_TEAM);
+
+        final Team waiting = scoreboard.registerNewTeam("Waiting");
+        waiting.color(NamedTextColor.GRAY);
+
+        this.eventScoreboard = EventCore.getInstance().getModuleRegistry().getModule(ScoreboardModule.class)
+                .getScoreboardManager().createScoreboard(scoreboard,
+                        Component.text("Hide & Seek").color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD));
+
+        eventScoreboard.addRow(new Row("Phase", new Row.RowRender() {
+            @Override
+            public String render(Player player) {
+                if(currentGame == null)
+                    return "&eN/A";
+                return switch (currentGame.getStatus()) {
+                    case JOINING -> "&eWaiting for Players";
+                    case WAITING -> "&eHiding";
+                    case STARTED -> "&eSearching";
+                    case ENDED -> "&eEnd";
+                };
+            }
+        }));
+
+        eventScoreboard.addRow(new Row("Time Remaining", new Row.RowRender() {
+            @Override
+            public String render(Player player) {
+                if(currentGame == null)
+                    return "&eN/A";
+                return "&e" + StringUtils.formatSeconds(currentGame.getActualTimeSeconds());
+            }
+        }));
+
+        eventScoreboard.addRow(new Row("Hiders Left", new Row.RowRender() {
+            @Override
+            public String render(Player player) {
+                System.out.println("Render " + currentGame.getHiders().size() + " for " + player.getName());
+                if(currentGame == null)
+                    return "&eN/A";
+                return "&e" + String.valueOf(currentGame.getHiders().size());
+            }
+        }));
     }
 
     @Override
@@ -104,8 +188,16 @@ public class HideNSeekModule extends Module {
     }
 
     public void joinAsHider(Player player) {
-        if(this.currentGame == null || this.currentGame.getStatus() != HideNSeekGame.GameStatus.WAITING)
+        if(this.currentGame == null || (this.currentGame.getStatus() != HideNSeekGame.GameStatus.JOINING
+                && this.currentGame.getStatus() != HideNSeekGame.GameStatus.WAITING))
             return;
+
+        eventScoreboard.installPlayer(player);
+        if(this.currentGame.getStatus() == HideNSeekGame.GameStatus.JOINING)
+            scoreboard.getTeam("Waiting").addPlayer(player);
+        else
+            scoreboard.getTeam("Hider").addPlayer(player);
+
         this.getGame().join(player.getUniqueId());
         MultiLib.notify("eventspigot:hns", "join:" + player.getUniqueId());
     }
@@ -113,6 +205,13 @@ public class HideNSeekModule extends Module {
     public void joinAsSeeker(Player player) {
         if(this.currentGame == null || this.currentGame.getStatus() == HideNSeekGame.GameStatus.ENDED)
             return;
+
+        player.setScoreboard(scoreboard);
+        if(this.currentGame.getStatus() == HideNSeekGame.GameStatus.JOINING)
+            scoreboard.getTeam("Waiting").addPlayer(player);
+        else
+            scoreboard.getTeam("Seeker").addPlayer(player);
+
         this.getGame().addSeeker(player.getUniqueId());
         MultiLib.notify("eventspigot:hns", "addseeker:" + player.getUniqueId());
     }
@@ -121,6 +220,7 @@ public class HideNSeekModule extends Module {
         if(this.currentGame == null || this.currentGame.getStatus() == HideNSeekGame.GameStatus.ENDED)
             return;
         this.getGame().leave(player.getUniqueId());
+        player.setScoreboard(EventSpigot.getInstance().getScoreboard());
         MultiLib.notify("eventspigot:hns", "leave:" + player.getUniqueId());
     }
 
@@ -128,6 +228,7 @@ public class HideNSeekModule extends Module {
         if(this.currentGame == null || this.currentGame.getStatus() == HideNSeekGame.GameStatus.ENDED)
             return;
         this.getGame().leaveSeeker(player.getUniqueId());
+        player.setScoreboard(EventSpigot.getInstance().getScoreboard());
         MultiLib.notify("eventspigot:hns", "rmseeker:" + player.getUniqueId());
     }
 

@@ -11,24 +11,35 @@ import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassPlayer;
 import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
 import dev.imabad.mceventsuite.core.modules.mysql.dao.PlayerDAO;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
+import dev.imabad.mceventsuite.spigot.modules.scoreboards.EventScoreboard;
+import dev.imabad.mceventsuite.spigot.modules.scoreboards.ScoreboardModule;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.title.Title;
+import net.kyori.adventure.title.TitlePart;
 import net.md_5.bungee.api.ChatMessageType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
+import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 public class HideNSeekGame {
 
     public enum GameStatus {
+        JOINING,
         WAITING,
         STARTED,
         ENDED;
@@ -42,17 +53,21 @@ public class HideNSeekGame {
 
     int counter;
     final int gameStartTime;
+    final int waitingStartTime;
+    private final EventScoreboard eventScoreboard;
 
-    public HideNSeekGame() {
-        this(0, 0);
+    public HideNSeekGame(EventScoreboard eventScoreboard) {
+        this(0, 0, 0, eventScoreboard);
     }
 
-    public HideNSeekGame(int startCountdown, int duration){
-        this.status = GameStatus.WAITING;
+    public HideNSeekGame(int startCountdown, int duration, int warmup, EventScoreboard eventScoreboard){
+        this.status = GameStatus.JOINING;
         this.seekers = new ArrayList<>();
         this.hiders = new ArrayList<>();
-        this.counter = startCountdown + duration;
+        this.counter = startCountdown + duration + warmup;
         this.gameStartTime = duration;
+        this.waitingStartTime = duration + startCountdown;
+        this.eventScoreboard = eventScoreboard;
     }
 
     public List<UUID> getSeekers() {
@@ -76,7 +91,12 @@ public class HideNSeekGame {
 
         this.seekers.add(uuid);
 
-        if (seeker.isLocalPlayer()) {
+        for (Player player : Bukkit.getAllOnlinePlayers()) {
+            if (!hiders.contains(player.getUniqueId()) && !seekers.contains(player.getUniqueId()))
+                seeker.hidePlayer(EventSpigot.getInstance(), player);
+        }
+
+        if (seeker.isLocalPlayer() && getStatus() == GameStatus.WAITING) {
             seeker.sendMessage(ChatColor.GREEN + "YOU ARE NOW A SEEKER!");
 
             if (getStatus() == GameStatus.WAITING) {
@@ -93,6 +113,8 @@ public class HideNSeekGame {
                 else
                     seeker.hidePlayer(EventSpigot.getInstance(), player);
             }
+        } else if(seeker.isLocalPlayer()) {
+            seeker.sendMessage(ChatColor.GREEN + "You will be a seeker this round!");
         }
     }
 
@@ -122,8 +144,12 @@ public class HideNSeekGame {
 
         if(this.hiders.contains(uuid)) {
             this.hiders.remove(uuid);
-            if(player.isLocalPlayer()) {
-                player.sendMessage(ChatColor.RED + nameOfFinder.toUpperCase() + " HAS CAUGHT YOU!");
+            if(player.isLocalPlayer() && nameOfFinder != null) {
+                player.showTitle(Title.title(
+                        Component.text("You are now a Seeker!").color(NamedTextColor.GOLD),
+                        Component.text("You were caught by ").color(NamedTextColor.WHITE)
+                                .append(Component.text(nameOfFinder).color(NamedTextColor.GOLD))
+                ));
             }
             addSeeker(uuid);
         }
@@ -137,29 +163,31 @@ public class HideNSeekGame {
         if(this.seekers.contains(uuid))
             return;
 
-        if (status == GameStatus.WAITING) {
+        if (status == GameStatus.JOINING || status == GameStatus.WAITING) {
             this.hiders.add(uuid);
 
-            if(hider.isLocalPlayer()) {
-                hider.sendMessage(ChatColor.GREEN + "YOU ARE NOW A HIDER!");
-                hider.sendMessage(ChatColor.YELLOW + "You are hidden from the seekers until the game begins!");
-                hider.sendMessage(ChatColor.RED + "You have " + Math.round((counter - gameStartTime) / 60) + " minutes to hide!");
-            }
-
-            for(Player player : Bukkit.getAllOnlinePlayers()) {
-                if(!hiders.contains(player.getUniqueId()) && !seekers.contains(player.getUniqueId()))
+            for (Player player : Bukkit.getAllOnlinePlayers()) {
+                if (!hiders.contains(player.getUniqueId()) && !seekers.contains(player.getUniqueId()))
                     hider.hidePlayer(EventSpigot.getInstance(), player);
             }
 
-            for (UUID seeker : seekers) {
-                final Player player = Bukkit.getPlayer(seeker);
-                if (player == null) {
-                    seekers.remove(seeker);
-                    continue;
+            if (status == GameStatus.WAITING) {
+                if (hider.isLocalPlayer()) {
+                    hider.sendMessage(ChatColor.GREEN + "YOU ARE NOW A HIDER!");
+                    hider.sendMessage(ChatColor.YELLOW + "You are hidden from the seekers until the game begins!");
+                    hider.sendMessage(ChatColor.RED + "You have " + Math.round((counter - gameStartTime) / 60) + " minutes to hide!");
                 }
 
-                if (player.isLocalPlayer())
-                    player.hidePlayer(EventSpigot.getInstance(), hider);
+                for (UUID seeker : seekers) {
+                    final Player player = Bukkit.getPlayer(seeker);
+                    if (player == null) {
+                        seekers.remove(seeker);
+                        continue;
+                    }
+
+                    if (player.isLocalPlayer())
+                        player.hidePlayer(EventSpigot.getInstance(), hider);
+                }
             }
         }
     }
@@ -177,22 +205,44 @@ public class HideNSeekGame {
         }
     }
 
+    public int getActualTimeSeconds() {
+        if(getStatus() == GameStatus.JOINING) {
+            return this.counter - this.waitingStartTime;
+        } else if(getStatus() == GameStatus.WAITING) {
+            return this.counter - this.gameStartTime;
+        } else {
+            return this.counter;
+        }
+    }
+
     public void startCountdown() {
         countdown = Bukkit.getScheduler().runTaskTimer(EventSpigot.getInstance(), () -> {
-            final int time = (getStatus() == GameStatus.WAITING ? this.counter - this.gameStartTime : this.counter);
-            final Component component = Component.text("Time remaining: ").color(NamedTextColor.GREEN)
-                    .append(Component.text(StringUtils.formatSeconds(time))).color(NamedTextColor.YELLOW);
-
             if(counter < 0) {
                 this.runEnd();
                 return;
             }
 
-            if(counter == this.gameStartTime && getStatus() == GameStatus.WAITING) {
-                MultiLib.notify("eventspigot:hns", "start");
-                this.start(false);
+            if(counter == this.waitingStartTime && getStatus() == GameStatus.JOINING) {
+                this.startWait(false);
+                MultiLib.notify("eventspigot:hns", "startwait");
                 return;
             }
+
+            if(counter == this.gameStartTime && getStatus() == GameStatus.WAITING) {
+                this.start(false);
+                MultiLib.notify("eventspigot:hns", "start");
+                return;
+            }
+
+            counter--;
+
+            final int time = this.getActualTimeSeconds();
+            final String text = getStatus() == GameStatus.JOINING ? "Waiting for Players" :
+                    getStatus() == GameStatus.WAITING ? "Hiding Time Left" :
+                            "Time Remaining";
+
+            final Component component = Component.text(text + ": ").color(NamedTextColor.GREEN)
+                    .append(Component.text(StringUtils.formatSeconds(time))).color(NamedTextColor.YELLOW);
 
             for(UUID uuid : getAllPlayers()) {
                 Player player = Bukkit.getPlayer(uuid);
@@ -204,8 +254,64 @@ public class HideNSeekGame {
                 player.sendActionBar(component);
             }
 
-            counter--;
+            this.eventScoreboard.update();
         }, 0, 20);
+    }
+
+    public void startWait(boolean remote) {
+        if(this.status != GameStatus.JOINING)
+            return;
+
+        if(!remote) {
+            int seekersRequired = this.hiders.size() < 5 ? 1 : this.hiders.size() < 10 ? 2 : 3;
+            if (this.seekers.size() < seekersRequired) {
+                seekersRequired = seekersRequired - this.seekers.size();
+                Random random = new Random();
+                for (int i = 0; i < seekersRequired; i++) {
+                    if (hiders.size() <= 1)
+                        break;
+                    final UUID hider = this.hiders.get(random.nextInt(this.hiders.size() - 1));
+                    this.hiders.remove(hider);
+                    this.seekers.add(hider);
+                    MultiLib.notify("eventspigot:hns", "silentset:seekers:" + hider);
+                }
+            }
+        }
+
+        for(Player player : Bukkit.getLocalOnlinePlayers()) {
+            if(hiders.contains(player.getUniqueId())) {
+                player.showTitle(Title.title(
+                        Component.text("You are a ").color(NamedTextColor.GRAY)
+                                .append(Component.text("Hider").color(NamedTextColor.BLUE)),
+                        Component.text("Stay hidden from the seekers!").color(NamedTextColor.WHITE)
+                ));
+                player.getScoreboard().getTeam("Hider").addPlayer(player);
+                player.teleport(new Location(
+                        Bukkit.getWorld("world"), 0.5, 30, 8.5, 0, 0));
+            } else if(seekers.contains(player.getUniqueId())) {
+                player.showTitle(Title.title(
+                        Component.text("You are a ").color(NamedTextColor.GRAY)
+                                .append(Component.text("Seeker").color(NamedTextColor.GOLD)),
+                        Component.text("Find all the hiders!").color(NamedTextColor.WHITE)
+                ));
+                player.getScoreboard().getTeam("Seeker").addPlayer(player);
+                player.teleport(new Location(
+                        Bukkit.getWorld("world"), 0.5, 30, 8.5, 0, 0));
+                player.addPotionEffect(new PotionEffect(
+                        PotionEffectType.SPEED,
+                        Integer.MAX_VALUE,
+                        1,
+                        false,
+                        false
+                ));
+                for(Player otherPlayer : Bukkit.getAllOnlinePlayers()) {
+                    if(!seekers.contains(otherPlayer.getUniqueId()))
+                        player.hidePlayer(EventSpigot.getInstance(), otherPlayer);
+                }
+            }
+        }
+
+        this.status = GameStatus.WAITING;
     }
 
     public void start(boolean remote) {
@@ -233,13 +339,16 @@ public class HideNSeekGame {
             }
         }
 
-        if(!remote) {
-            final Component component = Component.text("The game has started! All hiders are now ").color(NamedTextColor.GREEN)
-                    .append(Component.text("VISIBLE!").color(NamedTextColor.RED).decorate(TextDecoration.BOLD, TextDecoration.UNDERLINED));
-            for(UUID uuid : getAllPlayers()) {
-                Player player = Bukkit.getPlayer(uuid);
-                if(player != null)
-                    player.sendMessage(component);
+        for(Player player : Bukkit.getLocalOnlinePlayers()) {
+            if(getAllPlayers().contains(player.getUniqueId())) {
+                player.showTitle(Title.title(
+                        Component.text("The game has started!").color(NamedTextColor.GREEN),
+                        Component.text("All hiders are ").color(NamedTextColor.WHITE)
+                                .append(Component.text("VISIBLE!").color(NamedTextColor.GREEN).decorate(
+                                        TextDecoration.BOLD,
+                                        TextDecoration.UNDERLINED
+                                ))
+                ));
             }
         }
     }
@@ -250,7 +359,7 @@ public class HideNSeekGame {
     }
 
     public void end(boolean remote) {
-        if (status != GameStatus.STARTED)
+        if (status == GameStatus.ENDED || status == GameStatus.JOINING)
             return;
         this.status = GameStatus.ENDED;
 
@@ -258,7 +367,18 @@ public class HideNSeekGame {
             for(Player player1 : Bukkit.getAllOnlinePlayers()) {
                 player.showPlayer(EventSpigot.getInstance(), player1);
             }
+
+            if(player.getScoreboard().equals(this.eventScoreboard.getScoreboard())) {
+                player.setScoreboard(EventSpigot.getInstance().getScoreboard());
+            }
         }
+
+        boolean stoppedByAdmin = false;
+        boolean hidersWin = false;
+        if(counter > 0 && hiders.size() > 0)
+            stoppedByAdmin = true;
+        else if(counter <= 0 && hiders.size() > 0)
+            hidersWin = true;
 
         if(countdown != null)
             countdown.cancel();
@@ -268,28 +388,45 @@ public class HideNSeekGame {
                     .getMySQLDatabase().getDAO(PlayerDAO.class);
             final EventPassModule eventPassModule = EventCore.getInstance().getModuleRegistry().getModule(EventPassModule.class);
 
-            String winners = "seeker";
-            List<UUID> winnersUUIDs = seekers;
+            if(stoppedByAdmin) {
+                final Title title = Title.title(
+                        Component.text("Game Over").color(NamedTextColor.RED),
+                        Component.text("Ended by an Admin").color(NamedTextColor.WHITE)
+                );
+                for(Player player : Bukkit.getAllOnlinePlayers()) {
+                    player.showTitle(title);
+                }
+            } else {
+                String winners = "seeker";
+                Component component = Component.text("Seekers").color(NamedTextColor.GOLD);
+                List<UUID> winnersUUIDs = seekers;
+                String reason = "The last hider was found";
 
-            if(hiders.size() != 0) {
-                winners = "hider";
-                winnersUUIDs = hiders;
-            }
+                if(hidersWin) {
+                    winnersUUIDs = hiders;
+                    component = Component.text("Hiders").color(NamedTextColor.BLUE);
+                    winners = "hider";
+                    reason = "Seekers ran out of time";
+                }
 
-            for(UUID uuid : winnersUUIDs) {
-                Player player = Bukkit.getPlayer(uuid);
-                if(player == null)
-                    continue;
-                EventPlayer eventPlayer = playerDAO.getPlayer(uuid);
-                if(eventPlayer == null)
-                    continue;
-                eventPassModule.awardXP(eventPlayer, 1000, player, "Winning Hide & Seek as a " + winners, true);
-            }
+                for(UUID uuid : winnersUUIDs) {
+                    Player player = Bukkit.getPlayer(uuid);
+                    if(player == null)
+                        continue;
+                    EventPlayer eventPlayer = playerDAO.getPlayer(uuid);
+                    if(eventPlayer == null)
+                        continue;
+                    eventPassModule.awardXP(eventPlayer, 1000, player, "Winning Hide & Seek as a " + winners, true);
+                }
 
-            //Bukkit.broadcast() doesn't seem to be working, use this hack for now.
-            for(Player player : Bukkit.getAllOnlinePlayers()) {
-                player.sendMessage(ChatColor.GREEN + "Hide & Seek has ended! The " + ChatColor.YELLOW + (winners + "s")
-                        + ChatColor.GREEN + " have won!");
+                final Title title = Title.title(
+                        component.append(Component.text(" Win!").color(NamedTextColor.GREEN)),
+                        Component.text(reason)
+                );
+
+                for(Player player : Bukkit.getAllOnlinePlayers()) {
+                    player.showTitle(title);
+                }
             }
         }
     }

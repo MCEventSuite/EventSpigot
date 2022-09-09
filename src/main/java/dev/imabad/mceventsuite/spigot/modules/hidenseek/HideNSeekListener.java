@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.world.WorldLoadEvent;
 
 public class HideNSeekListener implements Listener {
     private final HideNSeekModule module;
@@ -25,6 +26,11 @@ public class HideNSeekListener implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void onWorldLoad(WorldLoadEvent event) {
+        this.module.onWorldLoad(event);
     }
 
     @EventHandler
