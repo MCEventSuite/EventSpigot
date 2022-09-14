@@ -1,7 +1,5 @@
 package dev.imabad.mceventsuite.spigot.modules.map.objects;
 
-import net.citizensnpcs.npc.skin.Skin;
-
 import java.util.List;
 
 public class Kevin {

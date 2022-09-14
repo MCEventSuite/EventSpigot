@@ -13,6 +13,7 @@ import dev.imabad.mceventsuite.spigot.interactions.Interaction;
 import dev.imabad.mceventsuite.spigot.interactions.InteractionRegistry;
 import dev.imabad.mceventsuite.spigot.modules.daylight.DaylightInventory;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.inventories.EventPassInventoryPage;
+import dev.imabad.mceventsuite.spigot.modules.hidenseek.HideNSeekModule;
 import dev.imabad.mceventsuite.spigot.modules.warps.inventories.WarpInventoryPage;
 import dev.imabad.mceventsuite.spigot.utils.ItemUtils;
 import java.util.Collections;
@@ -106,6 +107,9 @@ public class PlayerModule extends Module implements Listener {
       } else if(itemStack.getType().equals(PlayerHotbar.DAYLIGHT_SETTINGS.getType())) {
         playerInteractEvent.setCancelled(true);
         new DaylightInventory(player).open(player, null);
+      } else if(itemStack.getType().equals(PlayerHotbar.LEAVE_HIDE_SEEK.getType())) {
+        EventCore.getInstance().getModuleRegistry().getModule(HideNSeekModule.class)
+                .leave(player);
       }
     }
   }

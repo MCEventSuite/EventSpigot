@@ -24,6 +24,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -101,17 +102,14 @@ public class PacketListener implements Listener {
         pipeline.addBefore("packet_handler", "eventspigot_npc", channelDuplexHandler);
     }
 
-    @EventHandler
-    public void onPlayerMove(PlayerMoveEvent event) {
-        if(event.getPlayer().isLocalPlayer()) {
-            final ServerPlayer serverPlayer = ((CraftPlayer) event.getPlayer()).getHandle();
+    private void handlePlayerMove(Player player, Location from, Location to) {
+        if(player.isLocalPlayer()) {
+            final ServerPlayer serverPlayer = ((CraftPlayer) player).getHandle();
             final Connection connection = serverPlayer.connection.connection;
 
-            final Location from = event.getFrom();
-            final Location to = event.getTo();
             for(NPC npc : npcManager.getNpcList()) {
                 if(npc.getEntity() instanceof ServerPlayer) {
-                    final Location npcLocation = new Location(event.getPlayer().getWorld(),
+                    final Location npcLocation = new Location(player.getWorld(),
                             npc.getEntity().getX(), npc.getEntity().getY(), npc.getEntity().getZ());
                     if (from.distance(npcLocation) > (16 * 5) && to.distance(npcLocation) <= (16 * 5)) {
                         connection.send(new ClientboundRemoveEntitiesPacket(npc.getEntity().getId()));
@@ -120,6 +118,16 @@ public class PacketListener implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event) {
+        this.handlePlayerMove(event.getPlayer(), event.getFrom(), event.getTo());
+    }
+
+    @EventHandler
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        this.handlePlayerMove(event.getPlayer(), event.getFrom(), event.getTo());
     }
 
     @EventHandler

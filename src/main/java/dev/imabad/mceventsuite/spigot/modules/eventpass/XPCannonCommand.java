@@ -12,7 +12,6 @@ import dev.imabad.mceventsuite.spigot.commands.BaseCommand;
 import java.awt.Color;
 import java.util.Random;
 
-import net.citizensnpcs.api.CitizensAPI;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;

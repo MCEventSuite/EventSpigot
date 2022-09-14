@@ -5,6 +5,7 @@ import com.sk89q.worldedit.util.formatting.text.format.TextColor;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.modules.Module;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
+import dev.imabad.mceventsuite.spigot.modules.player.PlayerHotbar;
 import dev.imabad.mceventsuite.spigot.modules.scoreboards.EventScoreboard;
 import dev.imabad.mceventsuite.spigot.modules.scoreboards.Row;
 import dev.imabad.mceventsuite.spigot.modules.scoreboards.ScoreboardModule;
@@ -59,6 +60,9 @@ public class HideNSeekModule extends Module {
             if(this.currentGame != null && this.currentGame.getStatus() != HideNSeekGame.GameStatus.ENDED) {
                 if(parts[0].equalsIgnoreCase("addseeker")) {
                     this.currentGame.addSeeker(UUID.fromString(parts[1]));
+                } else if(parts[0].equals("time")) {
+                    int time = Integer.parseInt(parts[1]);
+                    this.currentGame.updateTimer(time);
                 } else if(parts[0].equalsIgnoreCase("rmseeker")) {
                     this.currentGame.leaveSeeker(UUID.fromString(parts[1]));
                 } else if(parts[0].equalsIgnoreCase("join")) {
@@ -125,7 +129,7 @@ public class HideNSeekModule extends Module {
             public String render(Player player) {
                 if(currentGame == null)
                     return "&eN/A";
-                return "&e" + StringUtils.formatSeconds(currentGame.getActualTimeSeconds());
+                return "&e" + StringUtils.formatSeconds(currentGame.getActualTimeSeconds(currentGame.counter));
             }
         }));
 
@@ -165,9 +169,9 @@ public class HideNSeekModule extends Module {
             MultiLib.notify("eventspigot:hns", "init");
 
             Component component = Component.text("----------------------------").color(NamedTextColor.BLUE)
-                    .append(Component.text("\n\nHIDE & SEEK\n\n").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD))
+                    .append(Component.text("\n\nHIDE & SEEK\n\n").color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD))
                     .append(Component.text("A game of ").color(NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.BOLD, false))
-                    .append(Component.text("Hide & Seek").color(NamedTextColor.YELLOW))
+                    .append(Component.text("Hide & Seek").color(NamedTextColor.GOLD))
                     .append(Component.text(" has been started!").color(NamedTextColor.LIGHT_PURPLE))
                     .append(Component.text("\nClick here").color(NamedTextColor.GREEN)
                             .decorate(TextDecoration.BOLD, TextDecoration.UNDERLINED)
@@ -193,6 +197,7 @@ public class HideNSeekModule extends Module {
             return;
 
         eventScoreboard.installPlayer(player);
+        PlayerHotbar.givePlayerHideSeekInventory(player);
         if(this.currentGame.getStatus() == HideNSeekGame.GameStatus.JOINING)
             scoreboard.getTeam("Waiting").addPlayer(player);
         else
@@ -207,6 +212,7 @@ public class HideNSeekModule extends Module {
             return;
 
         player.setScoreboard(scoreboard);
+        PlayerHotbar.givePlayerHideSeekInventory(player);
         if(this.currentGame.getStatus() == HideNSeekGame.GameStatus.JOINING)
             scoreboard.getTeam("Waiting").addPlayer(player);
         else
@@ -219,8 +225,15 @@ public class HideNSeekModule extends Module {
     public void leave(Player player) {
         if(this.currentGame == null || this.currentGame.getStatus() == HideNSeekGame.GameStatus.ENDED)
             return;
+
+        if(currentGame.getSeekers().contains(player.getUniqueId())) {
+            this.leaveSeeker(player);
+            return;
+        }
+
         this.getGame().leave(player.getUniqueId());
         player.setScoreboard(EventSpigot.getInstance().getScoreboard());
+        PlayerHotbar.givePlayerInventory(player);
         MultiLib.notify("eventspigot:hns", "leave:" + player.getUniqueId());
     }
 
@@ -229,6 +242,7 @@ public class HideNSeekModule extends Module {
             return;
         this.getGame().leaveSeeker(player.getUniqueId());
         player.setScoreboard(EventSpigot.getInstance().getScoreboard());
+        PlayerHotbar.givePlayerInventory(player);
         MultiLib.notify("eventspigot:hns", "rmseeker:" + player.getUniqueId());
     }
 

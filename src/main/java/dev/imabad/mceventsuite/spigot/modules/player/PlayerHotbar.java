@@ -34,6 +34,7 @@ public class PlayerHotbar {
     public static ItemStack DAYLIGHT_SETTINGS = ItemUtils.createItemStack(Material.CLOCK, "&cDaylight Settings");
     public static ItemStack HELP_GUIDE = ItemUtils.createBook("&9Help Guide", Collections.emptyList(), helpPages);
     public static ItemStack GADGETS = ItemUtils.createItemStack(Material.CHEST, "&aCosmetics");
+    public static final ItemStack LEAVE_HIDE_SEEK = ItemUtils.createItemStack(Material.DARK_OAK_DOOR, "&cLeave Game");
 
     public static void givePlayerInventory(Player player) {
         player.getInventory().clear();
@@ -44,6 +45,12 @@ public class PlayerHotbar {
         inventory.setItem(7, GADGETS);
         ItemStack EVENT_PASS = ItemUtils.createItemStack(Material.PAPER, "&e" + player.getName() + "'s Event Pass");
         inventory.setItem(8, EVENT_PASS);
+        player.updateInventory();
+    }
+
+    public static void givePlayerHideSeekInventory(Player player) {
+        player.getInventory().clear();
+        player.getInventory().setItem(8, LEAVE_HIDE_SEEK);
         player.updateInventory();
     }
 }

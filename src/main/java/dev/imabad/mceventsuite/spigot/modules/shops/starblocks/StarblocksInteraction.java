@@ -4,7 +4,6 @@ import dev.imabad.mceventsuite.spigot.modules.npc.NPC;
 import dev.imabad.mceventsuite.spigot.modules.npc.NPCInteraction;
 import dev.imabad.mceventsuite.spigot.modules.shops.api.IShop;
 import dev.imabad.mceventsuite.spigot.modules.shops.api.ShopVillagerInfo;
-import net.citizensnpcs.api.trait.Trait;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 
