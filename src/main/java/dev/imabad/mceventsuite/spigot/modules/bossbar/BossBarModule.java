@@ -56,10 +56,15 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
 
             if(stage == Stage.CURRENT) {
                 final BossBarConfig.Event event = currentEvents.get(current);
-                bossBar.setTitle(ChatColor.translateAlternateColorCodes('&',
-                        "&" + event.location.color + "&l" + event.location.human.toUpperCase()
-                        + " &r&a&l▪ ON NOW ▪ &r" + event.name
-                ));
+                if(event.location != BossBarConfig.Event.Location.MEET) {
+                    bossBar.setTitle(ChatColor.translateAlternateColorCodes('&',
+                            "&" + event.location.color + "&l" + event.location.human.toUpperCase()
+                                    + " &r&a&l▪ ON NOW ▪ &r" + event.name
+                    ));
+                } else {
+                    bossBar.setTitle(ChatColor.translateAlternateColorCodes('&',
+                            "&6&lMEET & GREET &r&a&l▪ ON NOW ▪ &r" + "/meet " + event.extraData));
+                }
                 bossBar.setProgress(Math.max(0.0D, Math.min(1.0D, event.getProgress())));
                 bossBar.setColor(BarColor.GREEN);
             } else if(stage == Stage.COMING) {
@@ -99,6 +104,12 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
             }
         }, 0, 20 * 5);
         EventSpigot.getInstance().getServer().getPluginManager().registerEvents(this, EventSpigot.getInstance());
+    }
+
+    public void addMeetGreet(String name, String displayName, long ends) {
+        this.config.getEvents().add(new BossBarConfig.Event(
+                displayName, BossBarConfig.Event.Location.MEET, System.currentTimeMillis(), ends, name
+        ));
     }
 
     @Override

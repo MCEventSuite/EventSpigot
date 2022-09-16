@@ -48,8 +48,13 @@ public class BossBarConfig extends BaseConfig {
         public Location location;
         public long start;
         public long end;
+        public String extraData;
 
         public Event(String name, Location location, long start, long end) {
+            this(name, location, start, end, null);
+        }
+
+        public Event(String name, Location location, long start, long end, String extraData) {
             this.name = name;
             this.location = location;
             this.start = start;
@@ -68,7 +73,8 @@ public class BossBarConfig extends BaseConfig {
         }
 
         public static enum Location {
-            MAIN_STAGE('d', "Main Stage"), SIDE_STAGE('b', "Outdoor Stage"), OUTSIDE('e', "Outside"), NONE('7', "None");
+            MAIN_STAGE('d', "Main Stage"), SIDE_STAGE('b', "Outdoor Stage"), OUTSIDE('e', "Outside"),
+            NONE('7', "None"), MEET('a', "Meet & Greet"), HNS('6', "Hide & Seek");
 
             public final String human;
             public final char color;
