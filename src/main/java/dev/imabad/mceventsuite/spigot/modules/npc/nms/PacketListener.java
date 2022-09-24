@@ -13,9 +13,12 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
@@ -82,18 +85,23 @@ public class PacketListener implements Listener {
         final Connection connection = serverPlayer.connection.connection;
 
         for(NPC npc : npcManager.getNpcList()) {
-            if(npc.getEntity() instanceof ServerPlayer npcPlayer) {
+            if (npc.getEntity() instanceof ServerPlayer npcPlayer) {
                 this.sendPlayerPacket(connection, npc, false);
             } else {
                 connection.send(new ClientboundAddEntityPacket(npc.getEntity()));
             }
 
             connection.send(new ClientboundSetEntityDataPacket(npc.getEntity().getId(), npc.getEntity().getEntityData(), true));
-            connection.send(new ClientboundRotateHeadPacket(npc.getEntity(), (byte)(npc.getEntity().getYHeadRot() * 256 / 360)));
+            connection.send(new ClientboundRotateHeadPacket(npc.getEntity(), (byte) (npc.getEntity().getYHeadRot() * 256 / 360)));
             connection.send(new ClientboundMoveEntityPacket.Rot(
                     npc.getEntity().getId(),
-                    (byte)(npc.getEntity().getYRot() * 256 / 360),
-                    (byte)(npc.getEntity().getXRot() * 256 / 360), true));
+                    (byte) (npc.getEntity().getYRot() * 256 / 360),
+                    (byte) (npc.getEntity().getXRot() * 256 / 360), true));
+
+            if (npc.getArmorStand() != null) {
+                connection.send(new ClientboundAddEntityPacket(npc.getArmorStand()));
+                connection.send(new ClientboundSetEntityDataPacket(npc.getArmorStand().getId(), npc.getArmorStand().getEntityData(), true));
+            }
         }
 
         ChannelPipeline pipeline = serverPlayer.connection.connection.channel.pipeline();
@@ -103,9 +111,14 @@ public class PacketListener implements Listener {
     }
 
     private void handlePlayerMove(Player player, Location from, Location to) {
+        if(from.getWorld() != to.getWorld())
+            return;
         if(player.isLocalPlayer()) {
             final ServerPlayer serverPlayer = ((CraftPlayer) player).getHandle();
             final Connection connection = serverPlayer.connection.connection;
+
+            if(!to.getWorld().getName().equalsIgnoreCase("world"))
+                return;
 
             for(NPC npc : npcManager.getNpcList()) {
                 if(npc.getEntity() instanceof ServerPlayer) {

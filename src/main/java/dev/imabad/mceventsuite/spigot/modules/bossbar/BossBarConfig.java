@@ -1,6 +1,10 @@
 package dev.imabad.mceventsuite.spigot.modules.bossbar;
 
+import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.BaseConfig;
+import dev.imabad.mceventsuite.core.api.commands.EventCommand;
+import dev.imabad.mceventsuite.spigot.modules.hidenseek.HideNSeekGame;
+import dev.imabad.mceventsuite.spigot.modules.hidenseek.HideNSeekModule;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -20,6 +24,8 @@ public class BossBarConfig extends BaseConfig {
         return texts;
     }
     public List<Event> getEvents() {
+
+
         return events;
     }
 
@@ -59,6 +65,7 @@ public class BossBarConfig extends BaseConfig {
             this.location = location;
             this.start = start;
             this.end = end;
+            this.extraData = extraData;
         }
 
         public double getProgress() {

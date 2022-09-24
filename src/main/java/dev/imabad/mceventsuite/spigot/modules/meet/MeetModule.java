@@ -63,6 +63,8 @@ public class MeetModule extends Module {
                         ChatColor.AQUA + this.getDisplayName(msg.getName()) + ChatColor.GREEN + "!\n" +
                         ChatColor.RESET + "Your session will last for " + ChatColor.YELLOW + msg.getEta() + " minutes");
             } else {
+                player.teleport(new Location(
+                        Bukkit.getWorld("world"), 0.5, 30, 8.5, 0, 0));
                 player.sendMessage(ChatColor.RED + "Your Meet & Greet session with " + ChatColor.AQUA + this.getDisplayName(msg.getName()) +
                         ChatColor.RESET + " has ended.\n" + ChatColor.RESET + "Thank you for stopping by. See you soon!");
             }

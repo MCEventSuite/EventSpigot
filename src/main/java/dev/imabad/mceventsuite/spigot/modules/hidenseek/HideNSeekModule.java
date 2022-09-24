@@ -66,7 +66,8 @@ public class HideNSeekModule extends Module {
                 } else if(parts[0].equalsIgnoreCase("rmseeker")) {
                     this.currentGame.leaveSeeker(UUID.fromString(parts[1]));
                 } else if(parts[0].equalsIgnoreCase("join")) {
-                    if(this.currentGame.getStatus() == HideNSeekGame.GameStatus.WAITING) {
+                    if(this.currentGame.getStatus() == HideNSeekGame.GameStatus.WAITING ||
+                            this.currentGame.getStatus() == HideNSeekGame.GameStatus.JOINING) {
                         this.currentGame.join(UUID.fromString(parts[1]));
                     }
                 } else if(parts[0].equalsIgnoreCase("leave")) {

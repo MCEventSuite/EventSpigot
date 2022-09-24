@@ -6,6 +6,7 @@ import dev.imabad.mceventsuite.spigot.modules.npc.NPC;
 import dev.imabad.mceventsuite.spigot.modules.npc.NPCManager;
 import dev.imabad.mceventsuite.spigot.modules.npc.NPCModule;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
+import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.EntityType;
@@ -54,21 +55,24 @@ public class KevinManager {
     }
 
     private void addKevin(World world, Kevin kevin) {
-        NPC npc = null;
+        NPC npc;
         Location location = new Location(world, kevin.getPosX(), kevin.getPosY(), kevin.getPosZ(), kevin.getFacing(), 0);
-        if (kevin.getModel().equalsIgnoreCase("villager")) {
-            npc = npcManager.createNpc(StringUtils.colorizeMessage(kevin.getName()), EntityType.VILLAGER,
-                    new KevinInteraction(kevin), location);
-        } else if (kevin.getModel().equalsIgnoreCase("player")) {
-            npc = npcManager.createNpc(StringUtils.colorizeMessage(kevin.getName()), EntityType.PLAYER,
-                    new KevinInteraction(kevin), location);
-            npc.setSkin(kevin.getSkin().getValue(), kevin.getSkin().getSignature());
-        } else if (kevin.getModel().equals("iron_golem")) {
-            npc = npcManager.createNpc(StringUtils.colorizeMessage(kevin.getName()), EntityType.IRON_GOLEM,
-                    new KevinInteraction(kevin), location);
+        EntityType model;
+        switch (kevin.getModel()) {
+            case "player" -> model = EntityType.PLAYER;
+            case "iron_golem" -> model = EntityType.IRON_GOLEM;
+            default -> model = EntityType.VILLAGER;
         }
+        if(kevin.getVoiceLines().size() != 0 && !kevin.getVoiceLines().get(0).isBlank())
+            npc = npcManager.createNpc(StringUtils.colorizeMessage(kevin.getName()), model,
+                    new KevinInteraction(kevin), location, Character.toChars(0x0316)[0]);
+        else
+            npc = npcManager.createNpc(StringUtils.colorizeMessage(kevin.getName()), model,
+                    new KevinInteraction(kevin), location, null);
         if (npc != null) {
             villagerNPCList.add(npc);
+            if(npc.getEntity() instanceof ServerPlayer)
+                npc.setSkin(kevin.getSkin().getValue(), kevin.getSkin().getSignature());
         }
     }
 

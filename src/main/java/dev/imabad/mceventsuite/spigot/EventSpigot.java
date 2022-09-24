@@ -206,11 +206,9 @@ public class EventSpigot extends JavaPlugin {
                 thisServer = new Server(EventCore.getInstance().getIdentifier(), "", 0, 0, 0, 100);
             }
 
-            if(thisServer != null){
-                thisServer.setPlayerCount(getServer().getOnlinePlayers().size());
-                if(!thisServer.isOnline()){
-                    thisServer.setOnline(true);
-                }
+            thisServer.setPlayerCount(getServer().getOnlinePlayers().size());
+            if(!thisServer.isOnline()){
+                thisServer.setOnline(true);
             }
 
             serversModule.getServerRedisManager().addServer(thisServer);

@@ -11,6 +11,7 @@ import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassReward;
 import dev.imabad.mceventsuite.core.modules.eventpass.db.EventPassUnlockedReward;
 import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
 import dev.imabad.mceventsuite.core.modules.mysql.dao.PlayerDAO;
+import dev.imabad.mceventsuite.core.util.SpecialTag;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.api.EventInventory;
 import dev.imabad.mceventsuite.spigot.commands.TpaCommand;
@@ -22,6 +23,7 @@ import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
 import dev.imabad.mceventsuite.spigot.modules.player.PlayerHotbar;
 import dev.imabad.mceventsuite.spigot.utils.BungeeUtils;
 import dev.imabad.mceventsuite.spigot.utils.PermissibleInjector;
+import dev.imabad.mceventsuite.spigot.utils.StringUtils;
 import fr.neatmonster.nocheatplus.NCPAPIProvider;
 import fr.neatmonster.nocheatplus.checks.CheckType;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -143,9 +145,9 @@ public class PlayerListener implements Listener {
                 chatColor = ChatColor.WHITE;
 
             event.setFormat(
-                    (rank.getPrefix() == null || rank.getPrefix().isBlank() ? "" : ChatColor.translateAlternateColorCodes('&', rank.getPrefix() + " "))
+                    (rank.getPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(rank.getPrefix() + " "))
                     + "%s"
-                    + (rank.getSuffix() == null || rank.getSuffix().isBlank() ? "" : " " + ChatColor.translateAlternateColorCodes('&', rank.getSuffix()))
+                    + (rank.getSuffix().isEmpty() ? "" : StringUtils.colorizeMessage(" " + rank.getSuffix()))
                     + ": " + chatColor + "%s"
             );
         }

@@ -15,6 +15,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -59,11 +60,11 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
                 if(event.location != BossBarConfig.Event.Location.MEET) {
                     bossBar.setTitle(ChatColor.translateAlternateColorCodes('&',
                             "&" + event.location.color + "&l" + event.location.human.toUpperCase()
-                                    + " &r&a&l▪ ON NOW ▪ &r" + event.name
+                                    + " &r&a&l" + this.getDivider() + " ON NOW " + this.getDivider() + " &r" + event.name
                     ));
                 } else {
                     bossBar.setTitle(ChatColor.translateAlternateColorCodes('&',
-                            "&6&lMEET & GREET &r&a&l▪ ON NOW ▪ &r" + "/meet " + event.extraData));
+                            "&6&lMEET & GREET &r&a&l" + this.getDivider() + " ON NOW " + this.getDivider() + " &r" + "/meet " + event.extraData));
                 }
                 bossBar.setProgress(Math.max(0.0D, Math.min(1.0D, event.getProgress())));
                 bossBar.setColor(BarColor.GREEN);
@@ -71,7 +72,7 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
                 final BossBarConfig.Event event = soon.get(current);
                 bossBar.setTitle(ChatColor.translateAlternateColorCodes('&',
                         "&" + event.location.color + "&l" + event.location.human.toUpperCase()
-                                + " &r&6&l▪ UP NEXT ▪ &r" + event.name
+                                + " &r&6&l" + this.getDivider() + " UP NEXT " + this.getDivider() + " &r" + event.name
                 ));
                 bossBar.setProgress(Math.max(0.0D, Math.min(1.0D, event.getProgress())));
                 bossBar.setColor(BarColor.YELLOW);
@@ -104,6 +105,10 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
             }
         }, 0, 20 * 5);
         EventSpigot.getInstance().getServer().getPluginManager().registerEvents(this, EventSpigot.getInstance());
+    }
+
+    private String getDivider() {
+        return String.valueOf(Character.toChars(0x25AA)[0]);
     }
 
     public void addMeetGreet(String name, String displayName, long ends) {

@@ -1,5 +1,6 @@
 package dev.imabad.mceventsuite.spigot.modules.map;
 
+import com.google.gson.Gson;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -23,8 +24,14 @@ import dev.imabad.mceventsuite.core.modules.mysql.dao.BoothDAO;
 import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.modules.map.commands.*;
+import dev.imabad.mceventsuite.spigot.modules.map.objects.Tree;
 import dev.imabad.mceventsuite.spigot.modules.npc.NPCModule;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.*;
+import org.bukkit.block.Sign;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -34,11 +41,15 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.util.Vector;
 
 public class MapModule extends Module implements Listener, IConfigProvider<MapConfig> {
 
@@ -50,6 +61,8 @@ public class MapModule extends Module implements Listener, IConfigProvider<MapCo
     private KevinManager kevinManager;
 
     private MapConfig mapConfig;
+
+    private List<Pair<UUID, Integer>> treeEditMode = new ArrayList<>();
 
     @Override
     public String getName() {
@@ -64,6 +77,8 @@ public class MapModule extends Module implements Listener, IConfigProvider<MapCo
         commandMap.register("loadbooth", new LoadSchemCommand());
         commandMap.register("undobooth", new UndoBoothCommand());
         commandMap.register("sbs", new SetBoothPosCommand());
+        commandMap.register("viptree", new TreeDebugCommand(this));
+        commandMap.register("newtree", new NewTreePlotCommand(this));
         EventCore.getInstance().getEventRegistry().registerListener(MySQLLoadedEvent.class, this::onMysqlLoad);
         if(EventCore.getInstance().getModuleRegistry().isModuleEnabled(InfluxDBModule.class)) {
             EventSpigot.getInstance().getServer().getScheduler().runTaskTimerAsynchronously(EventSpigot.getInstance(), () -> {
@@ -81,8 +96,63 @@ public class MapModule extends Module implements Listener, IConfigProvider<MapCo
             .getInstance().getServer().getPluginManager().registerEvents(this, EventSpigot.getInstance());
     }
 
+    public List<Pair<UUID, Integer>> getTreeEditMode() {
+        return this.treeEditMode;
+    }
+
     private void onMysqlLoad(MySQLLoadedEvent t) {
         booths = t.getMySQLDatabase().getDAO(BoothDAO.class).getBooths();
+    }
+
+    public void spawnTree(String name) {
+        Tree tree = this.getVacantTree();
+        if(tree == null) {
+            Bukkit.getLogger().warning("no tree available for " + name);
+            return;
+        }
+
+        Location location = tree.toLocation(mainWorld);
+        location = location.add(0, 1, 0);
+        int rotation = tree.getRotation();
+
+        EditSession editSession = WorldEdit.getInstance().newEditSessionBuilder().world(BukkitAdapter.adapt(mainWorld)).build();
+        File schemFile = new File(EventSpigot.getInstance().getDataFolder() + File.separator
+                + "trees" + File.separator +  "Plant" + (random.nextInt(2) + 1) + ".schem");
+
+        ClipboardFormat format = ClipboardFormats.findByFile(schemFile);
+        try {
+            try (ClipboardReader reader = format.getReader(new FileInputStream(schemFile))) {
+                Clipboard clipboard = reader.read();
+                AffineTransform transform = new AffineTransform();
+                transform = transform.rotateY(rotation);
+                ClipboardHolder holder = new ClipboardHolder(clipboard);
+                holder.setTransform(holder.getTransform().combine(transform));
+                Operation operation = holder
+                        .createPaste(editSession)
+                        .to(BlockVector3.at(location.getX(), location.getY(), location.getZ()))
+                        .ignoreAirBlocks(false)
+                        .build();
+                Operations.complete(operation);
+                editSession.close();
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+            return;
+        }
+
+        Vector signVector = switch (rotation) {
+            case 180 -> new Vector(2, -1, 0);
+            case 90 -> new Vector(0, -1, 2); // ->
+            case -90 -> new Vector(0, -1, -2); // -<
+            default -> new Vector(-2, -1, 0);
+        };
+        final Location signLocation = location.add(signVector);
+        if(signLocation.getBlock().getType().data == WallSign.class) {
+            Sign sign = (Sign)signLocation.getBlock().getState();
+            sign.line(0, Component.text("Planted by").color(NamedTextColor.DARK_GRAY));
+            sign.line(2, Component.text(name).color(NamedTextColor.DARK_GRAY));
+            sign.update();
+        }
     }
 
     @EventHandler
@@ -100,6 +170,17 @@ public class MapModule extends Module implements Listener, IConfigProvider<MapCo
         }
     }
 
+    public Tree getVacantTree() {
+        for(Tree tree : this.mapConfig.getTrees()) {
+            final Location location = tree.toLocation(this.mainWorld);
+            if(location.add(0, -1, 0).getBlock().getType() == Material.GRASS_BLOCK) {
+                continue;
+            }
+            return tree;
+        }
+        return null;
+    }
+
     public void initKevins(){
         kevinManager = new KevinManager(mainWorld, mapConfig);
     }
@@ -114,6 +195,34 @@ public class MapModule extends Module implements Listener, IConfigProvider<MapCo
 
     public Location getRandomLocation(){
         return spawnLocations.get(random.nextInt(spawnLocations.size()));
+    }
+
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        for(Pair<UUID, Integer> pair : this.treeEditMode) {
+            if(pair.getKey() == event.getPlayer().getUniqueId()) {
+                Location location = event.getBlock().getLocation().add(0,1,0);
+                for(Tree tree : this.mapConfig.getTrees()) {
+                    if(tree.getX() == location.getX() && tree.getY() == location.getY() && tree.getZ() == location.getZ()) {
+                        this.mapConfig.getTrees().remove(tree);
+                        this.saveConfig();
+                        event.getPlayer().sendMessage(ChatColor.RED + "Removed tree!");
+
+                        event.setCancelled(true);
+                        return;
+                    }
+                }
+
+                int rotation = pair.getValue();
+
+                this.getConfig().getTrees().add(new Tree(event.getBlock().getLocation().add(0,1,0).toVector(), rotation));
+                this.saveConfig();
+
+                event.getPlayer().sendMessage(ChatColor.GREEN + "Added tree position with rotation " + rotation + "!");
+                event.setCancelled(true);
+                break;
+            }
+        }
     }
 
     @Override
@@ -276,7 +385,12 @@ public class MapModule extends Module implements Listener, IConfigProvider<MapCo
 
     @Override
     public void saveConfig() {
-
+        final String json = new Gson().toJson(this.mapConfig);
+        try(FileWriter fw = new FileWriter(EventSpigot.getInstance().getDataFolder() + File.separator + this.getFileName())) {
+            fw.write(json);
+        } catch(IOException exc) {
+            exc.printStackTrace();
+        }
     }
 
     @Override

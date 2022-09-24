@@ -229,7 +229,7 @@ public class HideNSeekGame {
 
             if(counter == this.waitingStartTime && getStatus() == GameStatus.JOINING) {
                 this.startWait(false);
-                MultiLib.notify("eventspigot:hns", "startwait");
+                MultiLib.notify("eventspigot:hns", "wait");
                 return;
             }
 
