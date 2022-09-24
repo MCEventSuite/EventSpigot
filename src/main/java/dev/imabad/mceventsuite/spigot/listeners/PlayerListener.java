@@ -20,17 +20,24 @@ import dev.imabad.mceventsuite.spigot.impl.SpigotPlayer;
 import dev.imabad.mceventsuite.spigot.interactions.Interaction;
 import dev.imabad.mceventsuite.spigot.interactions.InteractionRegistry;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
+import dev.imabad.mceventsuite.spigot.modules.meet.MeetModule;
 import dev.imabad.mceventsuite.spigot.modules.player.PlayerHotbar;
 import dev.imabad.mceventsuite.spigot.utils.BungeeUtils;
 import dev.imabad.mceventsuite.spigot.utils.PermissibleInjector;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
 import fr.neatmonster.nocheatplus.NCPAPIProvider;
 import fr.neatmonster.nocheatplus.checks.CheckType;
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentBuilder;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -46,6 +53,7 @@ import org.geysermc.floodgate.api.FloodgateApi;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class PlayerListener implements Listener {
@@ -133,23 +141,36 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerChat(AsyncPlayerChatEvent event) {
+    public void onPlayerChat(AsyncChatEvent event) {
+        event.setCancelled(true);
         Optional<EventPlayer> eventPlayer = EventCore.getInstance().getEventPlayerManager().getPlayer(event.getPlayer().getUniqueId());
+        MeetModule meetModule = EventCore.getInstance().getModuleRegistry().getModule(MeetModule.class);
         if(eventPlayer.isPresent()) {
             final EventRank rank = eventPlayer.get().getRank();
 
             //TODO tidy this
-            ChatColor chatColor = ChatColor.GRAY;
+            NamedTextColor chatColor = NamedTextColor.GRAY;
             String chatColorHex = rank.getChatColor().substring(1);
             if (chatColorHex.equalsIgnoreCase("fff"))
-                chatColor = ChatColor.WHITE;
+                chatColor = NamedTextColor.WHITE;
 
-            event.setFormat(
+            Component message = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
                     (rank.getPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(rank.getPrefix() + " "))
-                    + "%s"
+                    + event.getPlayer().getName()
                     + (rank.getSuffix().isEmpty() ? "" : StringUtils.colorizeMessage(" " + rank.getSuffix()))
-                    + ": " + chatColor + "%s"
-            );
+                    + ": ")).asComponent();
+            message = message.append(event.originalMessage().color(chatColor));
+
+            List<UUID> chatBubble = meetModule.getChatBubble(event.getPlayer().getUniqueId());
+            if (chatBubble != null) {
+                message = Component.text("[CB] ").color(NamedTextColor.GREEN).append(message);
+            }
+
+            for(Player player : Bukkit.getAllOnlinePlayers()) {
+                if(chatBubble == null || chatBubble.contains(player.getUniqueId())) {
+                    player.sendMessage(event.getPlayer(), message);
+                }
+            }
         }
     }
 

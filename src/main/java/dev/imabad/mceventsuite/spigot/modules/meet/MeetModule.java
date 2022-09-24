@@ -16,6 +16,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -23,6 +24,7 @@ import org.bukkit.entity.Player;
 
 import javax.inject.Named;
 import javax.naming.Name;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +32,7 @@ import java.util.UUID;
 public class MeetModule extends Module {
 
     private HashMap<String, String> displayNames;
+    private HashMap<Pair<String, Integer>, List<UUID>> chatBubbles;
 
     @Override
     public String getName() {
@@ -58,15 +61,28 @@ public class MeetModule extends Module {
                 player.sendMessage(ChatColor.GREEN + "You're up for the Meet & Greet with " +
                         ChatColor.AQUA + this.getDisplayName(msg.getName()) + ChatColor.GREEN + "!\n" +
                         ChatColor.RESET + "Your session will last for " + ChatColor.YELLOW + msg.getEta() + " minutes");
+                final Pair<String, Integer> pair = Pair.of(msg.getName(), msg.getPosition());
+                if(!chatBubbles.containsKey(pair))
+                    chatBubbles.put(pair, new ArrayList<>());
+                chatBubbles.get(pair).add(player.getUniqueId());
             } else if(msg.getPosition() != -1) {
                 player.sendMessage(ChatColor.GREEN + "You're up for the next spot on the Meet & Greet with " +
                         ChatColor.AQUA + this.getDisplayName(msg.getName()) + ChatColor.GREEN + "!\n" +
                         ChatColor.RESET + "Your session will last for " + ChatColor.YELLOW + msg.getEta() + " minutes");
+                final Pair<String, Integer> newPair = Pair.of(msg.getName(), msg.getPosition());
+                final Pair<String, Integer> oldPair = Pair.of(msg.getName(), msg.getPosition() - 1);
+                if(!chatBubbles.containsKey(newPair))
+                    chatBubbles.put(newPair, new ArrayList<>());
+                chatBubbles.get(newPair).add(player.getUniqueId());
+                if(chatBubbles.containsKey(oldPair))
+                    chatBubbles.get(oldPair).remove(player.getUniqueId());
             } else {
-                player.teleport(new Location(
-                        Bukkit.getWorld("world"), 0.5, 30, 8.5, 0, 0));
+                Bukkit.getScheduler().runTask(EventSpigot.getInstance(), () -> player.teleport(new Location(
+                        Bukkit.getWorld("world"), 0.5, 30, 8.5, 0, 0)));
                 player.sendMessage(ChatColor.RED + "Your Meet & Greet session with " + ChatColor.AQUA + this.getDisplayName(msg.getName()) +
                         ChatColor.RESET + " has ended.\n" + ChatColor.RESET + "Thank you for stopping by. See you soon!");
+                for(List<UUID> list : chatBubbles.values())
+                    list.remove(player.getUniqueId());
             }
 
             if(msg.getLocation() != null) {
@@ -111,6 +127,15 @@ public class MeetModule extends Module {
             }
         }));
 
+        this.chatBubbles = new HashMap<>();
+    }
+
+    public List<UUID> getChatBubble(UUID uuid) {
+        for(List<UUID> list : this.chatBubbles.values()) {
+            if(list.contains(uuid))
+                return list;
+        }
+        return null;
     }
 
     @Override
