@@ -1,5 +1,6 @@
 package dev.imabad.mceventsuite.spigot.api;
 
+import dev.imabad.mceventsuite.spigot.EventSpigot;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -34,7 +35,7 @@ public abstract class EventInventory {
     public void open(Player player, @Nullable EventInventory backInventory) {
         repopulate();
         this.backInventory = backInventory;
-        player.openInventory(inventory);
+        Bukkit.getScheduler().runTask(EventSpigot.getInstance(), () -> player.openInventory(inventory));
     }
 
 
