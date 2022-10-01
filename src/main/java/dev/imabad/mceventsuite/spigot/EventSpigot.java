@@ -12,6 +12,7 @@ import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.core.modules.redis.RedisMessageListener;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
 import dev.imabad.mceventsuite.core.modules.redis.events.RedisConnectionEvent;
+import dev.imabad.mceventsuite.core.modules.redis.messages.DonationMessage;
 import dev.imabad.mceventsuite.core.modules.redis.messages.players.UpdatePlayerXPMessage;
 import dev.imabad.mceventsuite.core.modules.redis.messages.players.UpdatedPlayerMessage;
 import dev.imabad.mceventsuite.core.modules.redis.messages.players.UpdatedRankMessage;
@@ -120,6 +121,12 @@ public class EventSpigot extends JavaPlugin {
                         player.setExp(progressToNext);
                         getAudiences().player(player).playSound(Sound.sound(Key.key("minecraft:ui.toast.challenge_complete"), Sound.Source.AMBIENT, 1f, 1f));
                     }
+                }
+            }));
+            EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).registerListener(DonationMessage.class, new RedisMessageListener<>((msg) -> {
+                if(EventCore.getInstance().getIdentifier().equalsIgnoreCase("shard1")) {
+                    EventCore.getInstance().getModuleRegistry().getModule(MapModule.class)
+                            .spawnTree(msg.getUsername());
                 }
             }));
             EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).registerListener(UpdatedRankMessage.class, new RedisMessageListener<>((msg) -> {

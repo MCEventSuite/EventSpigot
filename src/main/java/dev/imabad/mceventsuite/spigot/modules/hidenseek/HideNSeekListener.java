@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 
 public class HideNSeekListener implements Listener {
@@ -26,6 +27,11 @@ public class HideNSeekListener implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void onPlayerLeave(PlayerQuitEvent event) {
+        module.leave(event.getPlayer());
     }
 
     @EventHandler

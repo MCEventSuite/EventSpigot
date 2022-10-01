@@ -235,7 +235,14 @@ public class HideNSeekModule extends Module {
         this.getGame().leave(player.getUniqueId());
         player.setScoreboard(EventSpigot.getInstance().getScoreboard());
         PlayerHotbar.givePlayerInventory(player);
+
         MultiLib.notify("eventspigot:hns", "leave:" + player.getUniqueId());
+
+        if(this.currentGame.getStatus() == HideNSeekGame.GameStatus.STARTED) {
+            if(this.currentGame.getHiders().size() == 0) {
+                this.currentGame.runEnd();
+            }
+        }
     }
 
     public void leaveSeeker(Player player) {
@@ -245,6 +252,12 @@ public class HideNSeekModule extends Module {
         player.setScoreboard(EventSpigot.getInstance().getScoreboard());
         PlayerHotbar.givePlayerInventory(player);
         MultiLib.notify("eventspigot:hns", "rmseeker:" + player.getUniqueId());
+
+        if(this.currentGame.getStatus() == HideNSeekGame.GameStatus.STARTED) {
+            if(this.currentGame.getSeekers().size() == 0) {
+                this.currentGame.runEnd();
+            }
+        }
     }
 
     public void catchHider(Player hider, Player seeker) {

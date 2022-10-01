@@ -236,6 +236,9 @@ public class HideNSeekGame {
             if(counter == this.gameStartTime && getStatus() == GameStatus.WAITING) {
                 this.start(false);
                 MultiLib.notify("eventspigot:hns", "start");
+
+                if(this.getSeekers().size() == 0 || this.getHiders().size() == 0)
+                    this.runEnd();
                 return;
             }
 
@@ -449,6 +452,10 @@ public class HideNSeekGame {
                 }
             }
         }
+    }
+
+    public boolean isHost() {
+        return this.countdown != null;
     }
 
     public GameStatus getStatus(){
