@@ -1,6 +1,7 @@
 package dev.imabad.mceventsuite.spigot.modules.map;
 
 import dev.imabad.mceventsuite.core.EventCore;
+import dev.imabad.mceventsuite.core.util.SpecialTag;
 import dev.imabad.mceventsuite.spigot.modules.map.objects.Kevin;
 import dev.imabad.mceventsuite.spigot.modules.npc.NPC;
 import dev.imabad.mceventsuite.spigot.modules.npc.NPCManager;
@@ -65,7 +66,7 @@ public class KevinManager {
         }
         if(kevin.getVoiceLines().size() != 0 && !kevin.getVoiceLines().get(0).isBlank())
             npc = npcManager.createNpc(StringUtils.colorizeMessage(kevin.getName()), model,
-                    new KevinInteraction(kevin), location, Character.toChars(0x0316)[0]);
+                    new KevinInteraction(kevin), location, SpecialTag.CHAT);
         else
             npc = npcManager.createNpc(StringUtils.colorizeMessage(kevin.getName()), model,
                     new KevinInteraction(kevin), location, null);

@@ -22,6 +22,7 @@ import dev.imabad.mceventsuite.spigot.interactions.InteractionRegistry;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
 import dev.imabad.mceventsuite.spigot.modules.meet.MeetModule;
 import dev.imabad.mceventsuite.spigot.modules.player.PlayerHotbar;
+import dev.imabad.mceventsuite.spigot.modules.teams.TeamModule;
 import dev.imabad.mceventsuite.spigot.utils.BungeeUtils;
 import dev.imabad.mceventsuite.spigot.utils.PermissibleInjector;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
@@ -39,6 +40,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.*;
@@ -91,7 +93,7 @@ public class PlayerListener implements Listener {
                 playerJoinEvent.getPlayer().setGameMode(GameMode.CREATIVE);
             }
         }
-        if(EventSpigot.getInstance().getRankTeams().size() < 1){
+        /*if(EventSpigot.getInstance().getRankTeams().size() < 1){
             EventSpigot.getInstance().getRanks().forEach(eventRank -> {
                 if (EventSpigot.getInstance().getScoreboard().getTeam(eventRank.getName()) == null) {
                     Team team = EventSpigot.getInstance().getScoreboard().registerNewTeam(eventRank.getName());
@@ -102,14 +104,19 @@ public class PlayerListener implements Listener {
                     EventSpigot.getInstance().getLogger().warning("Scoreboard team already exists: " + eventRank.getName());
                 }
             });
-        }
+        }*/
         if(playerJoinEvent.getPlayer().getScoreboard() != EventSpigot.getInstance().getScoreboard()){
             playerJoinEvent.getPlayer().setScoreboard(EventSpigot.getInstance().getScoreboard());
         }
-        Team team = EventSpigot.getInstance().getScoreboard().getTeam(player.getRank().getName());
+
+        /*Team team = EventSpigot.getInstance().getScoreboard().getTeam(player.getRank().getName());
         if(!team.hasEntry(playerJoinEvent.getPlayer().getDisplayName())) {
             team.addEntry(playerJoinEvent.getPlayer().getDisplayName());
-        }
+        }*/
+
+        EventCore.getInstance().getModuleRegistry().getModule(TeamModule.class)
+                .getTeamManager().addPlayerToTeam(playerJoinEvent.getPlayer(), player.getRank());
+
         for(PotionEffect potionEffect : playerJoinEvent.getPlayer().getActivePotionEffects()){
             playerJoinEvent.getPlayer().removePotionEffect(potionEffect.getType());
         }
@@ -140,7 +147,7 @@ public class PlayerListener implements Listener {
         NCPAPIProvider.getNoCheatPlusAPI().getPlayerDataManager().getPlayerData(playerJoinEvent.getPlayer()).exempt(CheckType.MOVING_SURVIVALFLY);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerChat(AsyncChatEvent event) {
         event.setCancelled(true);
         Optional<EventPlayer> eventPlayer = EventCore.getInstance().getEventPlayerManager().getPlayer(event.getPlayer().getUniqueId());
@@ -154,21 +161,33 @@ public class PlayerListener implements Listener {
             if (chatColorHex.equalsIgnoreCase("fff"))
                 chatColor = NamedTextColor.WHITE;
 
-            Component message = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
-                    (rank.getPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(rank.getPrefix() + " "))
+            Component javaMessage = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
+                    (rank.getJavaPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(rank.getJavaPrefix()))
                     + event.getPlayer().getName()
                     + (rank.getSuffix().isEmpty() ? "" : StringUtils.colorizeMessage(" " + rank.getSuffix()))
                     + ": ")).asComponent();
-            message = message.append(event.originalMessage().color(chatColor));
+
+            Component bedrockMessage = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
+                    (rank.getBedrockPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(rank.getBedrockPrefix()))
+                            + event.getPlayer().getName()
+                            + (rank.getSuffix().isEmpty() ? "" : StringUtils.colorizeMessage(" " + rank.getSuffix()))
+                            + ": ")).asComponent();
+
+            javaMessage = javaMessage.append(event.originalMessage().color(chatColor));
+            bedrockMessage = bedrockMessage.append(event.originalMessage().color(chatColor));
 
             List<UUID> chatBubble = meetModule.getChatBubble(event.getPlayer().getUniqueId());
             if (chatBubble != null) {
-                message = Component.text("[CB] ").color(NamedTextColor.GREEN).append(message);
+                javaMessage = Component.text("[CB] ").color(NamedTextColor.GREEN).append(javaMessage);
+                bedrockMessage = Component.text("[CB] ").color(NamedTextColor.GREEN).append(bedrockMessage);
             }
 
             for(Player player : Bukkit.getAllOnlinePlayers()) {
                 if(chatBubble == null || chatBubble.contains(player.getUniqueId())) {
-                    player.sendMessage(event.getPlayer(), message);
+                    if(FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()))
+                        player.sendMessage(event.getPlayer(), bedrockMessage);
+                    else
+                        player.sendMessage(event.getPlayer(), javaMessage);
                 }
             }
         }
@@ -181,6 +200,10 @@ public class PlayerListener implements Listener {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        EventCore.getInstance().getModuleRegistry().getModule(TeamModule.class)
+                .getTeamManager().removePlayerFromTeam(playerQuitEvent.getPlayer());
+
         EventCore.getInstance().getEventPlayerManager().getPlayer(playerQuitEvent.getPlayer().getUniqueId()).ifPresent(eventPlayer -> {
             TpaCommand.getTeleportRequests().remove(eventPlayer.getUUID().toString());
             Team team = EventSpigot.getInstance().getScoreboard().getTeam(eventPlayer.getRank().getName());

@@ -1,6 +1,7 @@
 package dev.imabad.mceventsuite.spigot.modules.npc;
 
 import com.mojang.authlib.GameProfile;
+import dev.imabad.mceventsuite.core.util.SpecialTag;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -24,6 +25,7 @@ import org.bukkit.craftbukkit.v1_19_R1.CraftWorld;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Team;
+import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +51,7 @@ public class NPCManager {
 
 
     public NPC createNpc(String displayName, EntityType type, NPCInteraction interaction, Location location,
-                         Character icon) {
+                         SpecialTag icon) {
         final ServerLevel level = ((CraftWorld) location.getWorld()).getHandle();
         LivingEntity entity = null;
         if (type == EntityType.PLAYER) {
@@ -77,13 +79,23 @@ public class NPCManager {
             entity.moveTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
             this.setEntityName(entity, displayName);
             final NPC npc = new NPC(displayName, entity, interaction, icon);
-            if (icon != null)
-                this.setEntityName(npc.getArmorStand(), icon.toString());
+            /*if (icon != null)
+                this.setEntityName(npc.getArmorStand(), icon.name());*/
             this.npcList.add(npc);
             return npc;
         }
 
         return null;
+    }
+
+    public SynchedEntityData getArmourStandData(Player player, NPC npc) {
+        SynchedEntityData data = npc.getArmorStand().getEntityData();
+        String tag = FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()) ? npc.getIcon().getBedrockString()
+                : npc.getIcon().getJavaString();
+        final Optional<Component> componentOptional = Optional.of(Component.literal(StringUtils.colorizeMessage(tag)));
+        data.set(new EntityDataAccessor<>(2, EntityDataSerializers.OPTIONAL_COMPONENT), componentOptional);
+        data.set(new EntityDataAccessor<>(3, EntityDataSerializers.BOOLEAN), true);
+        return data;
     }
 
     public void setEntityName(Entity entity, String displayName) {

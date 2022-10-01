@@ -45,6 +45,8 @@ import dev.imabad.mceventsuite.spigot.modules.scoreboards.ScoreboardModule;
 import dev.imabad.mceventsuite.spigot.modules.shops.ShopsModule;
 import dev.imabad.mceventsuite.spigot.modules.stafftrack.StaffTrackModule;
 import dev.imabad.mceventsuite.spigot.modules.stage.StageModule;
+import dev.imabad.mceventsuite.spigot.modules.teams.TeamManager;
+import dev.imabad.mceventsuite.spigot.modules.teams.TeamModule;
 import dev.imabad.mceventsuite.spigot.modules.warps.WarpModule;
 import dev.imabad.mceventsuite.spigot.utils.PermissibleInjector;
 import net.kyori.adventure.key.Key;
@@ -102,14 +104,11 @@ public class EventSpigot extends JavaPlugin {
                             PermissibleInjector.inject(player, eventPermissible);
                         } catch (Exception ignored) {
                         }
-                        Team previousTeam = getScoreboard().getTeam(previousRank.getName());
-                        if(previousTeam.hasEntry(player.getDisplayName())){
-                            previousTeam.removeEntry(player.getDisplayName());
-                        }
-                        Team team = getScoreboard().getTeam(eventPlayer.getRank().getName());
-                        if(!team.hasEntry(player.getDisplayName())) {
-                            team.addEntry(player.getDisplayName());
-                        }
+
+                        TeamManager teamManager = EventCore.getInstance().getModuleRegistry().getModule(TeamModule.class)
+                                .getTeamManager();
+                        teamManager.removePlayerFromTeam(player, false);
+                        teamManager.addPlayerToTeam(player, eventPlayer.getRank());
                     }
                 }
             }));
@@ -138,13 +137,13 @@ public class EventSpigot extends JavaPlugin {
                     Player bPlayer = getServer().getPlayer(player.getUUID());
                     if(bPlayer != null) {
                         bPlayer.recalculatePermissions();
+
+                        TeamManager teamManager = EventCore.getInstance().getModuleRegistry().getModule(TeamModule.class)
+                                .getTeamManager();
+                        teamManager.removePlayerFromTeam(bPlayer, false);
+                        teamManager.addPlayerToTeam(bPlayer, msg.getRank());
                     }
                 });
-                Team team = rankTeams.get(msg.getRank().getId());
-                team.setDisplayName(msg.getRank().getName());
-                team.setPrefix(ChatColor.translateAlternateColorCodes('&', msg.getRank().getPrefix()) + (msg.getRank().getPrefix().length() > 0 ? " " : ""));
-                team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
-                rankTeams.put(msg.getRank().getId(), team);
             }));
         });
         audiences = BukkitAudiences.create(this);
@@ -209,6 +208,9 @@ public class EventSpigot extends JavaPlugin {
         permissionAttachments = new HashMap<>();
         unRegisterBukkitCommand(getCommand("ban"));
         unRegisterBukkitCommand(getCommand("kick"));
+        getServer().getScheduler().runTaskLaterAsynchronously(getInstance(), () -> {
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new TeamModule());
+        }, 20 * 5);
         getServer().getScheduler().runTaskTimerAsynchronously(getInstance(), () -> {
             Server thisServer = serversModule.getServerRedisManager().getServer(EventCore.getInstance().getIdentifier());
 
@@ -224,8 +226,6 @@ public class EventSpigot extends JavaPlugin {
 
             serversModule.getServerRedisManager().addServer(thisServer);
         }, 0, 15 * 20);
-
-
     }
 
     public HashMap<Integer, Team> getRankTeams() {

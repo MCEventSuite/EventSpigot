@@ -9,10 +9,12 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import javax.naming.Name;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -20,6 +22,10 @@ public class ChatListener implements Listener {
 
     private static final Component FILTERED_MESSAGE = Component.text("Your message was filtered").color(NamedTextColor.YELLOW);
     private static final Component SPAM_MESSAGE = Component.text("Please don't spam!").color(NamedTextColor.YELLOW);
+    private static final Component MUTED_MESSAGE = Component.text("You have been muted!").color(NamedTextColor.RED)
+            .append(Component.text("\nThink this was in error? Appeal to ").color(NamedTextColor.GRAY))
+            .append(Component.text("support@cubedcon.com").color(NamedTextColor.BLUE));
+
 
     static class LastMessage {
         public String message;
@@ -47,6 +53,7 @@ public class ChatListener implements Listener {
                 long expiry = EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).getMutedPlayersManager().getMuteExpiry(sender.getUniqueId().toString());
                 if (expiry > System.currentTimeMillis()) {
                     event.setCancelled(true);
+                    event.getPlayer().sendMessage(MUTED_MESSAGE);
                     return;
                 } else {
                     EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).getMutedPlayersManager().removePlayer(sender.getUniqueId().toString());

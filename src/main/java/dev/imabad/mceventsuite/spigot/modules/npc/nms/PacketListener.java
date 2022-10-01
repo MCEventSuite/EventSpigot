@@ -100,7 +100,7 @@ public class PacketListener implements Listener {
 
             if (npc.getArmorStand() != null) {
                 connection.send(new ClientboundAddEntityPacket(npc.getArmorStand()));
-                connection.send(new ClientboundSetEntityDataPacket(npc.getArmorStand().getId(), npc.getArmorStand().getEntityData(), true));
+                connection.send(new ClientboundSetEntityDataPacket(npc.getArmorStand().getId(), npcManager.getArmourStandData(player, npc), true));
             }
         }
 
