@@ -1,6 +1,7 @@
 package dev.imabad.mceventsuite.spigot.modules.npc;
 
 import com.mojang.authlib.properties.Property;
+import dev.imabad.mceventsuite.core.util.SpecialTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -19,12 +20,14 @@ public class NPC {
     private final LivingEntity entity;
     private final Entity armorStand;
     private final NPCInteraction interactEvent;
+    private final SpecialTag icon;
 
-    public NPC(String displayName, LivingEntity entity, NPCInteraction runnable, Character icon) {
+    public NPC(String displayName, LivingEntity entity, NPCInteraction runnable, SpecialTag icon) {
         this.displayName = displayName;
         this.entity = entity;
 
         if(icon != null) {
+            this.icon = icon;
             this.armorStand = new ArmorStand(EntityType.ARMOR_STAND, this.getEntity().level);
             armorStand.setInvisible(true);
             SynchedEntityData data = armorStand.getEntityData();
@@ -41,6 +44,7 @@ public class NPC {
             this.armorStand.moveTo(entity.getX(), entity.getY() + modifier, entity.getZ());
         } else {
             this.armorStand = null;
+            this.icon = null;
         }
 
         this.interactEvent = runnable;
@@ -66,5 +70,9 @@ public class NPC {
 
     public NPCInteraction getInteractEvent() {
         return this.interactEvent;
+    }
+
+    public SpecialTag getIcon() {
+        return this.icon;
     }
 }

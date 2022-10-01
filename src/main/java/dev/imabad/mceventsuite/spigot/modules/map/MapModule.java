@@ -26,6 +26,7 @@ import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.modules.map.commands.*;
 import dev.imabad.mceventsuite.spigot.modules.map.objects.Tree;
 import dev.imabad.mceventsuite.spigot.modules.npc.NPCModule;
+import dev.imabad.mceventsuite.spigot.modules.teams.TeamModule;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.commons.lang3.tuple.Pair;
