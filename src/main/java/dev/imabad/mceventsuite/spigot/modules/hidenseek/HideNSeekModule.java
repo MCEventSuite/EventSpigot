@@ -41,21 +41,23 @@ public class HideNSeekModule extends Module {
         EventSpigot.getInstance().getServer().getPluginManager().registerEvents(new HideNSeekListener(this), EventSpigot.getInstance());
         EventSpigot.getInstance().getCommandMap().register("hns", new HideSeekCommand(this));
         MultiLib.onString(EventSpigot.getInstance(), "eventspigot:hns", (data) -> {
+            final String[] parts = data.split(":");
+
             if(data.equalsIgnoreCase("end")) {
                 this.currentGame.end(true);
                 return;
             } else if(data.equalsIgnoreCase("start")) {
                 this.currentGame.start(true);
                 return;
-            } else if(data.equalsIgnoreCase("init")) {
-                this.currentGame = new HideNSeekGame(this.eventScoreboard);
+            } else if(parts[0].equalsIgnoreCase("init")) {
+                int waitingStart = Integer.parseInt(parts[1]);
+                int gameStart = Integer.parseInt(parts[2]);
+                this.currentGame = new HideNSeekGame(this.eventScoreboard, waitingStart, gameStart);
                 return;
             } else if(data.equalsIgnoreCase("wait")) {
                 this.currentGame.startWait(true);
                 return;
             }
-
-            final String[] parts = data.split(":");
 
             if(this.currentGame != null && this.currentGame.getStatus() != HideNSeekGame.GameStatus.ENDED) {
                 if(parts[0].equalsIgnoreCase("addseeker")) {
@@ -167,7 +169,7 @@ public class HideNSeekModule extends Module {
     public boolean startGame(HideNSeekGame game) {
         if (currentGame == null || currentGame.getStatus() == HideNSeekGame.GameStatus.ENDED) {
             this.currentGame = game;
-            MultiLib.notify("eventspigot:hns", "init");
+            MultiLib.notify("eventspigot:hns", "init:" + this.currentGame.waitingStartTime + ":" + this.currentGame.gameStartTime);
 
             Component component = Component.text("----------------------------").color(NamedTextColor.BLUE)
                     .append(Component.text("\n\nHIDE & SEEK\n\n").color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD))
@@ -263,8 +265,20 @@ public class HideNSeekModule extends Module {
     public void catchHider(Player hider, Player seeker) {
         if(this.currentGame == null || this.currentGame.getStatus() != HideNSeekGame.GameStatus.STARTED)
             return;
-        MultiLib.notify("eventspigot:hns", "caught:" + hider.getUniqueId() + ":" + seeker.getName());
+
+        for(UUID uuid : this.currentGame.getAllPlayers()) {
+            Player player = Bukkit.getPlayer(uuid);
+            if(player != null) {
+                player.sendMessage(StringUtils.colorizeMessage("&9" + hider.getName() + " &ewas caught by &6" + seeker.getName() + "&e!"));
+            }
+        }
+
         this.getGame().convertToSeeker(hider.getUniqueId(), seeker.getName());
+        MultiLib.notify("eventspigot:hns", "caught:" + hider.getUniqueId() + ":" + seeker.getName());
+
+        if(this.currentGame.getHiders().size() == 0) {
+            this.currentGame.runEnd();
+        }
     }
 
     @Override

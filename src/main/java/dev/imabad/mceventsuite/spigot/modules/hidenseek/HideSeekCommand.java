@@ -53,7 +53,7 @@ public class HideSeekCommand extends BaseCommand {
                 duration = duration * 60;
                 warmup = warmup * 60;
 
-                if(module.startGame(new HideNSeekGame(countdown, duration, warmup, module.getEventScoreboard())))
+                if(module.startGame(new HideNSeekGame(countdown, duration, warmup, module.getEventScoreboard(), 0)))
                     module.joinAsSeeker(player);
                 else
                     player.sendMessage(Component.text("Game failed to start! Is there already in progress?").color(NamedTextColor.RED));

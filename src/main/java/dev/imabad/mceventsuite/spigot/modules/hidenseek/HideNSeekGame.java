@@ -14,6 +14,7 @@ import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.modules.player.PlayerHotbar;
 import dev.imabad.mceventsuite.spigot.modules.scoreboards.EventScoreboard;
 import dev.imabad.mceventsuite.spigot.modules.scoreboards.ScoreboardModule;
+import dev.imabad.mceventsuite.spigot.modules.teams.TeamModule;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -58,17 +59,21 @@ public class HideNSeekGame {
     final int waitingStartTime;
     private final EventScoreboard eventScoreboard;
 
-    public HideNSeekGame(EventScoreboard eventScoreboard) {
-        this(0, 0, 0, eventScoreboard);
+    public HideNSeekGame(EventScoreboard eventScoreboard, int waitingStart, int gameStartTime) {
+        this(0, gameStartTime, 0, eventScoreboard, waitingStart);
     }
 
-    public HideNSeekGame(int startCountdown, int duration, int warmup, EventScoreboard eventScoreboard){
+    public HideNSeekGame(int startCountdown, int duration, int warmup, EventScoreboard eventScoreboard, int waitingOverride){
         this.status = GameStatus.JOINING;
         this.seekers = new ArrayList<>();
         this.hiders = new ArrayList<>();
-        this.counter = startCountdown + duration + warmup;
         this.gameStartTime = duration;
-        this.waitingStartTime = duration + startCountdown;
+        if(waitingOverride == 0) {
+            this.counter = startCountdown + duration + warmup;
+            this.waitingStartTime = duration + startCountdown;
+        } else {
+            this.waitingStartTime = waitingOverride;
+        }
         this.eventScoreboard = eventScoreboard;
     }
 
@@ -98,7 +103,7 @@ public class HideNSeekGame {
                 seeker.hidePlayer(EventSpigot.getInstance(), player);
         }
 
-        if (seeker.isLocalPlayer() && getStatus() == GameStatus.WAITING) {
+        if (seeker.isLocalPlayer() && (getStatus() == GameStatus.WAITING)) {
             seeker.sendMessage(ChatColor.GRAY + "You are a " + ChatColor.GOLD + "Seeker!");
             seeker.sendMessage(ChatColor.GRAY + "You must find the " +
                     ChatColor.BLUE + "Hiders" + ChatColor.GRAY + " who are hidden around the Aandeel Convention Center!");
@@ -111,7 +116,7 @@ public class HideNSeekGame {
                 else
                     seeker.hidePlayer(EventSpigot.getInstance(), player);
             }
-        } else if(seeker.isLocalPlayer()) {
+        } else if(seeker.isLocalPlayer() && getStatus() == GameStatus.JOINING) {
             seeker.sendMessage(ChatColor.GREEN + "You will be a seeker this round!");
         }
     }
@@ -149,6 +154,7 @@ public class HideNSeekGame {
                         Component.text("You were caught by ").color(NamedTextColor.WHITE)
                                 .append(Component.text(nameOfFinder).color(NamedTextColor.GOLD))
                 ));
+                player.sendMessage(StringUtils.colorizeMessage("&6You are now a Seeker!\n&fYou were caught by &6" + nameOfFinder));
             }
             addSeeker(uuid);
         }
@@ -170,7 +176,12 @@ public class HideNSeekGame {
                     hider.hidePlayer(EventSpigot.getInstance(), player);
             }
 
-            if (status == GameStatus.WAITING) {
+            if(status == GameStatus.JOINING) {
+                for(Player player : Bukkit.getLocalOnlinePlayers()) {
+                    if(hiders.contains(player.getUniqueId()) || seekers.contains(player.getUniqueId()))
+                        player.showPlayer(EventSpigot.getInstance(), hider);
+                }
+            } else if (status == GameStatus.WAITING) {
                 if (hider.isLocalPlayer()) {
                     hider.sendMessage(ChatColor.GRAY + "You are a" + ChatColor.BLUE + " Hider!");
                     hider.sendMessage(ChatColor.GRAY + "Find good spots to stay hidden from seekers around the Aandeel Convention Center!\n");
@@ -395,6 +406,9 @@ public class HideNSeekGame {
                 PlayerHotbar.givePlayerInventory(player);
             }
         }
+
+        EventCore.getInstance().getModuleRegistry().getModule(TeamModule.class).getTeamManager()
+                .resendTeams();
 
         boolean stoppedByAdmin = false;
         boolean hidersWin = false;
