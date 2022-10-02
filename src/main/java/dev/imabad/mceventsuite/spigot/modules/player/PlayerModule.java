@@ -32,6 +32,7 @@ import org.bukkit.inventory.ItemStack;
 public class PlayerModule extends Module implements Listener {
 
   private static StateFlag allowFlyFlag;
+  private AFKManager afkManager;
 
   @Override
   public String getName() {
@@ -42,6 +43,7 @@ public class PlayerModule extends Module implements Listener {
   public void onEnable() {
     InteractionRegistry.registerInteraction(Interaction.RIGHT_CLICK, this::onPlayerRightClick);
     InteractionRegistry.registerInteraction(Interaction.MOVE, this::onPlayerMove);
+    this.afkManager = new AFKManager();
     registerFlag();
   }
 
