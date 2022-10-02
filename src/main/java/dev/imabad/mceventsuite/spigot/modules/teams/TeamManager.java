@@ -105,7 +105,7 @@ public class TeamManager {
 
     public void addPlayerToTeam(Player player, EventRank eventRank, boolean update) {
         this.addPlayerToTeam(player.getName(), eventRank.getId(), update);
-        MultiLib.notify("eventspigot:teams", "add:" + player.getName() + ":" + eventRank.getId() +
+        MultiLib.notify("eventspigot:teams", "add:" + player.getName() + ":" + eventRank.getId() + ":" +
                 (update ? "true" : "false"));
     }
 
