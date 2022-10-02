@@ -206,10 +206,6 @@ public class PlayerListener implements Listener {
 
         EventCore.getInstance().getEventPlayerManager().getPlayer(playerQuitEvent.getPlayer().getUniqueId()).ifPresent(eventPlayer -> {
             TpaCommand.getTeleportRequests().remove(eventPlayer.getUUID().toString());
-            Team team = EventSpigot.getInstance().getScoreboard().getTeam(eventPlayer.getRank().getName());
-            if(team.hasEntry(eventPlayer.getLastUsername())){
-                team.removeEntry(eventPlayer.getLastUsername());
-            }
             EventCore.getInstance().getEventPlayerManager().removePlayer(eventPlayer);
         });
         BungeeUtils.saveLocationSynchronously(playerQuitEvent.getPlayer());
