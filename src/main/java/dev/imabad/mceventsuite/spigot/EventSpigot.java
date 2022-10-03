@@ -29,6 +29,7 @@ import dev.imabad.mceventsuite.spigot.listeners.PlayerListener;
 import dev.imabad.mceventsuite.spigot.modules.bedrock.BedrockModule;
 import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
 import dev.imabad.mceventsuite.spigot.modules.bossbar.BossBarModule;
+import dev.imabad.mceventsuite.spigot.modules.bubbles.BubbleModule;
 import dev.imabad.mceventsuite.spigot.modules.daylight.DaylightModule;
 import dev.imabad.mceventsuite.spigot.modules.eventblocker.EventBlockModule;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.EventPassSpigotModule;
@@ -123,10 +124,9 @@ public class EventSpigot extends JavaPlugin {
                 }
             }));
             EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).registerListener(DonationMessage.class, new RedisMessageListener<>((msg) -> {
-                if(EventCore.getInstance().getIdentifier().equalsIgnoreCase("shard1")) {
+                if(EventCore.getInstance().getIdentifier().equalsIgnoreCase("shard1") && msg.isPlantTree())
                     EventCore.getInstance().getModuleRegistry().getModule(MapModule.class)
                             .spawnTree(msg.getUsername());
-                }
             }));
             EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).registerListener(UpdatedRankMessage.class, new RedisMessageListener<>((msg) -> {
                 ranks = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(RankDAO.class).getRanks(true);
@@ -200,6 +200,7 @@ public class EventSpigot extends JavaPlugin {
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new ScoreboardModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new MineconModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new MeetModule());
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BubbleModule());
         }
         permissionAttachments = new HashMap<>();
         unRegisterBukkitCommand(getCommand("ban"));

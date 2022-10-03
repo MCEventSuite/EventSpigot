@@ -1,12 +1,15 @@
 package dev.imabad.mceventsuite.spigot.modules.hidenseek;
 
+import com.mewin.WGRegionEvents.events.RegionLeaveEvent;
 import dev.imabad.mceventsuite.core.EventCore;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 
 public class HideNSeekListener implements Listener {
@@ -37,6 +40,32 @@ public class HideNSeekListener implements Listener {
     @EventHandler
     public void onWorldLoad(WorldLoadEvent event) {
         this.module.onWorldLoad(event);
+    }
+
+    @EventHandler
+    public void onRegionLeave(RegionLeaveEvent event) {
+        if(this.module.getGame() != null && event.getRegionId().equalsIgnoreCase("hideregion")) {
+            if(this.module.getGame().getStatus() == HideNSeekGame.GameStatus.WAITING ||
+                    this.module.getGame().getStatus() == HideNSeekGame.GameStatus.STARTED) {
+                if(this.module.getGame().getAllPlayers().contains(event.getPlayer().getUniqueId())) {
+                    event.getPlayer().sendMessage(ChatColor.RED + "You cannot leave the venue during Hide & Seek!");
+                    event.setCancelled(true);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent event) {
+        if(this.module.getGame() != null) {
+            if(this.module.getGame().getStatus() == HideNSeekGame.GameStatus.WAITING ||
+                    this.module.getGame().getStatus() == HideNSeekGame.GameStatus.STARTED) {
+                if(this.module.getGame().getAllPlayers().contains(event.getPlayer().getUniqueId())) {
+                    event.getPlayer().sendMessage(ChatColor.RED + "You cannot leave the venue during Hide & Seek!");
+                    event.setCancelled(true);
+                }
+            }
+        }
     }
 
     @EventHandler

@@ -3,14 +3,16 @@ package dev.imabad.mceventsuite.spigot.modules.meet;
 import com.github.puregero.multilib.MultiLib;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.modules.Module;
+import dev.imabad.mceventsuite.core.modules.redis.RedisChannel;
 import dev.imabad.mceventsuite.core.modules.redis.RedisMessageListener;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
-import dev.imabad.mceventsuite.core.modules.redis.messages.meet.PlayerMoveQueueMessage;
-import dev.imabad.mceventsuite.core.modules.redis.messages.meet.PlayerTimeReminderMessage;
-import dev.imabad.mceventsuite.core.modules.redis.messages.meet.ServerAnnounceDisplayNames;
-import dev.imabad.mceventsuite.core.modules.redis.messages.meet.ServerAnnounceMeetState;
+import dev.imabad.mceventsuite.core.modules.redis.messages.BooleanResponse;
+import dev.imabad.mceventsuite.core.modules.redis.messages.meet.*;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.modules.bossbar.BossBarModule;
+import dev.imabad.mceventsuite.spigot.modules.bubbles.BubbleManager;
+import dev.imabad.mceventsuite.spigot.modules.bubbles.BubbleModule;
+import dev.imabad.mceventsuite.spigot.modules.bubbles.ChatBubble;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -24,15 +26,14 @@ import org.bukkit.entity.Player;
 
 import javax.inject.Named;
 import javax.naming.Name;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class MeetModule extends Module {
 
     private HashMap<String, String> displayNames;
-    private HashMap<Pair<String, Integer>, List<UUID>> chatBubbles;
+    protected BubbleManager bubbleManager;
+    private RedisModule redisModule;
 
     @Override
     public String getName() {
@@ -41,9 +42,11 @@ public class MeetModule extends Module {
 
     @Override
     public void onEnable() {
-        final RedisModule redisModule = EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class);
+        this.redisModule = EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class);
         EventSpigot.getInstance().getCommandMap().register("meetgreet", new MeetCommand(this));
         EventSpigot.getInstance().getCommandMap().register("meet", new SimplifiedMeetCommand(this));
+
+        this.bubbleManager = EventCore.getInstance().getModuleRegistry().getModule(BubbleModule.class).getBubbleManager();
 
         redisModule.registerListener(ServerAnnounceDisplayNames.class,
                 new RedisMessageListener<>((msg) -> this.displayNames = msg.getDisplayNames()));
@@ -61,28 +64,19 @@ public class MeetModule extends Module {
                 player.sendMessage(ChatColor.GREEN + "You're up for the Meet & Greet with " +
                         ChatColor.AQUA + this.getDisplayName(msg.getName()) + ChatColor.GREEN + "!\n" +
                         ChatColor.RESET + "Your session will last for " + ChatColor.YELLOW + msg.getEta() + " minutes");
-                final Pair<String, Integer> pair = Pair.of(msg.getName(), msg.getPosition());
-                if(!chatBubbles.containsKey(pair))
-                    chatBubbles.put(pair, new ArrayList<>());
-                chatBubbles.get(pair).add(player.getUniqueId());
+                bubbleManager.joinMeetBubble(player, msg.getName(), msg.getPosition());
             } else if(msg.getPosition() != -1) {
                 player.sendMessage(ChatColor.GREEN + "You're up for the next spot on the Meet & Greet with " +
                         ChatColor.AQUA + this.getDisplayName(msg.getName()) + ChatColor.GREEN + "!\n" +
                         ChatColor.RESET + "Your session will last for " + ChatColor.YELLOW + msg.getEta() + " minutes");
-                final Pair<String, Integer> newPair = Pair.of(msg.getName(), msg.getPosition());
-                final Pair<String, Integer> oldPair = Pair.of(msg.getName(), msg.getPosition() - 1);
-                if(!chatBubbles.containsKey(newPair))
-                    chatBubbles.put(newPair, new ArrayList<>());
-                chatBubbles.get(newPair).add(player.getUniqueId());
-                if(chatBubbles.containsKey(oldPair))
-                    chatBubbles.get(oldPair).remove(player.getUniqueId());
+                bubbleManager.joinMeetBubble(player, msg.getName(), msg.getPosition());
             } else {
                 Bukkit.getScheduler().runTask(EventSpigot.getInstance(), () -> player.teleport(new Location(
                         Bukkit.getWorld("world"), 0.5, 30, 8.5, 0, 0)));
                 player.sendMessage(ChatColor.RED + "Your Meet & Greet session with " + ChatColor.AQUA + this.getDisplayName(msg.getName()) +
                         ChatColor.RESET + " has ended.\n" + ChatColor.RESET + "Thank you for stopping by. See you soon!");
-                for(List<UUID> list : chatBubbles.values())
-                    list.remove(player.getUniqueId());
+                for(ChatBubble bubble : bubbleManager.getChatBubbles())
+                    bubble.getMembers().remove(player.getUniqueId());
             }
 
             if(msg.getLocation() != null) {
@@ -91,6 +85,22 @@ public class MeetModule extends Module {
                                 Bukkit.getWorld("world"), msg.getLocation().getX(), msg.getLocation().getY(), msg.getLocation().getZ())));
 
             }
+        }));
+
+        redisModule.registerListener(AdminPauseSessionRequest.class, new RedisMessageListener<>((msg) -> {
+            if(msg.isResume())
+                EventCore.getInstance().getModuleRegistry().getModule(BossBarModule.class).resumeGreet(msg.getName());
+            else
+                EventCore.getInstance().getModuleRegistry().getModule(BossBarModule.class).pauseGreet(msg.getName());
+        }));
+
+        redisModule.registerListener(ServerAnnounceMeetTime.class, new RedisMessageListener<>((msg) -> {
+            EventCore.getInstance().getModuleRegistry().getModule(BossBarModule.class).addMeetGreet(
+                    msg.getName(),
+                    this.getDisplayName(msg.getName()),
+                    msg.getStart(),
+                    msg.getEnd()
+            );
         }));
 
         redisModule.registerListener(PlayerTimeReminderMessage.class, new RedisMessageListener<>((msg) -> {
@@ -104,7 +114,7 @@ public class MeetModule extends Module {
         redisModule.registerListener(ServerAnnounceMeetState.class, new RedisMessageListener<>((msg) -> {
             if(msg.isStarted()) {
                 EventCore.getInstance().getModuleRegistry().getModule(BossBarModule.class)
-                        .addMeetGreet(msg.getName(), this.getDisplayName(msg.getName()), msg.getEnds());
+                        .addMeetGreet(msg.getName(), this.getDisplayName(msg.getName()), System.currentTimeMillis(), msg.getEnds());
                 Component component = Component.text("----------------------------").color(NamedTextColor.BLUE)
                         .append(Component.text("\n\nMeet & Greet\n").color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD))
                         .append(Component.text("A Meet & Greet session is starting with ").color(NamedTextColor.GREEN))
@@ -126,21 +136,25 @@ public class MeetModule extends Module {
                             ChatColor.RED + " has ended.\n" + ChatColor.RESET + "Thank you for stopping by. See you soon!");
             }
         }));
-
-        this.chatBubbles = new HashMap<>();
-    }
-
-    public List<UUID> getChatBubble(UUID uuid) {
-        for(List<UUID> list : this.chatBubbles.values()) {
-            if(list.contains(uuid))
-                return list;
-        }
-        return null;
     }
 
     @Override
     public void onDisable() {
 
+    }
+
+    public CompletableFuture<Boolean> removeFromSession(Player player) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+        this.redisModule.publishRequest(RedisChannel.GLOBAL, new PlayerLeaveQueueRequest(player.getUniqueId()), (msg) -> {
+            if(msg instanceof BooleanResponse response) {
+                future.complete(response.getValue());
+                if(response.getValue()) {
+                    this.bubbleManager.leaveAllChatBubbles(player, true);
+                }
+            }
+            future.complete(false);
+        });
+        return future;
     }
 
     public String getDisplayName(String name) {
@@ -151,8 +165,14 @@ public class MeetModule extends Module {
         return this.displayNames.get(name);
     }
 
+    public void setDisplayName(String key, String value) {
+        if(this.displayNames == null)
+            this.displayNames = new HashMap<>();
+        this.displayNames.put(key, value);
+    }
+
     @Override
     public List<Class<? extends Module>> getDependencies() {
-        return null;
+        return Collections.singletonList(BubbleModule.class);
     }
 }

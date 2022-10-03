@@ -3,12 +3,17 @@ package dev.imabad.mceventsuite.spigot.modules.meet;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.modules.redis.RedisChannel;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
+import dev.imabad.mceventsuite.core.modules.redis.RedisRequestListener;
 import dev.imabad.mceventsuite.core.modules.redis.messages.BooleanResponse;
 import dev.imabad.mceventsuite.core.modules.redis.messages.meet.*;
 import dev.imabad.mceventsuite.spigot.commands.BaseCommand;
+import dev.imabad.mceventsuite.spigot.modules.bossbar.BossBarModule;
+import dev.imabad.mceventsuite.spigot.modules.bubbles.ChatBubble;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.milkbowl.vault.chat.Chat;
+import org.apache.commons.lang3.tuple.Pair;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -42,6 +47,7 @@ public class MeetCommand extends BaseCommand {
                 final int sessionTime = Integer.parseInt(args[2]);
                 final int meetTime = Integer.parseInt(args[3]);
                 final String displayName = this.getLastArgs(args, 4);
+                this.meetModule.setDisplayName(name, displayName);
 
                 this.redisModule.publishRequest(RedisChannel.GLOBAL,
                         new AdminCreateSessionRequest(name, displayName, meetTime, sessionTime),
@@ -71,30 +77,102 @@ public class MeetCommand extends BaseCommand {
                                     player.sendMessage(Component.text("Failed to create pos " + (finalPos + 1) + " for session " + name + ". Did you get the name right?").color(NamedTextColor.RED));
                             }
                         });
-            } else if(args[0].equalsIgnoreCase("start")) {
+            } else if (args[0].equalsIgnoreCase("start")) {
                 final String name = args[1];
                 this.redisModule.publishRequest(RedisChannel.GLOBAL, new AdminStartSessionRequest(name), (msg) -> {
-                    if(player.isOnline() && msg instanceof BooleanResponse response) {
-                        if(!response.getValue()) {
+                    if (player.isOnline() && msg instanceof BooleanResponse response) {
+                        if (!response.getValue()) {
                             player.sendMessage(ChatColor.RED + "Could not start session! Does it exist, or is it already in progress?");
                         }
                     }
                 });
-            } else if(args[0].equalsIgnoreCase("next")) {
+            } else if (args[0].equalsIgnoreCase("next")) {
                 final String name = args[1];
                 this.redisModule.publishRequest(RedisChannel.GLOBAL, new AdminMoveAlongSessionRequest(name), (msg) -> {
-                    if(player.isOnline() && msg instanceof BooleanResponse response) {
-                        if(!response.getValue()) {
+                    if (player.isOnline() && msg instanceof BooleanResponse response) {
+                        if (!response.getValue()) {
                             player.sendMessage(ChatColor.RED + "Could not move along session! Is it in progress, or does it even exist?");
                         } else {
                             player.sendMessage(ChatColor.RED + "Session ended. Queue moved up.");
                         }
                     }
                 });
+            } else if(args[0].equalsIgnoreCase("pause") || args[0].equalsIgnoreCase("resume")) {
+                Pair<String, Integer> session = getCurrentSession(player, args);
+                if (session == null) {
+                    player.sendMessage(ChatColor.RED + "Usage: /meetgreet pause/resume <name>");
+                    return false;
+                }
+
+                boolean resume = args[0].equalsIgnoreCase("resume");
+
+                this.redisModule.publishRequest(RedisChannel.GLOBAL, new AdminPauseSessionRequest(session.getKey(), resume),
+                        (response) -> {
+                            if (response instanceof BooleanResponse booleanResponse) {
+                                if (booleanResponse.getValue()) {
+                                    for (Player player1 : Bukkit.getAllOnlinePlayers()) {
+                                        player1.sendMessage(ChatColor.AQUA + this.meetModule.getDisplayName(session.getKey()) +
+                                                ChatColor.RED + " has been " + (resume ? "resumed" : "paused"));
+                                    }
+                                } else {
+                                    player.sendMessage(ChatColor.RED + "Could not pause/resume " + session.getKey() + "! Is it already paused/resumed? Does it even exist?");
+                                }
+                            }
+                        });
+            } else if(args[0].equalsIgnoreCase("meettime") || args[0].equalsIgnoreCase("sessiontime")) {
+                String name = args[1];
+                int time;
+                try {
+                    time = Integer.parseInt(args[2]);
+                } catch(NumberFormatException exc) {
+                    player.sendMessage(ChatColor.RED + "That is not a valid number!");
+                    return false;
+                }
+
+                boolean session = args[0].equalsIgnoreCase("sessiontime");
+                this.redisModule.publishRequest(RedisChannel.GLOBAL, new AdminExtendTimeRequest(name, time, session), (msg) -> {
+                    if(msg instanceof BooleanResponse response) {
+                        if(!response.getValue()) {
+                            player.sendMessage(ChatColor.RED + "Are you sure " + name + " exists?");
+                        }
+                    }
+                });
+            } else if (args[0].equalsIgnoreCase("kick")) {
+                final String name = args[1];
+                final String username = args[2];
+                final Player player1 = Bukkit.getPlayer(username);
+                if (player1 == null) {
+                    player.sendMessage(ChatColor.RED + "Could not find player " + username + "!");
+                    return false;
+                }
+
+                this.meetModule.removeFromSession(player1).thenAcceptAsync((response) -> {
+                    if (response) {
+                        player.sendMessage(ChatColor.RED + "Kicked " + username);
+                        player1.sendMessage(ChatColor.RED + "You were removed from the session.");
+                    } else {
+                        player.sendMessage(ChatColor.RED + "Wasn't able to kick " + username + " from " + name + "! Does the queue exist?");
+                    }
+                });
             }
         }
 
         return true;
+    }
+
+    private Pair<String, Integer> getCurrentSession(Player player, String[] args) {
+        if(args.length == 3)
+            return Pair.of(args[1], Integer.parseInt(args[2]));
+        if(args.length == 2)
+            return Pair.of(args[1], -1);
+
+        ChatBubble bubble = this.meetModule.bubbleManager.getChatBubble(player.getUniqueId());
+        if(bubble == null)
+            return null;
+        String[] parts = bubble.getName().split("-");
+        if(parts.length == 1)
+            return null;
+        return Pair.of(parts[0], Integer.parseInt(parts[1]));
     }
 
     @Override
