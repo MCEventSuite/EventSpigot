@@ -30,6 +30,7 @@ import dev.imabad.mceventsuite.spigot.modules.bedrock.BedrockModule;
 import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
 import dev.imabad.mceventsuite.spigot.modules.bossbar.BossBarModule;
 import dev.imabad.mceventsuite.spigot.modules.bubbles.BubbleModule;
+import dev.imabad.mceventsuite.spigot.modules.chat.ChatFilterModule;
 import dev.imabad.mceventsuite.spigot.modules.daylight.DaylightModule;
 import dev.imabad.mceventsuite.spigot.modules.eventblocker.EventBlockModule;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.EventPassSpigotModule;
@@ -151,6 +152,7 @@ public class EventSpigot extends JavaPlugin {
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new EventBlockModule());
         EventCore.getInstance().setActionExecutor(new SpigotActionExecutor());
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new JoinModule());
+        EventCore.getInstance().getModuleRegistry().addAndEnableModule(new ChatFilterModule());
         EventCore.getInstance().getEventRegistry().registerListener(MySQLLoadedEvent.class, (event) -> {
             ranks = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(RankDAO.class).getRanks();
         });

@@ -22,6 +22,7 @@ import dev.imabad.mceventsuite.spigot.interactions.InteractionRegistry;
 import dev.imabad.mceventsuite.spigot.modules.bubbles.BubbleManager;
 import dev.imabad.mceventsuite.spigot.modules.bubbles.BubbleModule;
 import dev.imabad.mceventsuite.spigot.modules.bubbles.ChatBubble;
+import dev.imabad.mceventsuite.spigot.modules.chat.ChatFilterModule;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
 import dev.imabad.mceventsuite.spigot.modules.meet.MeetModule;
 import dev.imabad.mceventsuite.spigot.modules.player.PlayerHotbar;
@@ -34,6 +35,7 @@ import fr.neatmonster.nocheatplus.checks.CheckType;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentBuilder;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -145,50 +147,61 @@ public class PlayerListener implements Listener {
         Optional<EventPlayer> eventPlayer = EventCore.getInstance().getEventPlayerManager().getPlayer(event.getPlayer().getUniqueId());
         BubbleManager bubbleManager = EventCore.getInstance().getModuleRegistry().getModule(BubbleModule.class)
                 .getBubbleManager();
-        if(eventPlayer.isPresent()) {
+        if (eventPlayer.isPresent()) {
             final EventRank rank = eventPlayer.get().getRank();
+            if (event.originalMessage() instanceof TextComponent textComponent) {
+                EventCore.getInstance().getModuleRegistry().getModule(ChatFilterModule.class)
+                        .checkText(event.getPlayer(), textComponent.content()).thenAcceptAsync((allowed) -> {
 
-            //TODO tidy this
-            NamedTextColor chatColor = NamedTextColor.GRAY;
-            String chatColorHex = rank.getChatColor().substring(1);
-            if (chatColorHex.equalsIgnoreCase("fff"))
-                chatColor = NamedTextColor.WHITE;
+                            if(!allowed) {
+                                event.getPlayer().sendMessage(Component.text("Your message was blocked by the filter!")
+                                        .color(NamedTextColor.RED));
+                                return;
+                            }
 
-            Component javaMessage = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
-                    (rank.getJavaPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(rank.getJavaPrefix()))
-                    + event.getPlayer().getName()
-                    + (rank.getSuffix().isEmpty() ? "" : StringUtils.colorizeMessage(" " + rank.getSuffix()))
-                    + ": ")).asComponent();
+                            //TODO tidy this
+                            NamedTextColor chatColor = NamedTextColor.GRAY;
+                            String chatColorHex = rank.getChatColor().substring(1);
+                            if (chatColorHex.equalsIgnoreCase("fff"))
+                                chatColor = NamedTextColor.WHITE;
 
-            Component bedrockMessage = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
-                    (rank.getBedrockPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(rank.getBedrockPrefix()))
-                            + event.getPlayer().getName()
-                            + (rank.getSuffix().isEmpty() ? "" : StringUtils.colorizeMessage(" " + rank.getSuffix()))
-                            + ": ")).asComponent();
+                            Component javaMessage = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
+                                    (rank.getJavaPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(rank.getJavaPrefix()))
+                                            + event.getPlayer().getName()
+                                            + (rank.getSuffix().isEmpty() ? "" : StringUtils.colorizeMessage(" " + rank.getSuffix()))
+                                            + ": ")).asComponent();
 
-            javaMessage = javaMessage.append(event.originalMessage().color(chatColor));
-            bedrockMessage = bedrockMessage.append(event.originalMessage().color(chatColor));
+                            Component bedrockMessage = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
+                                    (rank.getBedrockPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(rank.getBedrockPrefix()))
+                                            + event.getPlayer().getName()
+                                            + (rank.getSuffix().isEmpty() ? "" : StringUtils.colorizeMessage(" " + rank.getSuffix()))
+                                            + ": ")).asComponent();
 
-            ChatBubble chatBubble = bubbleManager.getChatBubble(event.getPlayer().getUniqueId());
-            if (chatBubble != null) {
-                javaMessage = Component.text("[" + chatBubble.getDisplayName() + "] ").color(NamedTextColor.GREEN).append(javaMessage);
-                bedrockMessage = Component.text("[" + chatBubble.getDisplayName() + "] ").color(NamedTextColor.GREEN).append(bedrockMessage);
-            }
+                            javaMessage = javaMessage.append(event.originalMessage().color(chatColor));
+                            bedrockMessage = bedrockMessage.append(event.originalMessage().color(chatColor));
 
-            for(Player player : Bukkit.getAllOnlinePlayers()) {
-                ChatBubble playerBubble = bubbleManager.getChatBubble(player.getUniqueId());
-                if(playerBubble != null && (chatBubble == null || !chatBubble.getName().equalsIgnoreCase(playerBubble.getName()))) {
-                    boolean global = player.getPersistentData("cb_global") == null || player.getPersistentData("cb_global").equals("true");
-                    if(!player.hasPermission("eventsuite.cb.monitor") || !global)
-                        continue;
-                }
+                            ChatBubble chatBubble = bubbleManager.getChatBubble(event.getPlayer().getUniqueId());
+                            if (chatBubble != null) {
+                                javaMessage = Component.text("[" + chatBubble.getDisplayName() + "] ").color(NamedTextColor.GREEN).append(javaMessage);
+                                bedrockMessage = Component.text("[" + chatBubble.getDisplayName() + "] ").color(NamedTextColor.GREEN).append(bedrockMessage);
+                            }
 
-                if(chatBubble == null || chatBubble.getMembers().contains(player.getUniqueId())) {
-                    if(FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()))
-                        player.sendMessage(event.getPlayer(), bedrockMessage);
-                    else
-                        player.sendMessage(event.getPlayer(), javaMessage);
-                }
+                            for (Player player : Bukkit.getAllOnlinePlayers()) {
+                                ChatBubble playerBubble = bubbleManager.getChatBubble(player.getUniqueId());
+                                if (playerBubble != null && (chatBubble == null || !chatBubble.getName().equalsIgnoreCase(playerBubble.getName()))) {
+                                    boolean global = player.getPersistentData("cb_global") == null || player.getPersistentData("cb_global").equals("true");
+                                    if (!player.hasPermission("eventsuite.cb.monitor") || !global)
+                                        continue;
+                                }
+
+                                if (chatBubble == null || chatBubble.getMembers().contains(player.getUniqueId())) {
+                                    if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()))
+                                        player.sendMessage(event.getPlayer(), bedrockMessage);
+                                    else
+                                        player.sendMessage(event.getPlayer(), javaMessage);
+                                }
+                            }
+                        });
             }
         }
     }
