@@ -177,17 +177,17 @@ public class HideNSeekModule extends Module {
             this.currentGame = game;
             MultiLib.notify("eventspigot:hns", "init:" + this.currentGame.waitingStartTime + ":" + this.currentGame.gameStartTime);
 
-            Component component = Component.text("----------------------------").color(NamedTextColor.BLUE)
-                    .append(Component.text("\n\nHIDE & SEEK\n\n").color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD))
-                    .append(Component.text("A game of ").color(NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.BOLD, false))
+            Component component = Component.text("\nA game of ").color(NamedTextColor.GREEN).decoration(TextDecoration.BOLD, false)
                     .append(Component.text("Hide & Seek").color(NamedTextColor.GOLD))
-                    .append(Component.text(" has been started!").color(NamedTextColor.LIGHT_PURPLE))
-                    .append(Component.text("\nClick here").color(NamedTextColor.GREEN)
+                    .append(Component.text(" has been started!").color(NamedTextColor.GREEN))
+                    .append(Component.text("\n\nClick here").color(NamedTextColor.YELLOW)
                             .decorate(TextDecoration.BOLD, TextDecoration.UNDERLINED)
                             .clickEvent(ClickEvent.runCommand("/hns join"))
                             .hoverEvent(HoverEvent.showText(Component.text("Click to join!").color(NamedTextColor.GREEN))))
-                    .append(Component.text(" to join the game.").color(NamedTextColor.AQUA).decoration(TextDecoration.BOLD, false).decoration(TextDecoration.UNDERLINED, false))
-                    .append(Component.text("\n\n----------------------------").color(NamedTextColor.BLUE));
+                    .append(Component.text(" or use ").color(NamedTextColor.WHITE).decoration(TextDecoration.BOLD, false).decoration(TextDecoration.UNDERLINED, false))
+                    .append(Component.text("/hns join").color(NamedTextColor.LIGHT_PURPLE))
+                    .append(Component.text(" to join the game.").color(NamedTextColor.WHITE).decoration(TextDecoration.BOLD, false).decoration(TextDecoration.UNDERLINED, false))
+                    .append(Component.text("\n").color(NamedTextColor.BLUE));
 
             // Bukkit.broadcast() only seems to be sending to console
             for(Player player : Bukkit.getAllOnlinePlayers())

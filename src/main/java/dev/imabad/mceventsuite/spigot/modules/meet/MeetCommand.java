@@ -138,8 +138,7 @@ public class MeetCommand extends BaseCommand {
                     }
                 });
             } else if (args[0].equalsIgnoreCase("kick")) {
-                final String name = args[1];
-                final String username = args[2];
+                final String username = args[1];
                 final Player player1 = Bukkit.getPlayer(username);
                 if (player1 == null) {
                     player.sendMessage(ChatColor.RED + "Could not find player " + username + "!");
@@ -151,7 +150,7 @@ public class MeetCommand extends BaseCommand {
                         player.sendMessage(ChatColor.RED + "Kicked " + username);
                         player1.sendMessage(ChatColor.RED + "You were removed from the session.");
                     } else {
-                        player.sendMessage(ChatColor.RED + "Wasn't able to kick " + username + " from " + name + "! Does the queue exist?");
+                        player.sendMessage(ChatColor.RED + "Wasn't able to kick " + username + "! Does the queue exist?");
                     }
                 });
             }

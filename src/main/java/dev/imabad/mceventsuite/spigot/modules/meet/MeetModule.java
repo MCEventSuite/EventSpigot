@@ -115,9 +115,7 @@ public class MeetModule extends Module {
             if(msg.isStarted()) {
                 EventCore.getInstance().getModuleRegistry().getModule(BossBarModule.class)
                         .addMeetGreet(msg.getName(), this.getDisplayName(msg.getName()), System.currentTimeMillis(), msg.getEnds());
-                Component component = Component.text("----------------------------").color(NamedTextColor.BLUE)
-                        .append(Component.text("\n\nMeet & Greet\n").color(NamedTextColor.GOLD).decorate(TextDecoration.BOLD))
-                        .append(Component.text("A Meet & Greet session is starting with ").color(NamedTextColor.GREEN))
+                Component component = Component.text("\nA Meet & Greet session is starting with ").color(NamedTextColor.GREEN)
                         .append(Component.text(this.getDisplayName(msg.getName())).color(NamedTextColor.AQUA))
                         .append(Component.text("!").color(NamedTextColor.GREEN))
                         .append(Component.text("\n\nClick here").color(NamedTextColor.YELLOW)
@@ -126,7 +124,7 @@ public class MeetModule extends Module {
                                 .hoverEvent(HoverEvent.showText(Component.text("Click to join!").color(NamedTextColor.GREEN))))
                         .append(Component.text(" to join the the queue, or use ").color(NamedTextColor.WHITE).decoration(TextDecoration.BOLD, false).decoration(TextDecoration.UNDERLINED, false))
                         .append(Component.text("/meet " + msg.getName()).color(NamedTextColor.LIGHT_PURPLE))
-                        .append(Component.text("\n\n----------------------------").color(NamedTextColor.BLUE));
+                        .append(Component.text("\n").color(NamedTextColor.BLUE));
 
                 for(Player player : Bukkit.getLocalOnlinePlayers())
                     player.sendMessage(component);

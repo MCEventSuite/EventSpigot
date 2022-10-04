@@ -17,9 +17,7 @@ public class BubbleManager {
     private final Map<String, ChatBubble> chatBubbleMap;
 
     public BubbleManager() {
-        System.out.println(" -- NEW BUBBLE MANAGER --");
-        Thread.dumpStack();
-        this.chatBubbleMap = new ConcurrentHashMap<>();
+        this.chatBubbleMap = new HashMap<>();
         this.chatBubbleMap.put("Main Stage", new ChatBubble("Main Stage", "Stage", "mainstage"));
         this.chatBubbleMap.put("Community Stage", new ChatBubble("Community Stage", "Stage", "communitystage"));
         EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class)
@@ -38,9 +36,6 @@ public class BubbleManager {
 
     public ChatBubble getChatBubble(UUID uuid) {
         for(ChatBubble bubble : this.chatBubbleMap.values()) {
-            System.out.println(bubble.getName() + " " + bubble.getMembers().size());
-            if(bubble.getMembers().size() > 0)
-                System.out.println(bubble.getMembers().get(0).toString() + " vs " + uuid.toString());
             if (bubble.getMembers().contains(uuid)) {
                 return bubble;
             }
@@ -66,15 +61,15 @@ public class BubbleManager {
     }
 
     public void joinChatBubble(Player player, String bubbleName) {
-        final ChatBubble bubble = this.chatBubbleMap.get(bubbleName);
-        if(bubble == null) {
+        ChatBubble bubble = this.chatBubbleMap.get(bubbleName);
+        if(bubble == null && !bubbleName.contains("-")) {
             player.sendMessage(ChatColor.RED + "Chat bubble " + bubbleName + " does not exist!");
             return;
+        } else if(bubble == null) {
+            bubble = new ChatBubble(bubbleName, "Meet", null);
+            this.chatBubbleMap.put(bubbleName, bubble);
         }
 
-        bubble.getMembers().add(player.getUniqueId());
-        System.out.println(bubble.getMembers().size());
-        System.out.println(chatBubbleMap.get(bubble.getName()).getMembers().size());
         player.sendMessage(ChatColor.GREEN + "You have entered the chat bubble for " + ChatColor.AQUA +
                 bubble.getName());
     }
@@ -91,8 +86,6 @@ public class BubbleManager {
         final ChatBubble bubble = this.chatBubbleMap.get(bubbleName);
         if(bubble == null)
             return;
-
-        System.out.println("leaving bubble");
 
         bubble.getMembers().remove(player.getUniqueId());
         player.sendMessage(ChatColor.GREEN + "You have left the chat bubble for " + ChatColor.AQUA +
