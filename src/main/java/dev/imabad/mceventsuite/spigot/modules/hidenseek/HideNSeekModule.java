@@ -36,12 +36,18 @@ public class HideNSeekModule extends Module {
     private HideNSeekGame currentGame;
     private Scoreboard scoreboard;
     private EventScoreboard eventScoreboard;
+    public boolean setup;
 
     public HideNSeekModule() {
         EventSpigot.getInstance().getServer().getPluginManager().registerEvents(new HideNSeekListener(this), EventSpigot.getInstance());
         EventSpigot.getInstance().getCommandMap().register("hns", new HideSeekCommand(this));
         MultiLib.onString(EventSpigot.getInstance(), "eventspigot:hns", (data) -> {
             final String[] parts = data.split(":");
+
+            if(!setup) {
+                setup();
+                setup = true;
+            }
 
             if(data.equalsIgnoreCase("end")) {
                 this.currentGame.end(true);
@@ -52,6 +58,7 @@ public class HideNSeekModule extends Module {
             } else if(parts[0].equalsIgnoreCase("init")) {
                 int waitingStart = Integer.parseInt(parts[1]);
                 int gameStart = Integer.parseInt(parts[2]);
+
                 this.currentGame = new HideNSeekGame(this.eventScoreboard, waitingStart, gameStart);
                 return;
             } else if(data.equalsIgnoreCase("wait")) {
@@ -95,7 +102,7 @@ public class HideNSeekModule extends Module {
         return this.eventScoreboard;
     }
 
-    public void onWorldLoad(WorldLoadEvent worldLoadEvent) {
+    public void setup() {
         this.scoreboard = EventSpigot.getInstance().getServer().getScoreboardManager().getNewScoreboard();
         final Team seekers = scoreboard.registerNewTeam("Seeker");
         seekers.color(NamedTextColor.GOLD);
@@ -139,7 +146,6 @@ public class HideNSeekModule extends Module {
         eventScoreboard.addRow(new Row("Hiders Left", new Row.RowRender() {
             @Override
             public String render(Player player) {
-                System.out.println("Render " + currentGame.getHiders().size() + " for " + player.getName());
                 if(currentGame == null)
                     return "&eN/A";
                 return "&e" + String.valueOf(currentGame.getHiders().size());

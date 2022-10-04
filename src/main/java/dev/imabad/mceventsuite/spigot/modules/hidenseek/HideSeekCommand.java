@@ -37,6 +37,11 @@ public class HideSeekCommand extends BaseCommand {
 
         final String subCommand = args[0];
 
+        if(!module.setup) {
+            module.setup();
+            module.setup = true;
+        }
+
         if(player.hasPermission("eventsuite.admin.hns")) {
             if (subCommand.equalsIgnoreCase("create")) {
                 int countdown = 5;
