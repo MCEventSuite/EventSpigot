@@ -5,6 +5,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
+import org.bukkit.event.player.PlayerTakeLecternBookEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 
@@ -37,6 +38,11 @@ public class BuildListener implements Listener {
     @EventHandler
     public void onPlantGrow(BlockGrowEvent blockGrowEvent){
         blockGrowEvent.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onTakeBook(PlayerTakeLecternBookEvent event) {
+        event.setCancelled(true);
     }
 
     @EventHandler

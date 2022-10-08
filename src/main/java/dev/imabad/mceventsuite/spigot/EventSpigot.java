@@ -210,12 +210,16 @@ public class EventSpigot extends JavaPlugin {
         getServer().getScheduler().runTaskLaterAsynchronously(getInstance(), () -> {
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new TeamModule());
         }, 20 * 5);
+        if(serversModule.getServerRedisManager().getServer(EventCore.getInstance().getIdentifier()) != null) {
+            serversModule.getServerRedisManager().removeServer(EventCore.getInstance().getIdentifier());
+            getLogger().info("Deleting server so we can be re-registered..");
+        }
         getServer().getScheduler().runTaskTimerAsynchronously(getInstance(), () -> {
             Server thisServer = serversModule.getServerRedisManager().getServer(EventCore.getInstance().getIdentifier());
 
             if (thisServer == null) {
                 System.out.println("[EventSpigot] Registering server...");
-                thisServer = new Server(EventCore.getInstance().getIdentifier(), "", 0, 0, 0, 100);
+                thisServer = new Server(EventCore.getInstance().getIdentifier(), Bukkit.getIp().isBlank() ? "127.0.0.1" : Bukkit.getIp(), Bukkit.getPort(), 0, 0, 100);
             }
 
             thisServer.setPlayerCount(getServer().getOnlinePlayers().size());
