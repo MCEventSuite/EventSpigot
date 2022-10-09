@@ -4,6 +4,8 @@ import dev.imabad.mceventsuite.core.api.BaseConfig;
 import dev.imabad.mceventsuite.core.api.IConfigProvider;
 import dev.imabad.mceventsuite.core.api.modules.Module;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
+import dev.imabad.mceventsuite.spigot.modules.bossbar.ui.BossBarUI;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
@@ -26,12 +28,15 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
     private BossBarConfig config;
     private org.bukkit.boss.BossBar bossBar;
 
+    private BossBarUI testBar = new BossBarUI(Component.text("Hello World!"));
+
     private Stage stage = Stage.STRINGS;
     private int current = 0;
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         bossBar.addPlayer(e.getPlayer());
+        testBar.show(e.getPlayer());
     }
 
     @Override
