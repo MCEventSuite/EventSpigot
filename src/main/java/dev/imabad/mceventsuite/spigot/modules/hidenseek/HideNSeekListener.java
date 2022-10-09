@@ -1,13 +1,14 @@
 package dev.imabad.mceventsuite.spigot.modules.hidenseek;
 
-import dev.imabad.mceventsuite.core.EventCore;
+import com.mewin.WGRegionEvents.events.RegionLeaveEvent;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class HideNSeekListener implements Listener {
     private final HideNSeekModule module;
@@ -35,8 +36,30 @@ public class HideNSeekListener implements Listener {
     }
 
     @EventHandler
-    public void onWorldLoad(WorldLoadEvent event) {
-        this.module.onWorldLoad(event);
+    public void onRegionLeave(RegionLeaveEvent event) {
+        if(this.module.getGame() != null && event.getRegionId().equalsIgnoreCase("hideregion")) {
+            if(this.module.getGame().getStatus() == HideNSeekGame.GameStatus.WAITING ||
+                    this.module.getGame().getStatus() == HideNSeekGame.GameStatus.STARTED) {
+                System.out.println(this.module.getGame().getAllPlayers());
+                if(this.module.getGame().getAllPlayers().contains(event.getPlayer().getUniqueId())) {
+                    event.getPlayer().sendMessage(ChatColor.RED + "You cannot leave the venue during Hide & Seek!");
+                    event.setCancelled(true);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent event) {
+        if(this.module.getGame() != null) {
+            if(this.module.getGame().getStatus() == HideNSeekGame.GameStatus.WAITING ||
+                    this.module.getGame().getStatus() == HideNSeekGame.GameStatus.STARTED) {
+                if(this.module.getGame().getAllPlayers().contains(event.getPlayer().getUniqueId())) {
+                    event.getPlayer().sendMessage(ChatColor.RED + "You cannot leave the venue during Hide & Seek!");
+                    event.setCancelled(true);
+                }
+            }
+        }
     }
 
     @EventHandler

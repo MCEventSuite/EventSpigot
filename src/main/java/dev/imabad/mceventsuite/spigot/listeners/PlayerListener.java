@@ -19,6 +19,10 @@ import dev.imabad.mceventsuite.spigot.impl.EventPermissible;
 import dev.imabad.mceventsuite.spigot.impl.SpigotPlayer;
 import dev.imabad.mceventsuite.spigot.interactions.Interaction;
 import dev.imabad.mceventsuite.spigot.interactions.InteractionRegistry;
+import dev.imabad.mceventsuite.spigot.modules.bubbles.BubbleManager;
+import dev.imabad.mceventsuite.spigot.modules.bubbles.BubbleModule;
+import dev.imabad.mceventsuite.spigot.modules.bubbles.ChatBubble;
+import dev.imabad.mceventsuite.spigot.modules.chat.ChatFilterModule;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
 import dev.imabad.mceventsuite.spigot.modules.meet.MeetModule;
 import dev.imabad.mceventsuite.spigot.modules.player.PlayerHotbar;
@@ -31,6 +35,7 @@ import fr.neatmonster.nocheatplus.checks.CheckType;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentBuilder;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -72,7 +77,7 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent playerJoinEvent){
+    public void onPlayerJoin(PlayerJoinEvent playerJoinEvent) {
         EventPlayer player = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(PlayerDAO.class).getOrCreatePlayer(playerJoinEvent.getPlayer().getUniqueId(), playerJoinEvent.getPlayer().getDisplayName());
         SpigotPlayer spigotPlayer = SpigotPlayer.asSpigot(player, playerJoinEvent.getPlayer());
         EventCore.getInstance().getEventPlayerManager().addPlayer(spigotPlayer);
@@ -84,7 +89,7 @@ public class PlayerListener implements Listener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if(EventSpigot.getInstance().isEvent()){
+        if (EventSpigot.getInstance().isEvent()) {
             if (playerJoinEvent.getPlayer().getGameMode() != GameMode.ADVENTURE) {
                 playerJoinEvent.getPlayer().setGameMode(GameMode.ADVENTURE);
             }
@@ -93,31 +98,15 @@ public class PlayerListener implements Listener {
                 playerJoinEvent.getPlayer().setGameMode(GameMode.CREATIVE);
             }
         }
-        /*if(EventSpigot.getInstance().getRankTeams().size() < 1){
-            EventSpigot.getInstance().getRanks().forEach(eventRank -> {
-                if (EventSpigot.getInstance().getScoreboard().getTeam(eventRank.getName()) == null) {
-                    Team team = EventSpigot.getInstance().getScoreboard().registerNewTeam(eventRank.getName());
-                    team.setPrefix(ChatColor.translateAlternateColorCodes('&', eventRank.getPrefix()) + (eventRank.getPrefix().length() > 0 ? " " : ""));
-                    team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS);
-                    EventSpigot.getInstance().getRankTeams().put(eventRank.getId(), team);
-                } else {
-                    EventSpigot.getInstance().getLogger().warning("Scoreboard team already exists: " + eventRank.getName());
-                }
-            });
-        }*/
-        if(playerJoinEvent.getPlayer().getScoreboard() != EventSpigot.getInstance().getScoreboard()){
+
+        if (playerJoinEvent.getPlayer().getScoreboard() != EventSpigot.getInstance().getScoreboard()) {
             playerJoinEvent.getPlayer().setScoreboard(EventSpigot.getInstance().getScoreboard());
         }
-
-        /*Team team = EventSpigot.getInstance().getScoreboard().getTeam(player.getRank().getName());
-        if(!team.hasEntry(playerJoinEvent.getPlayer().getDisplayName())) {
-            team.addEntry(playerJoinEvent.getPlayer().getDisplayName());
-        }*/
 
         EventCore.getInstance().getModuleRegistry().getModule(TeamModule.class)
                 .getTeamManager().addPlayerToTeam(playerJoinEvent.getPlayer(), player.getRank());
 
-        for(PotionEffect potionEffect : playerJoinEvent.getPlayer().getActivePotionEffects()){
+        for (PotionEffect potionEffect : playerJoinEvent.getPlayer().getActivePotionEffects()) {
             playerJoinEvent.getPlayer().removePotionEffect(potionEffect.getType());
         }
 
@@ -128,73 +117,97 @@ public class PlayerListener implements Listener {
         );
 
         PlayerHotbar.givePlayerInventory(playerJoinEvent.getPlayer());
-        EventPassPlayer eventPassPlayer = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).getOrCreateEventPass(player);
+        Bukkit.getScheduler().runTaskAsynchronously(EventSpigot.getInstance(), () -> {
+            EventPassPlayer eventPassPlayer = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).getOrCreateEventPass(player);
 
-        int level = eventPassPlayer.levelFromXP();
-        List<EventPassReward> unlockedRewards = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).getUnlockedRewards(player).stream().map(EventPassUnlockedReward::getUnlockedReward).collect(Collectors.toList());
-        List<EventPassReward> rewards = EventCore.getInstance().getModuleRegistry().getModule(EventPassModule.class).getEventPassRewards().stream().filter(eventPassReward -> eventPassReward.getRequiredLevel() > 0 && eventPassReward.getRequiredLevel() <= level && !unlockedRewards.contains(eventPassReward)).sorted(Comparator.comparingInt(EventPassReward::getRequiredLevel)).collect(Collectors.toList());
-        for(EventPassReward reward : rewards) {
-            EventPassUnlockedReward unlockedReward = new EventPassUnlockedReward(reward, player);
-            EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).saveUnlockedReward(unlockedReward);
-        }
-        float progressToNext = (float) EventPassModule.experience(level) / (float) EventPassModule.experience(level + 1);
-        playerJoinEvent.getPlayer().setLevel(level);
-        playerJoinEvent.getPlayer().setExp(progressToNext);
+            int level = eventPassPlayer.levelFromXP();
+            List<EventPassReward> unlockedRewards = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).getUnlockedRewards(player).stream().map(EventPassUnlockedReward::getUnlockedReward).collect(Collectors.toList());
+            List<EventPassReward> rewards = EventCore.getInstance().getModuleRegistry().getModule(EventPassModule.class).getEventPassRewards().stream().filter(eventPassReward -> eventPassReward.getRequiredLevel() > 0 && eventPassReward.getRequiredLevel() <= level && !unlockedRewards.contains(eventPassReward)).sorted(Comparator.comparingInt(EventPassReward::getRequiredLevel)).collect(Collectors.toList());
+            for (EventPassReward reward : rewards) {
+                EventPassUnlockedReward unlockedReward = new EventPassUnlockedReward(reward, player);
+                EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).saveUnlockedReward(unlockedReward);
+            }
+            float progressToNext = (float) EventPassModule.experience(level) / (float) EventPassModule.experience(level + 1);
+            playerJoinEvent.getPlayer().setLevel(level);
+            playerJoinEvent.getPlayer().setExp(progressToNext);
+        });
         playerJoinEvent.setJoinMessage("");
-        if(FloodgateApi.getInstance().isFloodgatePlayer(playerJoinEvent.getPlayer().getUniqueId())){
-            NCPAPIProvider.getNoCheatPlusAPI().getPlayerDataManager().getPlayerData(playerJoinEvent.getPlayer()).exempt(CheckType.ALL);
+
+        if (Bukkit.getPluginManager().isPluginEnabled("NoCheatPlus")) {
+            if (FloodgateApi.getInstance().isFloodgatePlayer(playerJoinEvent.getPlayer().getUniqueId())) {
+                NCPAPIProvider.getNoCheatPlusAPI().getPlayerDataManager().getPlayerData(playerJoinEvent.getPlayer()).exempt(CheckType.ALL);
+            }
+            NCPAPIProvider.getNoCheatPlusAPI().getPlayerDataManager().getPlayerData(playerJoinEvent.getPlayer()).exempt(CheckType.MOVING_SURVIVALFLY);
         }
-        NCPAPIProvider.getNoCheatPlusAPI().getPlayerDataManager().getPlayerData(playerJoinEvent.getPlayer()).exempt(CheckType.MOVING_SURVIVALFLY);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerChat(AsyncChatEvent event) {
         event.setCancelled(true);
         Optional<EventPlayer> eventPlayer = EventCore.getInstance().getEventPlayerManager().getPlayer(event.getPlayer().getUniqueId());
-        MeetModule meetModule = EventCore.getInstance().getModuleRegistry().getModule(MeetModule.class);
-        if(eventPlayer.isPresent()) {
+        BubbleManager bubbleManager = EventCore.getInstance().getModuleRegistry().getModule(BubbleModule.class)
+                .getBubbleManager();
+        if (eventPlayer.isPresent()) {
             final EventRank rank = eventPlayer.get().getRank();
+            if (event.originalMessage() instanceof TextComponent textComponent) {
+                EventCore.getInstance().getModuleRegistry().getModule(ChatFilterModule.class)
+                        .checkText(event.getPlayer(), textComponent.content()).thenAcceptAsync((allowed) -> {
 
-            //TODO tidy this
-            NamedTextColor chatColor = NamedTextColor.GRAY;
-            String chatColorHex = rank.getChatColor().substring(1);
-            if (chatColorHex.equalsIgnoreCase("fff"))
-                chatColor = NamedTextColor.WHITE;
+                            if(!allowed) {
+                                event.getPlayer().sendMessage(Component.text("Your message was blocked by the filter!")
+                                        .color(NamedTextColor.RED));
+                                return;
+                            }
 
-            Component javaMessage = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
-                    (rank.getJavaPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(rank.getJavaPrefix()))
-                    + event.getPlayer().getName()
-                    + (rank.getSuffix().isEmpty() ? "" : StringUtils.colorizeMessage(" " + rank.getSuffix()))
-                    + ": ")).asComponent();
+                            //TODO tidy this
+                            NamedTextColor chatColor = NamedTextColor.GRAY;
+                            String chatColorHex = rank.getChatColor().substring(1);
+                            if (chatColorHex.equalsIgnoreCase("fff"))
+                                chatColor = NamedTextColor.WHITE;
 
-            Component bedrockMessage = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
-                    (rank.getBedrockPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(rank.getBedrockPrefix()))
-                            + event.getPlayer().getName()
-                            + (rank.getSuffix().isEmpty() ? "" : StringUtils.colorizeMessage(" " + rank.getSuffix()))
-                            + ": ")).asComponent();
+                            Component javaMessage = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
+                                    (rank.getJavaPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(rank.getJavaPrefix()))
+                                            + event.getPlayer().getName()
+                                            + (rank.getSuffix().isEmpty() ? "" : StringUtils.colorizeMessage(" " + rank.getSuffix()))
+                                            + ": ")).asComponent();
 
-            javaMessage = javaMessage.append(event.originalMessage().color(chatColor));
-            bedrockMessage = bedrockMessage.append(event.originalMessage().color(chatColor));
+                            Component bedrockMessage = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
+                                    (rank.getBedrockPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(rank.getBedrockPrefix()))
+                                            + event.getPlayer().getName()
+                                            + (rank.getSuffix().isEmpty() ? "" : StringUtils.colorizeMessage(" " + rank.getSuffix()))
+                                            + ": ")).asComponent();
 
-            List<UUID> chatBubble = meetModule.getChatBubble(event.getPlayer().getUniqueId());
-            if (chatBubble != null) {
-                javaMessage = Component.text("[CB] ").color(NamedTextColor.GREEN).append(javaMessage);
-                bedrockMessage = Component.text("[CB] ").color(NamedTextColor.GREEN).append(bedrockMessage);
-            }
+                            javaMessage = javaMessage.append(event.originalMessage().color(chatColor));
+                            bedrockMessage = bedrockMessage.append(event.originalMessage().color(chatColor));
 
-            for(Player player : Bukkit.getAllOnlinePlayers()) {
-                if(chatBubble == null || chatBubble.contains(player.getUniqueId())) {
-                    if(FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()))
-                        player.sendMessage(event.getPlayer(), bedrockMessage);
-                    else
-                        player.sendMessage(event.getPlayer(), javaMessage);
-                }
+                            ChatBubble chatBubble = bubbleManager.getChatBubble(event.getPlayer().getUniqueId());
+                            if (chatBubble != null) {
+                                javaMessage = Component.text("[" + chatBubble.getDisplayName() + "] ").color(NamedTextColor.GREEN).append(javaMessage);
+                                bedrockMessage = Component.text("[" + chatBubble.getDisplayName() + "] ").color(NamedTextColor.GREEN).append(bedrockMessage);
+                            }
+
+                            for (Player player : Bukkit.getAllOnlinePlayers()) {
+                                ChatBubble playerBubble = bubbleManager.getChatBubble(player.getUniqueId());
+                                if (playerBubble != null && (chatBubble == null || !chatBubble.getName().equalsIgnoreCase(playerBubble.getName()))) {
+                                    boolean global = player.getPersistentData("cb_global") == null || player.getPersistentData("cb_global").equals("true");
+                                    if (!player.hasPermission("eventsuite.cb.monitor") || !global)
+                                        continue;
+                                }
+
+                                if (chatBubble == null || chatBubble.getMembers().contains(player.getUniqueId())) {
+                                    if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUniqueId()))
+                                        player.sendMessage(event.getPlayer(), bedrockMessage);
+                                    else
+                                        player.sendMessage(event.getPlayer(), javaMessage);
+                                }
+                            }
+                        });
             }
         }
     }
 
     @EventHandler
-    public void onPlayerLeave(PlayerQuitEvent playerQuitEvent){
+    public void onPlayerLeave(PlayerQuitEvent playerQuitEvent) {
         try {
             PermissibleInjector.uninject(playerQuitEvent.getPlayer());
         } catch (Exception e) {
@@ -204,11 +217,13 @@ public class PlayerListener implements Listener {
         EventCore.getInstance().getModuleRegistry().getModule(TeamModule.class)
                 .getTeamManager().removePlayerFromTeam(playerQuitEvent.getPlayer());
 
-        EventCore.getInstance().getEventPlayerManager().getPlayer(playerQuitEvent.getPlayer().getUniqueId()).ifPresent(eventPlayer -> {
-            TpaCommand.getTeleportRequests().remove(eventPlayer.getUUID().toString());
-            EventCore.getInstance().getEventPlayerManager().removePlayer(eventPlayer);
+        Bukkit.getScheduler().runTaskAsynchronously(EventSpigot.getInstance(), () -> {
+            EventCore.getInstance().getEventPlayerManager().getPlayer(playerQuitEvent.getPlayer().getUniqueId()).ifPresent(eventPlayer -> {
+                TpaCommand.getTeleportRequests().remove(eventPlayer.getUUID().toString());
+                EventCore.getInstance().getEventPlayerManager().removePlayer(eventPlayer);
+            });
+            BungeeUtils.saveLocationSynchronously(playerQuitEvent.getPlayer());
         });
-        BungeeUtils.saveLocationSynchronously(playerQuitEvent.getPlayer());
         playerQuitEvent.setQuitMessage("");
     }
 

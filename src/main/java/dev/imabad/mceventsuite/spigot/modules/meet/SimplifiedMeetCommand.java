@@ -30,26 +30,24 @@ public class SimplifiedMeetCommand extends BaseCommand {
 
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
-        if(sender instanceof Player player) {
-            if(args.length == 0) {
-                player.sendMessage(ChatColor.RED + "Usage: /meet <[name] | leave>");
+        if (sender instanceof Player player) {
+            if (args.length == 0) {
+                player.sendMessage(ChatColor.RED + "Usage: /meet <name/leave>");
                 return true;
             }
 
-            if(args[0].equalsIgnoreCase("leave")) {
-                redisModule.publishRequest(RedisChannel.GLOBAL, new PlayerLeaveQueueRequest(player.getUniqueId()), (response) -> {
-                    if(player.isOnline() && response instanceof BooleanResponse booleanResponse) {
-                        if(booleanResponse.getValue())
-                            player.sendMessage(ChatColor.RED + "You left the Meet & Greet.");
-                        else
-                            player.sendMessage(ChatColor.RED + "You are not in the queue for a Meet & Greet!");
-                    }
+            if (args[0].equalsIgnoreCase("leave")) {
+                this.meetModule.removeFromSession(player).thenAcceptAsync((response) -> {
+                    if (response)
+                        player.sendMessage(ChatColor.RED + "You left the Meet & Greet.");
+                    else
+                        player.sendMessage(ChatColor.RED + "You are not in the queue for a Meet & Greet!");
                 });
             } else {
                 this.redisModule.publishRequest(RedisChannel.GLOBAL,
                         new PlayerJoinQueueRequest(args[0], player.getUniqueId()), (raw) -> {
-                            if(player.isOnline() && raw instanceof PlayerJoinQueueResponse response) {
-                                if(!response.isSuccess()) {
+                            if (player.isOnline() && raw instanceof PlayerJoinQueueResponse response) {
+                                if (!response.isSuccess()) {
                                     switch (response.getFailureReason()) {
                                         case NO_SUCH_QUEUE -> player.sendMessage(ChatColor.RED + "There is no queue by that name!");
                                         case IN_OTHER_QUEUE ->

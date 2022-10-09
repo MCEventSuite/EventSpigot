@@ -116,10 +116,29 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
         return String.valueOf(Character.toChars(0x25AA)[0]);
     }
 
-    public void addMeetGreet(String name, String displayName, long ends) {
+    public void addMeetGreet(String name, String displayName, long starts, long ends) {
+        for(BossBarConfig.Event event : this.config.getEvents()) {
+            if(event.location == BossBarConfig.Event.Location.MEET && event.extraData.equalsIgnoreCase(name))
+                this.config.getEvents().remove(event);
+        }
+
         this.config.getEvents().add(new BossBarConfig.Event(
-                displayName, BossBarConfig.Event.Location.MEET, System.currentTimeMillis(), ends, name
+                displayName, BossBarConfig.Event.Location.MEET, starts, ends, name
         ));
+    }
+
+    public void pauseGreet(String name) {
+        for (BossBarConfig.Event event : this.config.getEvents()) {
+            if (event.location == BossBarConfig.Event.Location.MEET && event.extraData.equalsIgnoreCase(name))
+                event.paused = System.currentTimeMillis();
+        }
+    }
+
+    public void resumeGreet(String name) {
+        for (BossBarConfig.Event event : this.config.getEvents()) {
+            if (event.location == BossBarConfig.Event.Location.MEET && event.extraData.equalsIgnoreCase(name))
+                event.paused = 0;
+        }
     }
 
     @Override

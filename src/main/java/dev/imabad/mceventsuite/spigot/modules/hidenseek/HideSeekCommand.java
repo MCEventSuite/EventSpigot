@@ -37,6 +37,11 @@ public class HideSeekCommand extends BaseCommand {
 
         final String subCommand = args[0];
 
+        if(!module.setup) {
+            module.setup();
+            module.setup = true;
+        }
+
         if(player.hasPermission("eventsuite.admin.hns")) {
             if (subCommand.equalsIgnoreCase("create")) {
                 int countdown = 5;
@@ -99,16 +104,22 @@ public class HideSeekCommand extends BaseCommand {
                 for(Player player1 : Bukkit.getAllOnlinePlayers()) {
                     if(!module.getGame().getSeekers().contains(player1.getUniqueId())
                         && !module.getGame().getHiders().contains(player1.getUniqueId())) {
-                        module.joinAsSeeker(player1);
+                        module.joinAsHider(player1);
                     }
                 }
                 return true;
             } else if(subCommand.equalsIgnoreCase("start")) {
-                if(module.getGame() == null || module.getGame().getStatus() != HideNSeekGame.GameStatus.WAITING) {
+                if(module.getGame() == null || module.getGame().getStatus() == HideNSeekGame.GameStatus.STARTED ||
+                        module.getGame().getStatus() == HideNSeekGame.GameStatus.ENDED) {
                     player.sendMessage(ChatColor.RED + "Cannot start game! Is there a game in progress already or have you not ran /hns create?");
                     return true;
                 }
-                module.getGame().start(false);
+
+                switch(module.getGame().getStatus()) {
+                    case JOINING -> module.getGame().counter = module.getGame().waitingStartTime + 1;
+                    case WAITING -> module.getGame().counter = module.getGame().gameStartTime + 1;
+                }
+
                 return true;
             }
         }

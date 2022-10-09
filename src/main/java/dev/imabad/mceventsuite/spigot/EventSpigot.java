@@ -29,6 +29,8 @@ import dev.imabad.mceventsuite.spigot.listeners.PlayerListener;
 import dev.imabad.mceventsuite.spigot.modules.bedrock.BedrockModule;
 import dev.imabad.mceventsuite.spigot.modules.booths.BoothModule;
 import dev.imabad.mceventsuite.spigot.modules.bossbar.BossBarModule;
+import dev.imabad.mceventsuite.spigot.modules.bubbles.BubbleModule;
+import dev.imabad.mceventsuite.spigot.modules.chat.ChatFilterModule;
 import dev.imabad.mceventsuite.spigot.modules.daylight.DaylightModule;
 import dev.imabad.mceventsuite.spigot.modules.eventblocker.EventBlockModule;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.EventPassSpigotModule;
@@ -123,10 +125,9 @@ public class EventSpigot extends JavaPlugin {
                 }
             }));
             EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).registerListener(DonationMessage.class, new RedisMessageListener<>((msg) -> {
-                if(EventCore.getInstance().getIdentifier().equalsIgnoreCase("shard1")) {
+                if(EventCore.getInstance().getIdentifier().equalsIgnoreCase("shard1") && msg.isPlantTree())
                     EventCore.getInstance().getModuleRegistry().getModule(MapModule.class)
                             .spawnTree(msg.getUsername());
-                }
             }));
             EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).registerListener(UpdatedRankMessage.class, new RedisMessageListener<>((msg) -> {
                 ranks = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(RankDAO.class).getRanks(true);
@@ -151,6 +152,7 @@ public class EventSpigot extends JavaPlugin {
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new EventBlockModule());
         EventCore.getInstance().setActionExecutor(new SpigotActionExecutor());
         EventCore.getInstance().getModuleRegistry().addAndEnableModule(new JoinModule());
+        EventCore.getInstance().getModuleRegistry().addAndEnableModule(new ChatFilterModule());
         EventCore.getInstance().getEventRegistry().registerListener(MySQLLoadedEvent.class, (event) -> {
             ranks = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(RankDAO.class).getRanks();
         });
@@ -200,6 +202,7 @@ public class EventSpigot extends JavaPlugin {
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new ScoreboardModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new MineconModule());
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new MeetModule());
+            EventCore.getInstance().getModuleRegistry().addAndEnableModule(new BubbleModule());
         }
         permissionAttachments = new HashMap<>();
         unRegisterBukkitCommand(getCommand("ban"));
@@ -207,12 +210,16 @@ public class EventSpigot extends JavaPlugin {
         getServer().getScheduler().runTaskLaterAsynchronously(getInstance(), () -> {
             EventCore.getInstance().getModuleRegistry().addAndEnableModule(new TeamModule());
         }, 20 * 5);
+        if(serversModule.getServerRedisManager().getServer(EventCore.getInstance().getIdentifier()) != null) {
+            serversModule.getServerRedisManager().removeServer(EventCore.getInstance().getIdentifier());
+            getLogger().info("Deleting server so we can be re-registered..");
+        }
         getServer().getScheduler().runTaskTimerAsynchronously(getInstance(), () -> {
             Server thisServer = serversModule.getServerRedisManager().getServer(EventCore.getInstance().getIdentifier());
 
             if (thisServer == null) {
                 System.out.println("[EventSpigot] Registering server...");
-                thisServer = new Server(EventCore.getInstance().getIdentifier(), "", 0, 0, 0, 100);
+                thisServer = new Server(EventCore.getInstance().getIdentifier(), Bukkit.getIp().isBlank() ? "127.0.0.1" : Bukkit.getIp(), Bukkit.getPort(), 0, 0, 100);
             }
 
             thisServer.setPlayerCount(getServer().getOnlinePlayers().size());

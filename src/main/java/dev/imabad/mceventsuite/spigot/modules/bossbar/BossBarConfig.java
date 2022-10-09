@@ -55,6 +55,7 @@ public class BossBarConfig extends BaseConfig {
         public long start;
         public long end;
         public String extraData;
+        public long paused;
 
         public Event(String name, Location location, long start, long end) {
             this(name, location, start, end, null);
@@ -69,7 +70,7 @@ public class BossBarConfig extends BaseConfig {
         }
 
         public double getProgress() {
-            final long time = System.currentTimeMillis();
+            final long time = paused != 0 ? paused : System.currentTimeMillis();
             if(time > start) {
                 double progress = ((double) time - (double) start) / ((double) end - (double) start);
                 return progress;
