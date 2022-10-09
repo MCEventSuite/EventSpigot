@@ -272,35 +272,36 @@ public class MapModule extends Module implements Listener, IConfigProvider<MapCo
             return false;
         }
         EventBoothPlot plot = plotOptional.get();
-        File schemFile = new File(EventSpigot.getInstance().getDataFolder() + File.separator + "booths" + File.separator + booth.getId());
-        if(!schemFile.exists()){
-            return false;
-        }
-        ClipboardFormat format = ClipboardFormats.findByFile(schemFile);
-        try {
-            try (ClipboardReader reader = format.getReader(new FileInputStream(schemFile))) {
-                Clipboard clipboard = reader.read();
-                AffineTransform transform = new AffineTransform();
-                transform = transform.rotateY(-rotationI);
-                ClipboardHolder holder = new ClipboardHolder(clipboard);
-                holder.setTransform(holder.getTransform().combine(transform));
-                Operation operation = holder
-                        .createPaste(editSession)
-                        .to(BlockVector3.at(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ()))
-                        .ignoreAirBlocks(false)
-                        .build();
-                Operations.complete(operation);
-                editSession.close();
-                plot.setBooth(booth);
-                EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(BoothDAO.class).saveBoothPlot(plot);
-                player.sendMessage("Loaded booth.");
-                return true;
-            }
-        } catch(Exception e){
-            e.printStackTrace();
-            player.sendMessage("Error loading");
-            return false;
-        }
+        EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(BoothDAO.class).saveBoothPlot(plot);
+        plot.setBooth(booth);
+        player.sendMessage("Loaded booth.");
+        return true;
+//        File schemFile = new File(EventSpigot.getInstance().getDataFolder() + File.separator + "booths" + File.separator + booth.getId());
+//        if(!schemFile.exists()){
+//            return false;
+//        }
+//        ClipboardFormat format = ClipboardFormats.findByFile(schemFile);
+//        try {
+//            try (ClipboardReader reader = format.getReader(new FileInputStream(schemFile))) {
+//                Clipboard clipboard = reader.read();
+//                AffineTransform transform = new AffineTransform();
+//                transform = transform.rotateY(-rotationI);
+//                ClipboardHolder holder = new ClipboardHolder(clipboard);
+//                holder.setTransform(holder.getTransform().combine(transform));
+//                Operation operation = holder
+//                        .createPaste(editSession)
+//                        .to(BlockVector3.at(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ()))
+//                        .ignoreAirBlocks(false)
+//                        .build();
+//                Operations.complete(operation);
+//                editSession.close();
+//                return true;
+//            }
+//        } catch(Exception e){
+//            e.printStackTrace();
+//            player.sendMessage("Error loading");
+//            return false;
+//        }
     }
 
     public CompletableFuture<Boolean> generateMap(String worldName, int chunkRadiusX, int chunkRadiusZ, int cx, int cz){

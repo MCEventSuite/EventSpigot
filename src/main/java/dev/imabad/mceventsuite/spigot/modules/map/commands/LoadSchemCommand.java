@@ -45,7 +45,7 @@ public class LoadSchemCommand extends BaseCommand {
         if(!(sender instanceof Player)){
             return false;
         }
-        if(args.length < 2){
+        if(args.length < 1){
             return false;
         }
         if(!sender.hasPermission("eventsuite.loadbooth")){
@@ -53,9 +53,7 @@ public class LoadSchemCommand extends BaseCommand {
         }
         Player player = (Player) sender;
         String name = args[0];
-        String rotation = args[1];
-        int rotationI = Integer.parseInt(rotation);
-        EventCore.getInstance().getModuleRegistry().getModule(MapModule.class).loadBooth(player, name, rotationI);
+        EventCore.getInstance().getModuleRegistry().getModule(MapModule.class).loadBooth(player, name, 0);
         return false;
     }
 
