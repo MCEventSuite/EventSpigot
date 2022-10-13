@@ -74,7 +74,10 @@ public class EventPassInventoryPage extends EventInventory {
       return Collections.emptyList();
     }
     EventPassReward rew = optionalReward.get();
-    return Arrays.asList("&7" + rew.getDescription(), "&d" + rew.getName());
+
+    if(rew.getEligible_rank() == 0)
+      return Arrays.asList("&7" + rew.getDescription(), "&d" + rew.getName());
+    return Arrays.asList("&7" + rew.getDescription(), "&d" + rew.getName(), "&bVIP Exclusive Cosmetic");
   }
 
   public void generatePath(){

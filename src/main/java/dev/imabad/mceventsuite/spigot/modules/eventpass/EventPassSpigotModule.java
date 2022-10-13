@@ -27,7 +27,7 @@ public class EventPassSpigotModule extends Module {
         EventSpigot.getInstance().getCommandMap().register("xpc", new XPCannonCommand());
         EventSpigot.getInstance().getCommandMap().register("kothxp", new KingOfTheHillCommand());
         EventCore.getInstance().getEventRegistry().registerListener(MySQLLoadedEvent.class, (event) -> {
-//            rewards = event.getMySQLDatabase().getDAO(EventPassDAO.class).getRewards();
+            rewards = event.getMySQLDatabase().getDAO(EventPassDAO.class).getRewards(EventCore.getInstance().getConfig().getCurrentYearAsInt());
         });
     }
 

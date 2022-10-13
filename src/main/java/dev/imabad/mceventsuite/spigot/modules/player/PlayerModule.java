@@ -12,6 +12,7 @@ import dev.imabad.mceventsuite.core.api.modules.Module;
 import dev.imabad.mceventsuite.spigot.interactions.Interaction;
 import dev.imabad.mceventsuite.spigot.interactions.InteractionRegistry;
 import dev.imabad.mceventsuite.spigot.modules.daylight.DaylightInventory;
+import dev.imabad.mceventsuite.spigot.modules.eventpass.inventories.CosmeticsInventoryPage;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.inventories.EventPassInventoryPage;
 import dev.imabad.mceventsuite.spigot.modules.hidenseek.HideNSeekModule;
 import dev.imabad.mceventsuite.spigot.modules.warps.inventories.WarpInventoryPage;
@@ -88,28 +89,28 @@ public class PlayerModule extends Module implements Listener {
     return Collections.emptyList();
   }
 
-  public void onPlayerRightClick(Event event){
+  public void onPlayerRightClick(Event event) {
     PlayerInteractEvent playerInteractEvent = (PlayerInteractEvent) event;
     Player player = playerInteractEvent.getPlayer();
-    if(playerInteractEvent.getItem() != null && playerInteractEvent.getItem().getType() != Material.AIR){
+    if (playerInteractEvent.getItem() != null && playerInteractEvent.getItem().getType() != Material.AIR) {
       ItemStack itemStack = playerInteractEvent.getItem();
-      if(itemStack.getType().equals(PlayerHotbar.GADGETS.getType())){
-        if(!RegionUtils.isInRegion(player, "stage") && !RegionUtils.isInRegion(player, "sticky")){
-//          new CosmeticsInventoryPage(player).open(player, null);
+      if (itemStack.getType().equals(PlayerHotbar.GADGETS.getType())) {
+        if (!RegionUtils.isInRegion(player, "stage") && !RegionUtils.isInRegion(player, "sticky")) {
+          new CosmeticsInventoryPage(player).open(player, null);
         } else {
           player.sendMessage(ChatColor.RED + "Sorry but you cannot use that here.");
         }
-      } else if(itemStack.getType().equals(PlayerHotbar.NAVIGATION.getType())){
+      } else if (itemStack.getType().equals(PlayerHotbar.NAVIGATION.getType())) {
         playerInteractEvent.setCancelled(true);
         new WarpInventoryPage(player).open(player, null);
-      } else if(itemStack.getType().equals(Material.PAPER) && ItemUtils.equalsItemName(itemStack, player.getName() + "'s Event Pass")){
-        EventCore.getInstance().getEventPlayerManager().getPlayer(player.getUniqueId()).ifPresent( eventPlayer -> {
+      } else if (itemStack.getType().equals(Material.PAPER)) {
+        EventCore.getInstance().getEventPlayerManager().getPlayer(player.getUniqueId()).ifPresent(eventPlayer -> {
           new EventPassInventoryPage(player, eventPlayer, 0, 1, 25, 1).open(player, null);
         });
-      } else if(itemStack.getType().equals(PlayerHotbar.DAYLIGHT_SETTINGS.getType())) {
+      } else if (itemStack.getType().equals(PlayerHotbar.DAYLIGHT_SETTINGS.getType())) {
         playerInteractEvent.setCancelled(true);
         new DaylightInventory(player).open(player, null);
-      } else if(itemStack.getType().equals(PlayerHotbar.LEAVE_HIDE_SEEK.getType())) {
+      } else if (itemStack.getType().equals(PlayerHotbar.LEAVE_HIDE_SEEK.getType())) {
         EventCore.getInstance().getModuleRegistry().getModule(HideNSeekModule.class)
                 .leave(player);
       }
