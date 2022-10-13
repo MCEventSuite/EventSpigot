@@ -74,6 +74,8 @@ public class ChatFilterModule extends Module implements IConfigProvider<ChatFilt
                         }
                         debugString = debugString.formatted(suspect.getName(), string, terms);
                         for(Player player : Bukkit.getAllOnlinePlayers()) {
+                            if(player.getName().equalsIgnoreCase("cubedcam"))
+                                continue;
                             boolean enabled = player.getPersistentData("cb_global") == null || player.getPersistentData("cb_global").equalsIgnoreCase("true");
                             if(!player.hasPermission("eventsuite.filter") || !enabled)
                                 continue;
