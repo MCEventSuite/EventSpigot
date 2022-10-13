@@ -1,47 +1,84 @@
 package dev.imabad.mceventsuite.spigot.modules.bossbar;
 
-import dev.imabad.mceventsuite.core.api.BaseConfig;
 import dev.imabad.mceventsuite.core.api.IConfigProvider;
 import dev.imabad.mceventsuite.core.api.modules.Module;
+import dev.imabad.mceventsuite.core.util.SpecialTag;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.modules.bossbar.ui.BossBarUI;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
-import org.bukkit.boss.BossBar;
-import org.bukkit.entity.Boss;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.geysermc.floodgate.api.FloodgateApi;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 
 public class BossBarModule extends Module implements IConfigProvider<BossBarConfig>, Listener {
 
     private BossBarConfig config;
     private org.bukkit.boss.BossBar bossBar;
-
-    private BossBarUI testBar = new BossBarUI(Component.text("Hello World!"));
+    private Map<UUID, BossBarUI> directions;
 
     private Stage stage = Stage.STRINGS;
     private int current = 0;
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
+        this.directions = new HashMap<>();
+        /*if(!FloodgateApi.getInstance().isFloodgatePlayer(e.getPlayer().getUniqueId())) {
+            this.directions.put(e.getPlayer().getUniqueId(), new BossBarUI(e.getPlayer(), (player) -> {
+                Location destination = new Location(
+                        Bukkit.getWorld("world"), 0.5, 30, 8.5, 0, 0);
+                String name = this.determineDirection(player.getLocation(), destination);
+                SpecialTag tag = SpecialTag.valueOf(name.toUpperCase());
+                return Component.text(tag.getJavaString() + " Venue").font(Key.key(Key.MINECRAFT_NAMESPACE, "default"));
+            }));
+        }*/
         bossBar.addPlayer(e.getPlayer());
-        testBar.show(e.getPlayer());
     }
 
     @Override
     public String getName() {
         return "bossbar";
+    }
+
+    private String translateRegion(String name) {
+        return switch(name){
+            case "mainstage" -> "Main Stage";
+            case "communitystage" -> "Community Stage";
+            case "koth" -> "KOTH";
+            case "hideregion" -> "HnS";
+            default -> name;
+        };
+    }
+
+    private String determineDirection(Location from, Location to) {
+        float angle = from.getDirection().angle(to.toVector());
+        angle = (float) Math.toDegrees(angle);
+
+        if(angle >= 330 || angle <= 30)
+            return "NORTH";
+        else if(angle >= 30 && angle <= 60)
+            return "NORTHEAST";
+        else if(angle >= 60 && angle <= 120)
+            return "EAST";
+        else if(angle >= 120 && angle <= 150)
+            return "SOUTHEAST";
+        else if(angle >= 150 && angle <= 210)
+            return "SOUTH";
+        else if(angle >= 210 && angle <= 240)
+            return "SOUTHWEST";
+        else if(angle >= 240 && angle <= 300)
+            return "WEST";
+        else
+            return "NORTHWEST";
     }
 
     @Override
@@ -174,6 +211,13 @@ public class BossBarModule extends Module implements IConfigProvider<BossBarConf
     @Override
     public void saveConfig() {
 
+    }
+
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event) {
+        if(this.directions.containsKey(event.getPlayer().getUniqueId())) {
+            this.directions.get(event.getPlayer().getUniqueId()).update();
+        }
     }
 
     @Override

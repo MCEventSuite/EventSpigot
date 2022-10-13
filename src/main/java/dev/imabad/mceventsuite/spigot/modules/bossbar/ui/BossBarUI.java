@@ -1,15 +1,20 @@
 package dev.imabad.mceventsuite.spigot.modules.bossbar.ui;
 
+import com.mojang.datafixers.types.Func;
 import it.unimi.dsi.fastutil.ints.Int2CharMap;
 import it.unimi.dsi.fastutil.ints.Int2CharOpenHashMap;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import org.bukkit.entity.Player;
+
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class BossBarUI {
 
@@ -41,25 +46,15 @@ public class BossBarUI {
     private String rawText;
     private int padding = 4;
     private BossBar bossBar;
+    private Function<Player, Component> render;
+    private Player player;
 
-    public BossBarUI(Component text){
-        this.text = text;
-        this.rawText = PlainTextComponentSerializer.plainText().serialize(text);
-        this.bossBar = BossBar.bossBar(generateTitle(), 0, BossBar.Color.WHITE, BossBar.Overlay.PROGRESS);
-    }
-
-    public void show(Audience target){
-        target.showBossBar(bossBar);
-    }
-
-    public void hide(Audience target){
-        target.hideBossBar(bossBar);
-    }
-
-    public void setText(Component text){
-        this.text = text;
-        this.rawText = PlainTextComponentSerializer.plainText().serialize(text);
-        update();
+    public BossBarUI(Player player, Function<Player, Component> consumer){
+        this.bossBar = BossBar.bossBar(Component.text("Loading..."), 0, BossBar.Color.WHITE, BossBar.Overlay.PROGRESS);
+        this.player = player;
+        this.render = consumer;
+        this.update();
+        player.showBossBar(this.bossBar);
     }
 
     public void setPadding(int padding){
@@ -68,7 +63,9 @@ public class BossBarUI {
     }
 
     public void update(){
-        bossBar.name(generateTitle());
+        this.text = this.render.apply(player);
+        this.rawText = ((TextComponent) this.text).content();
+        bossBar.name(this.generateTitle());
     }
 
     private Component generateTitle(){
