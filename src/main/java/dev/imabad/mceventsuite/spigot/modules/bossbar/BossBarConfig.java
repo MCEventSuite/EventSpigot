@@ -82,6 +82,7 @@ public class BossBarConfig extends BaseConfig {
 
         public static enum Location {
             MAIN_STAGE('d', "Main Stage"), SIDE_STAGE('b', "Outdoor Stage"), OUTSIDE('e', "Outside"),
+            GENERAL('6', "General"),
             NONE('7', "None"), MEET('a', "Meet & Greet"), HNS('6', "Hide & Seek");
 
             public final String human;

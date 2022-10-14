@@ -1,4 +1,4 @@
-package dev.imabad.mceventsuite.spigot.modules.shops.squareways.products;
+package dev.imabad.mceventsuite.spigot.modules.shops.products;
 
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.modules.redis.RedisChannel;
@@ -68,10 +68,10 @@ public class SandwichProduct implements ISkullProduct {
       cPlayer.getHandle().networkManager.send(eatPacket);
       player.getInventory().remove(playerInteractEvent.getItem());
       EventCore.getInstance().getEventPlayerManager().getPlayer(player.getUniqueId()).ifPresent(eventPlayer -> {
-        long lastStarblocks = eventPlayer.getLongProperty("lastSquareway");
+        long lastStarblocks = eventPlayer.getLongProperty("last" + shop.getName());
         if(System.currentTimeMillis() - lastStarblocks >= TimeUnit.HOURS.toMillis(1)){
-          eventPlayer.setProperty("lastSquareway", System.currentTimeMillis());
-          EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(eventPlayer.getUUID(), 250, "Ate a sandwich"));
+          eventPlayer.setProperty("last" + shop.getName(), System.currentTimeMillis());
+          EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(eventPlayer.getUUID(), 250, "Ate some food!"));
         }
       });
     }, 20);

@@ -66,41 +66,34 @@ public class StageListener implements Listener {
   }
 
   @EventHandler
-  public void onEnterRegion(RegionEnteredEvent regionEnterEvent){
+  public void onEnterRegion(RegionEnteredEvent regionEnterEvent) {
     boolean isAllowParticles = regionEnterEvent.getRegion().getFlag(StageModule.getAllowParticles()) == State.ALLOW || regionEnterEvent.getRegion().getFlag(StageModule.getAllowParticles()) == null;
-    if(!isAllowParticles){
+    if (!isAllowParticles) {
 //      Arrays.asList(CosmeticItemCategory.BALLOONS, CosmeticItemCategory.GADGETS, CosmeticItemCategory.PARTICLES, CosmeticItemCategory.TRAILS).forEach(category -> CosmeticManager.getInstance().getCurrentCosmeticItemByCategory(regionEnterEvent.getPlayer().getUniqueId(), category).ifPresent(cosmeticItem -> CosmeticManager.getInstance().removeCosmeticItem(cosmeticItem)));
     }
-    if(regionEnterEvent.getRegionId().equalsIgnoreCase("KOTH")){
-      if (this.isKothServer()) {
-        regionEnterEvent.getPlayer().getInventory().setItem(5, KNOCK_STICK);
-        EventSpigot.getInstance().getAudiences().player(regionEnterEvent.getPlayer()).sendMessage(
-                Component.text("You have entered king of the hill!").color(NamedTextColor.GREEN));
-      } else {
-        // Save location and teleport to correct server
-        BungeeUtils.saveServer(regionEnterEvent.getPlayer());
-        BungeeUtils.sendToServer(regionEnterEvent.getPlayer(), "venue1");
-      }
-    } else if(regionEnterEvent.getRegionId().equalsIgnoreCase("KOTH-TOP") && this.isKothServer()){
+    if (regionEnterEvent.getRegionId().equalsIgnoreCase("KOTH")) {
+      regionEnterEvent.getPlayer().getInventory().setItem(5, KNOCK_STICK);
+      EventSpigot.getInstance().getAudiences().player(regionEnterEvent.getPlayer()).sendMessage(
+              Component.text("You have entered king of the hill!").color(NamedTextColor.GREEN));
+    } else if (regionEnterEvent.getRegionId().equalsIgnoreCase("KOTH-TOP") && this.isKothServer()) {
       List<Player> playersOnTop = Bukkit.getOnlinePlayers().stream().filter(player -> RegionUtils.isInRegion(player, "KOTH-TOP")).collect(Collectors.toList());
       List<Player> playersInKOTH = Bukkit.getOnlinePlayers().stream().filter(player -> RegionUtils.isInRegion(player, "KOTH")).collect(Collectors.toList());
-      if(playersOnTop.size() > 1){
+      if (playersOnTop.size() > 1) {
         playersInKOTH.forEach(player -> EventSpigot.getInstance().getAudiences().player(player).sendActionBar(TIED));
-        ((TextLine)module.getKothHologram().getLine(0)).setText(ChatColor.RED + "TIED");
-      } else if(playersOnTop.size() == 1){
+        ((TextLine) module.getKothHologram().getLine(0)).setText(ChatColor.RED + "TIED");
+      } else if (playersOnTop.size() == 1) {
         Player playerOnTop = playersOnTop.get(0);
         Component kingOfTheHill = Component.text("King of the Hill - ").color(NamedTextColor.BLUE).append(Component.text(playerOnTop.getName()).decorate(TextDecoration.BOLD).color(NamedTextColor.GREEN));
         playersInKOTH.forEach(player -> EventSpigot.getInstance().getAudiences().player(player).sendActionBar(kingOfTheHill));
-        ((TextLine)module.getKothHologram().getLine(0)).setText(ChatColor.GREEN + playerOnTop.getName());
+        ((TextLine) module.getKothHologram().getLine(0)).setText(ChatColor.GREEN + playerOnTop.getName());
       } else {
-        ((TextLine)module.getKothHologram().getLine(0)).setText(ChatColor.GREEN + "NO BODY");
+        ((TextLine) module.getKothHologram().getLine(0)).setText(ChatColor.GREEN + "NO BODY");
       }
     }
   }
 
   @EventHandler
   public void onRegionLeave(RegionLeftEvent leftEvent){
-    if (!this.isKothServer()) return;
     if(leftEvent.getRegionId().equalsIgnoreCase("KOTH") && !RegionUtils.isInRegion(leftEvent.getPlayer(), "KOTH-TOP")){
       if(leftEvent.getPlayer().getInventory().getItem(5).getType().equals(Material.STICK)){
         leftEvent.getPlayer().getInventory().setItem(5, new ItemStack(Material.AIR));
@@ -127,9 +120,8 @@ public class StageListener implements Listener {
 
   @EventHandler
   public void onPluginEnable(PluginEnableEvent event){
-    if (!this.isKothServer()) return;
     if(event.getPlugin().getName().equalsIgnoreCase("HolographicDisplays")){
-      Hologram hologram = HologramsAPI.createHologram(EventSpigot.getInstance(), new Location(Bukkit.getWorld("world"), 152.5, 31, 153.5));
+      Hologram hologram = HologramsAPI.createHologram(EventSpigot.getInstance(), new Location(Bukkit.getWorld("world"), 209, 65, 151));
       hologram.insertTextLine(0, ChatColor.GREEN + "NO BODY");
       hologram.insertTextLine(1, ChatColor.RED + "KING OF THE HILL");
       module.setKothHologram(hologram);

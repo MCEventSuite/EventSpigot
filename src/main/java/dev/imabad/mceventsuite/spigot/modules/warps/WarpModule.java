@@ -98,6 +98,14 @@ public class WarpModule extends Module implements Listener {
         warpItems.add(new WarpItem("VIP Yacht", STICKY_PISTON, new Location(world, -206, 30, 298, 180, 0), WarpCategory.OTHER));
         ItemStack STATION = ItemUtils.createItemStack(Material.GRASS, "&r&9&lBiome Tour Experience");
         warpItems.add(new WarpItem("Biome Tour Experience", STATION, new Location(world, 42, 30, 12, -140, 0), WarpCategory.OTHER));
+
+
+        ItemStack dreamKingdom = ItemUtils.createItemStack(Material.RED_CONCRETE, "&r&lDreamKingdom");
+        ItemStack paradiseIsles = ItemUtils.createItemStack(Material.RED_CONCRETE, "&r&lParadise Isles");
+        ItemStack imaginears = ItemUtils.createItemStack(Material.RED_CONCRETE, "&r&lImaginears Club");
+        warpItems.add(new WarpItem("DreamKingdom", dreamKingdom, new Location(world, 277.5, 30, 330.5, 0, 0), WarpCategory.HALL));
+        warpItems.add(new WarpItem("Paradise Isles", paradiseIsles, new Location(world, 210.5, 30, 323.5, 0, 0), WarpCategory.HALL));
+        warpItems.add(new WarpItem("Imaginears Club", imaginears, new Location(world, 142.5, 30, 322.5, 0, 0), WarpCategory.HALL));
     }
 
     public List<WarpItem> getWarpItems() {

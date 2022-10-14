@@ -13,20 +13,25 @@ import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.session.ClipboardHolder;
+import com.sk89q.worldguard.protection.flags.StringFlag;
+import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.IConfigProvider;
 import dev.imabad.mceventsuite.core.api.modules.Module;
 import dev.imabad.mceventsuite.core.api.objects.EventBooth;
 import dev.imabad.mceventsuite.core.api.objects.EventBoothPlot;
+import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
 import dev.imabad.mceventsuite.core.modules.influx.InfluxDBModule;
 import dev.imabad.mceventsuite.core.modules.mysql.MySQLModule;
 import dev.imabad.mceventsuite.core.modules.mysql.dao.BoothDAO;
+import dev.imabad.mceventsuite.core.modules.mysql.dao.PlayerDAO;
 import dev.imabad.mceventsuite.core.modules.mysql.events.MySQLLoadedEvent;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.modules.map.commands.*;
 import dev.imabad.mceventsuite.spigot.modules.map.objects.Tree;
 import dev.imabad.mceventsuite.spigot.modules.npc.NPCModule;
 import dev.imabad.mceventsuite.spigot.modules.teams.TeamModule;
+import dev.imabad.mceventsuite.spigot.utils.RegionUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.commons.lang3.tuple.Pair;
@@ -150,10 +155,22 @@ public class MapModule extends Module implements Listener, IConfigProvider<MapCo
         final Location signLocation = location.add(signVector);
         if(signLocation.getBlock().getType().data == WallSign.class) {
             Sign sign = (Sign)signLocation.getBlock().getState();
-            sign.line(0, Component.text("Planted by").color(NamedTextColor.DARK_GRAY));
-            sign.line(2, Component.text(name).color(NamedTextColor.DARK_GRAY));
+            sign.line(0, Component.text("Planted by").color(NamedTextColor.GRAY));
+            sign.line(2, Component.text(name).color(NamedTextColor.GRAY));
             sign.update();
+        } else {
+            Bukkit.broadcast(Component.text("TREE FOR "+ name + "SIGN COULD NOT BE DONE AT  " + location.toString()), "eventsuite.admin");
         }
+
+        EventPlayer player = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase()
+                .getDAO(PlayerDAO.class).getPlayer(name);
+        if(player == null) {
+            Bukkit.broadcast(Component.text("WARNING! player for" + name + "is null so tree flag cannot be set"), "eventsuite.admin");
+            return;
+        }
+        player.setProperty("tree-planted-2022", true);
+        EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase()
+                .getDAO(PlayerDAO.class).savePlayer(player);
     }
 
     @EventHandler

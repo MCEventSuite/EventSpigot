@@ -1,5 +1,12 @@
 package dev.imabad.mceventsuite.spigot.listeners;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.mewin.WGRegionEvents.events.RegionEnterEvent;
+import com.mewin.WGRegionEvents.events.RegionEnteredEvent;
+import com.sk89q.worldguard.protection.flags.IntegerFlag;
+import com.sk89q.worldguard.protection.flags.NumberFlag;
+import com.sk89q.worldguard.protection.flags.StringFlag;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.events.JoinEvent;
 import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
@@ -23,12 +30,14 @@ import dev.imabad.mceventsuite.spigot.modules.bubbles.BubbleManager;
 import dev.imabad.mceventsuite.spigot.modules.bubbles.BubbleModule;
 import dev.imabad.mceventsuite.spigot.modules.bubbles.ChatBubble;
 import dev.imabad.mceventsuite.spigot.modules.chat.ChatFilterModule;
+import dev.imabad.mceventsuite.spigot.modules.eventpass.EventPassSpigotModule;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
 import dev.imabad.mceventsuite.spigot.modules.meet.MeetModule;
 import dev.imabad.mceventsuite.spigot.modules.player.PlayerHotbar;
 import dev.imabad.mceventsuite.spigot.modules.teams.TeamModule;
 import dev.imabad.mceventsuite.spigot.utils.BungeeUtils;
 import dev.imabad.mceventsuite.spigot.utils.PermissibleInjector;
+import dev.imabad.mceventsuite.spigot.utils.RegionUtils;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
 import fr.neatmonster.nocheatplus.NCPAPIProvider;
 import fr.neatmonster.nocheatplus.checks.CheckType;
@@ -39,10 +48,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -61,25 +67,36 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class PlayerListener implements Listener {
 
+    private final StringFlag serverTpFlag;
+    private final IntegerFlag powerFlag;
+    private final Cache<UUID, Long> joinCache = CacheBuilder.newBuilder().expireAfterWrite(10L, TimeUnit.SECONDS).build();
+
+    public PlayerListener() {
+        this.powerFlag = RegionUtils.getOrRegisterFlag(new IntegerFlag("power"));
+        this.serverTpFlag = RegionUtils.getOrRegisterFlag(new StringFlag("server-tp", ""));
+    }
+
     @EventHandler
-    public void onPlayerLogin(PlayerLoginEvent playerJoinEvent){
-        if(EventCore.getInstance().getEventPlayerManager() == null){
+    public void onPlayerLogin(PlayerLoginEvent playerJoinEvent) {
+        if (EventCore.getInstance().getEventPlayerManager() == null) {
             playerJoinEvent.disallow(PlayerLoginEvent.Result.KICK_OTHER, "Server is still loading....");
         }
     }
 
     @EventHandler
-    public void onCommandSend(PlayerCommandSendEvent event){
+    public void onCommandSend(PlayerCommandSendEvent event) {
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent playerJoinEvent) {
         EventPlayer player = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(PlayerDAO.class).getOrCreatePlayer(playerJoinEvent.getPlayer().getUniqueId(), playerJoinEvent.getPlayer().getDisplayName());
         SpigotPlayer spigotPlayer = SpigotPlayer.asSpigot(player, playerJoinEvent.getPlayer());
+        joinCache.put(spigotPlayer.getUUID(), System.currentTimeMillis());
         EventCore.getInstance().getEventPlayerManager().addPlayer(spigotPlayer);
         EventCore.getInstance().getEventRegistry().handleEvent(new JoinEvent(spigotPlayer));
         EventPermissible eventPermissible = new EventPermissible(playerJoinEvent.getPlayer(), player);
@@ -97,6 +114,10 @@ public class PlayerListener implements Listener {
             if (playerJoinEvent.getPlayer().getGameMode() != GameMode.CREATIVE) {
                 playerJoinEvent.getPlayer().setGameMode(GameMode.CREATIVE);
             }
+        }
+
+        if (player.getRank().getPower() >= 35) {
+            EventCore.getInstance().getModuleRegistry().getModule(EventPassSpigotModule.class).awardVipPlus(player);
         }
 
         if (playerJoinEvent.getPlayer().getScoreboard() != EventSpigot.getInstance().getScoreboard()) {
@@ -121,9 +142,18 @@ public class PlayerListener implements Listener {
             EventPassPlayer eventPassPlayer = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).getOrCreateEventPass(player);
 
             int level = eventPassPlayer.levelFromXP();
-            List<EventPassReward> unlockedRewards = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).getUnlockedRewards(player).stream().map(EventPassUnlockedReward::getUnlockedReward).collect(Collectors.toList());
-            List<EventPassReward> rewards = EventCore.getInstance().getModuleRegistry().getModule(EventPassModule.class).getEventPassRewards().stream().filter(eventPassReward -> eventPassReward.getRequiredLevel() > 0 && eventPassReward.getRequiredLevel() <= level && !unlockedRewards.contains(eventPassReward)).sorted(Comparator.comparingInt(EventPassReward::getRequiredLevel)).collect(Collectors.toList());
+            List<EventPassReward> unlockedRewards = EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase()
+                    .getDAO(EventPassDAO.class).getUnlockedRewards(player).stream().map(EventPassUnlockedReward::getUnlockedReward).toList();
+            List<EventPassReward> rewards = EventCore.getInstance().getModuleRegistry().getModule(EventPassModule.class)
+                    .getEventPassRewards()
+                    .stream()
+                    .filter(eventPassReward -> eventPassReward.getRequiredLevel() > 0 &&
+                            eventPassReward.getRequiredLevel() <= level &&
+                            !unlockedRewards.contains(eventPassReward))
+                    .sorted(Comparator.comparingInt(EventPassReward::getRequiredLevel)).toList();
             for (EventPassReward reward : rewards) {
+                if (reward.getEligible_rank() > 0 && player.getRank().getPower() < 20)
+                    continue;
                 EventPassUnlockedReward unlockedReward = new EventPassUnlockedReward(reward, player);
                 EventCore.getInstance().getModuleRegistry().getModule(MySQLModule.class).getMySQLDatabase().getDAO(EventPassDAO.class).saveUnlockedReward(unlockedReward);
             }
@@ -150,10 +180,26 @@ public class PlayerListener implements Listener {
         if (eventPlayer.isPresent()) {
             final EventRank rank = eventPlayer.get().getRank();
             if (event.originalMessage() instanceof TextComponent textComponent) {
+
+                boolean bad = false;
+                for (SpecialTag specialTag : SpecialTag.values()) {
+                    for (char ch : specialTag.getBedrock()) {
+                        if (textComponent.content().contains(String.valueOf(ch)))
+                            bad = true;
+                    }
+                    if (textComponent.content().contains(specialTag.getJavaString()))
+                        bad = true;
+                }
+
+                if (bad) {
+                    event.setCancelled(true);
+                    return;
+                }
+
                 EventCore.getInstance().getModuleRegistry().getModule(ChatFilterModule.class)
                         .checkText(event.getPlayer(), textComponent.content()).thenAcceptAsync((allowed) -> {
 
-                            if(!allowed) {
+                            if (!allowed) {
                                 event.getPlayer().sendMessage(Component.text("Your message was blocked by the filter!")
                                         .color(NamedTextColor.RED));
                                 return;
@@ -202,7 +248,11 @@ public class PlayerListener implements Listener {
                                 }
                             }
                         });
+            } else {
+                event.getPlayer().sendMessage(ChatColor.RED + "There was an issue with your message. Try again later.");
             }
+        } else {
+            event.getPlayer().sendMessage(ChatColor.RED + "There was an issue loading your data. Try again later.");
         }
     }
 
@@ -222,16 +272,16 @@ public class PlayerListener implements Listener {
                 TpaCommand.getTeleportRequests().remove(eventPlayer.getUUID().toString());
                 EventCore.getInstance().getEventPlayerManager().removePlayer(eventPlayer);
             });
-            BungeeUtils.saveLocationSynchronously(playerQuitEvent.getPlayer());
+            BungeeUtils.saveLocationSynchronously(playerQuitEvent.getPlayer(), null);
         });
         playerQuitEvent.setQuitMessage("");
     }
 
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent event){
-        if(event.getClickedInventory() != null) {
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (event.getClickedInventory() != null) {
             for (EventInventory eventInventory : EventInventory.EVENT_INVENTORIES) {
-                if(eventInventory.isInventory(event.getClickedInventory())) {
+                if (eventInventory.isInventory(event.getClickedInventory())) {
                     // TODO: Potentially allow handler to override this (but safely if the handler throws)
                     event.setCancelled(true);
 
@@ -247,8 +297,67 @@ public class PlayerListener implements Listener {
         }
     }
 
+    //TODO this is such a bodge
+    private Location getReturn(String name) {
+        World world = Bukkit.getWorld("world");
+        return switch (name) {
+            case "projectrun" -> new Location(world, -86, 30, 38, 180, 0);
+            case "marathon" -> new Location(world, -86, 30, -7, 180, 0);
+            case "marathonoverflow" -> new Location(world, -78, 30, -7, 180, 0);
+            case "mmalpha" -> new Location(world, -58, 30, 42, 180, 0);
+            case "mmomega" -> new Location(world, -58, 30, -1, 0, 0);
+            case "spectral" -> new Location(world, -126, 32, -5, 0, 0);
+            case "abovebelow" -> new Location(world, 194, 30, -1, 0, 0);
+            case "sprintracer" -> new Location(world, -179, 30, 12);
+            case "mse" -> new Location(world, -39, 33, 88, 90, 0);
+            case "ride" -> new Location(world, -49, 33, 99, 180, 0);
+            case "parkourspiral" -> new Location(world, -193, 30, 40, 0, 0);
+            default -> new Location(world, 0, 0, 0);
+        };
+    }
+
     @EventHandler
-    public void onMove(PlayerMoveEvent event){
+    public void onJoinRegion(RegionEnteredEvent event) {
+        if (event.getPlayer().isLocalPlayer()) {
+            String flag = event.getRegion().getFlag(serverTpFlag);
+            if (flag != null && !flag.isEmpty() && !flag.isBlank()) {
+                if (event.getParentEvent() instanceof PlayerJoinEvent || joinCache.asMap().containsKey(event.getPlayer().getUniqueId())) {
+                    event.getPlayer().teleport(getReturn(flag));
+                    return;
+                }
+
+                if (flag.equalsIgnoreCase("mse")) {
+                    event.getPlayer().teleport(new Location(Bukkit.getWorld("minecon"), 5, 87, 9));
+                } else {
+                    BungeeUtils.sendToServer(event.getPlayer(), flag, getReturn(flag));
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void beforeJoinRegion(RegionEnterEvent event) {
+        if (event.getPlayer().isLocalPlayer()) {
+            Integer flag = event.getRegion().getFlag(powerFlag);
+            if (flag == null)
+                return;
+
+            Optional<EventPlayer> player = EventCore.getInstance().getEventPlayerManager().getPlayer(event.getPlayer().getUniqueId());
+            if (player.isEmpty()) {
+                event.setCancelled(true);
+                event.getPlayer().sendMessage(ChatColor.RED + "You can't go there!");
+                return;
+            }
+
+            if (player.get().getRank().getPower() < flag) {
+                event.setCancelled(true);
+                event.getPlayer().sendMessage(ChatColor.RED + "You can't go there!");
+            }
+        }
+    }
+
+    @EventHandler
+    public void onMove(PlayerMoveEvent event) {
         InteractionRegistry.handleEvent(Interaction.MOVE, event);
     }
 
@@ -283,7 +392,7 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void inventoryClickEvent(InventoryClickEvent event) {
         InteractionRegistry.handleEvent(Interaction.CLICK_INSIDE_INVENTORY, event);
-        if(event.getClickedInventory() instanceof PlayerInventory && !event.getWhoClicked().hasPermission("eventsuite.inventory")){
+        if (event.getClickedInventory() instanceof PlayerInventory && !event.getWhoClicked().hasPermission("eventsuite.inventory")) {
             event.setCancelled(true);
         }
     }
@@ -294,19 +403,17 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    public void inventoryClose(InventoryCloseEvent event){
+    public void inventoryClose(InventoryCloseEvent event) {
         InteractionRegistry.handleEvent(Interaction.CLOSE_INVENTORY, event);
     }
 
     @EventHandler
-    public void inventoryDrag(InventoryDragEvent event){
+    public void inventoryDrag(InventoryDragEvent event) {
         InteractionRegistry.handleEvent(Interaction.DRAG_INVENTORY, event);
     }
 
     @EventHandler
-    public void onDrop(PlayerDropItemEvent event){
-        if(!event.getPlayer().hasPermission("eventsuite.inventory")){
-            event.setCancelled(true);
-        }
+    public void onDrop(PlayerDropItemEvent event) {
+        event.setCancelled(true);
     }
 }

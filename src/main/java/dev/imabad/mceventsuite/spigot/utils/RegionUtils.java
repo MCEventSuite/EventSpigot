@@ -25,7 +25,7 @@ public class RegionUtils {
         return getPlayerRegions(player).getRegions().stream().anyMatch(protectedRegion -> protectedRegion.getId().equalsIgnoreCase(regionName));
     }
 
-    public static <T extends Flag<?>> T getOrRegisterFlag(T flag) throws Exception {
+    public static <T extends Flag<?>> T getOrRegisterFlag(T flag) {
         try{
             WorldGuard.getInstance().getFlagRegistry().register(flag);
             return flag;
@@ -34,7 +34,7 @@ public class RegionUtils {
             if(flag.getClass().isInstance(existing)){
                 return (T) existing;
             }
-            throw new Exception("Something went wrong whilst registering region flags");
+            throw new RuntimeException("Something went wrong whilst registering region flags");
         }
     }
 }

@@ -41,8 +41,8 @@ public class MeetCommand extends BaseCommand {
 
         final Player player = (Player) sender;
 
-        if(player.hasPermission("eventsuite.meet.admin")) {
-            if (args[0].equalsIgnoreCase("create")) {
+        if(player.hasPermission("eventsuite.meet")) {
+            if (args[0].equalsIgnoreCase("create") && player.hasPermission("eventsuite.meet.admin")) {
                 final String name = args[1];
                 final int sessionTime = Integer.parseInt(args[2]);
                 final int meetTime = Integer.parseInt(args[3]);
@@ -61,7 +61,7 @@ public class MeetCommand extends BaseCommand {
                                     player.sendMessage(Component.text("Couldn't create session! Is there one with the same name already?").color(NamedTextColor.RED));
                             }
                         });
-            } else if (args[0].equalsIgnoreCase("setspawn")) {
+            } else if (args[0].equalsIgnoreCase("setspawn") && player.hasPermission("eventsuite.meet.admin")) {
                 final String name = args[1];
                 int pos = 0;
                 if (args.length == 3)
@@ -77,7 +77,7 @@ public class MeetCommand extends BaseCommand {
                                     player.sendMessage(Component.text("Failed to create pos " + (finalPos + 1) + " for session " + name + ". Did you get the name right?").color(NamedTextColor.RED));
                             }
                         });
-            } else if (args[0].equalsIgnoreCase("start")) {
+            } else if (args[0].equalsIgnoreCase("start") && player.hasPermission("eventsuite.meet.admin")) {
                 final String name = args[1];
                 this.redisModule.publishRequest(RedisChannel.GLOBAL, new AdminStartSessionRequest(name), (msg) -> {
                     if (player.isOnline() && msg instanceof BooleanResponse response) {
@@ -119,7 +119,7 @@ public class MeetCommand extends BaseCommand {
                                 }
                             }
                         });
-            } else if(args[0].equalsIgnoreCase("meettime") || args[0].equalsIgnoreCase("sessiontime")) {
+            } else if(args[0].equalsIgnoreCase("meettime") || args[0].equalsIgnoreCase("sessiontime") && player.hasPermission("eventsuite.meet.admin")) {
                 String name = args[1];
                 int time;
                 try {

@@ -1,4 +1,4 @@
-package dev.imabad.mceventsuite.spigot.modules.shops.starblocks.products;
+package dev.imabad.mceventsuite.spigot.modules.shops.products;
 
 
 import dev.imabad.mceventsuite.core.EventCore;
@@ -43,6 +43,10 @@ public class CoffeeProduct implements ISkullProduct {
     this.givesCup = givesCup;
   }
 
+  public static CoffeeProduct fizzyPop(IShop shop) {
+    return new CoffeeProduct("&r&lFizzy Pop", 0, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjBiZjYwNWFlMzhjZTVlNThiZGY4MmEyZWY5YmIyM2EyMzViMjM0NDMyNzRlYTI5Y2VjZjRhNjI5NTk3M2FiOSJ9fX0=", shop, false);
+  }
+
   @Override
   public ItemStack getBedrockItemStack() {
     return ItemUtils.createItemStack(Material.MILK_BUCKET, getDisplayName(), getLore());
@@ -81,10 +85,10 @@ public class CoffeeProduct implements ISkullProduct {
       }
       player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10 * 20, 2));
       EventCore.getInstance().getEventPlayerManager().getPlayer(player.getUniqueId()).ifPresent(eventPlayer -> {
-        long lastStarblocks = eventPlayer.getLongProperty("lastStarblocks");
+        long lastStarblocks = eventPlayer.getLongProperty("last" + this.shop.getName());
         if(System.currentTimeMillis() - lastStarblocks >= TimeUnit.HOURS.toMillis(1)){
-          eventPlayer.setProperty("lastStarblocks", System.currentTimeMillis());
-          EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(eventPlayer.getUUID(), 250, "Drank some coffee!"));
+          eventPlayer.setProperty("last" + this.shop.getName(), System.currentTimeMillis());
+          EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class).publishMessage(RedisChannel.GLOBAL, new AwardPlayerXPMessage(eventPlayer.getUUID(), 250, "Had a drink!"));
         }
       });
     }, 20);

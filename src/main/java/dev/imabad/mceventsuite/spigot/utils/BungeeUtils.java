@@ -1,5 +1,6 @@
 package dev.imabad.mceventsuite.spigot.utils;
 
+import com.google.common.cache.Cache;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.modules.redis.RedisChannel;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
@@ -13,9 +14,9 @@ import java.util.Optional;
 
 public class BungeeUtils {
 
-    public static void saveLocationSynchronously(Player player) {
+    public static void saveLocationSynchronously(Player player, Location location) {
         RedisModule redis = EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class);
-        redis.storeData("location-" + player.getUniqueId(), LocationHelper.serializeLocation(player.getLocation()));
+        redis.storeData("location-" + player.getUniqueId(), LocationHelper.serializeLocation(location == null ? player.getLocation() : location));
     }
 
     public static void saveServer(Player player){
@@ -32,9 +33,9 @@ public class BungeeUtils {
         }
     }
 
-    public static void sendToServer(Player player, String server) {
+    public static void sendToServer(Player player, String server, Location toReturnTo) {
         Bukkit.getScheduler().runTaskAsynchronously(EventSpigot.getInstance(), () -> {
-            BungeeUtils.saveLocationSynchronously(player);
+            BungeeUtils.saveLocationSynchronously(player, toReturnTo);
             RedisModule redis = EventCore.getInstance().getModuleRegistry().getModule(RedisModule.class);
             redis.publishMessage(RedisChannel.GLOBAL, new ChangePlayerServerMessage(player.getUniqueId(), server));
         });

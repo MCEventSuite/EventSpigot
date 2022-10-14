@@ -6,6 +6,7 @@ import org.bukkit.inventory.ItemStack;
 
 public enum WarpCategory {
     ALL("", ItemUtils.createItemStack(Material.WHITE_CONCRETE, "&l&fAll"), 0),
+    HALL("halls",ItemUtils.createItemStack(Material.RED_CONCRETE, "&l&bHalls"), Material.RED_CONCRETE, 0),
     LARGE("large", ItemUtils.createItemStack(Material.CYAN_CONCRETE, "&l&bLarge Booths"), Material.CYAN_CONCRETE, 0),
     MEDIUM("medium", ItemUtils.createItemStack(Material.YELLOW_CONCRETE, "&l&eMedium Booths"), Material.YELLOW_CONCRETE, 1),
     SMALL("small", ItemUtils.createItemStack(Material.GREEN_CONCRETE, "&l&aSmall Booths"), Material.GREEN_CONCRETE, 3),

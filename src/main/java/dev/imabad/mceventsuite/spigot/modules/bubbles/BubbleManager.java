@@ -1,11 +1,15 @@
 package dev.imabad.mceventsuite.spigot.modules.bubbles;
 
 import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.spigot.modules.bubbles.redis.GetBubblesRequest;
 import dev.imabad.mceventsuite.spigot.modules.bubbles.redis.GetBubblesResponse;
 import dev.imabad.mceventsuite.core.modules.redis.RedisChannel;
 import dev.imabad.mceventsuite.core.modules.redis.RedisModule;
+import dev.imabad.mceventsuite.spigot.utils.RegionUtils;
 import net.milkbowl.vault.chat.Chat;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -69,6 +73,8 @@ public class BubbleManager {
             bubble = new ChatBubble(bubbleName, "Meet", null);
             this.chatBubbleMap.put(bubbleName, bubble);
         }
+
+        bubble.getMembers().add(player.getUniqueId());
 
         player.sendMessage(ChatColor.GREEN + "You have entered the chat bubble for " + ChatColor.AQUA +
                 bubble.getName());
