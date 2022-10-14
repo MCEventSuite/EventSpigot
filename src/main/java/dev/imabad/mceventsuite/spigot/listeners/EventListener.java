@@ -9,6 +9,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerTakeLecternBookEvent;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +34,7 @@ public class EventListener implements Listener {
         }
     }
 
-    private static final List<Material> DISALLOWED_INTERACT_MATERIALS = Arrays.asList(Material.LECTERN, Material.ACACIA_BUTTON, Material.BIRCH_BUTTON, Material.CRIMSON_BUTTON, Material.OAK_BUTTON, Material.DARK_OAK_BUTTON, Material.JUNGLE_BUTTON, Material.POLISHED_BLACKSTONE_BUTTON, Material.SPRUCE_BUTTON, Material.STONE_BUTTON, Material.WARPED_BUTTON);
+    private static final List<Material> DISALLOWED_INTERACT_MATERIALS = Arrays.asList(Material.ACACIA_BUTTON, Material.BIRCH_BUTTON, Material.CRIMSON_BUTTON, Material.OAK_BUTTON, Material.DARK_OAK_BUTTON, Material.JUNGLE_BUTTON, Material.POLISHED_BLACKSTONE_BUTTON, Material.SPRUCE_BUTTON, Material.STONE_BUTTON, Material.WARPED_BUTTON);
 
     @EventHandler
     public void onExplode(PlayerInteractEvent playerInteractEvent) {
@@ -42,6 +43,11 @@ public class EventListener implements Listener {
                 playerInteractEvent.setCancelled(true);
             }
         }
+    }
+
+    @EventHandler
+    public void onLecternTake(PlayerTakeLecternBookEvent event) {
+        event.setCancelled(true);
     }
 
 }
