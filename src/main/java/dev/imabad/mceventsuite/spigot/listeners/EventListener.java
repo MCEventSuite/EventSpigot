@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTakeLecternBookEvent;
 
@@ -50,4 +51,9 @@ public class EventListener implements Listener {
         event.setCancelled(true);
     }
 
+    //Prevent players from taking armor from armorstands.
+    @EventHandler
+    public void onArmorStandTake(PlayerArmorStandManipulateEvent event) {
+        event.setCancelled(true);
+    }
 }

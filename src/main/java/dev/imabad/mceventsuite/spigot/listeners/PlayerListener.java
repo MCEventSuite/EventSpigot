@@ -312,7 +312,7 @@ public class PlayerListener implements Listener {
             case "mse" -> new Location(world, -39, 33, 88, 90, 0);
             case "ride" -> new Location(world, -49, 33, 99, 180, 0);
             case "parkourspiral" -> new Location(world, -193, 30, 40, 0, 0);
-            default -> new Location(world, 0, 0, 0);
+            default -> new Location(world, 0.5, 30, 4.5);
         };
     }
 

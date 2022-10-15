@@ -17,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,29 +25,39 @@ import java.util.stream.Collectors;
 public class WarpInventoryPage extends EventInventory {
 
     private WarpCategory filter = WarpCategory.ALL;
-    private HashMap<Integer, WarpItem> warpItemHashMap = new HashMap<>();
+    private final HashMap<Integer, WarpItem> warpItemHashMap = new HashMap<>();
+    private final List<WarpItem> warpItems = new ArrayList<>();
 
     public WarpInventoryPage(Player player) {
-        super(player, "Cubed! Warp", 54);
+        super(player, "Navigation", 54);
     }
 
     @Override
     protected void populate() {
         warpItemHashMap.clear();
-        List<WarpItem> warpItems = new ArrayList(EventCore.getInstance().getModuleRegistry().getModule(WarpModule.class).getWarpItems());
-        if (filter == WarpCategory.ALL) {
-            // Don't show small booths which may overflow - instead show a quick
-            // link to the small booths page
-            warpItems = warpItems.stream().filter(warpItem -> warpItem.getCategory() != WarpCategory.SMALL).collect(Collectors.toCollection(ArrayList::new));
-            this.inventory.setItem(19, ItemUtils.createItemStack(Material.GREEN_CONCRETE, ChatColor.BLUE + "" + ChatColor.BOLD + "Small Booths"));
-        } else {
-            warpItems = warpItems.stream().filter(warpItem -> warpItem.getCategory() == filter).collect(Collectors.toCollection(ArrayList::new));
-        }
+        warpItems.clear();
+        EventCore.getInstance().getModuleRegistry().getModule(WarpModule.class).getWarpItems().forEach(warpItem -> {
+            if(filter == WarpCategory.ALL && warpItem.getCategory() != WarpCategory.SMALL){
+                warpItems.add(warpItem);
+                this.inventory.setItem(23, ItemUtils.createItemStack(Material.GREEN_CONCRETE, ChatColor.BLUE + "" + ChatColor.BOLD + "Small Booths"));
+            }else if(warpItem.getCategory() == filter) {
+                warpItems.add(warpItem);
+            }
+        });
+//        if (filter == WarpCategory.ALL) {
+//            // Don't show small booths which may overflow - instead show a quick
+//            // link to the small booths page
+//            warpItems = warpItems.stream().filter(warpItem -> warpItem.getCategory() != WarpCategory.SMALL).collect(Collectors.toCollection(ArrayList::new));
+//            this.inventory.setItem(19, ItemUtils.createItemStack(Material.GREEN_CONCRETE, ChatColor.BLUE + "" + ChatColor.BOLD + "Small Booths"));
+//        } else {
+//            warpItems = warpItems.stream().filter(warpItem -> warpItem.getCategory() == filter).collect(Collectors.toCollection(ArrayList::new));
+//        }
         int prevLineNumber = 0;
         int lineCount = -1;
+
         for(int i = 0; i < warpItems.size(); i++){
             WarpItem boothPlot = warpItems.get(i);
-            int startPos = 0;
+            int startPos;
             if(filter == WarpCategory.ALL){
                 if(boothPlot.getCategory().lineNumber != prevLineNumber){
                     prevLineNumber = boothPlot.getCategory().lineNumber;
@@ -75,7 +86,7 @@ public class WarpInventoryPage extends EventInventory {
             }
             repopulate();
             return true;
-        } else if (slot == 19 && filter == WarpCategory.ALL) {
+        } else if (slot == 23 && filter == WarpCategory.ALL) {
             filter = WarpCategory.SMALL;
             repopulate();
             return true;

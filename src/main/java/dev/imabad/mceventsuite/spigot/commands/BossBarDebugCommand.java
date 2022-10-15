@@ -17,21 +17,21 @@ public class BossBarDebugCommand extends BaseCommand {
 
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
-        final BossBarConfig.Event event = new BossBarConfig.Event("Game Server Panel", BossBarConfig.Event.Location.MAIN_STAGE,
-                System.currentTimeMillis() - (60 * 1000 * 25), System.currentTimeMillis() + (60 * 1000 * 5));
-        final BossBarConfig.Event sideEvent = new BossBarConfig.Event("Community Panel", BossBarConfig.Event.Location.SIDE_STAGE,
-                System.currentTimeMillis() - (60 * 1000 * 2), System.currentTimeMillis() + (60 * 1000 * 28));
-        final BossBarConfig.Event nextEventOne = new BossBarConfig.Event("Twitter Panel", BossBarConfig.Event.Location.MAIN_STAGE,
-                System.currentTimeMillis() + (60 * 1000 * 5), System.currentTimeMillis() + (60 * 1000 * 35));
-        final BossBarConfig.Event nextEventTwo = new BossBarConfig.Event("Hide and Seek", BossBarConfig.Event.Location.OUTSIDE,
-                System.currentTimeMillis() + (60 * 1000 * 2), System.currentTimeMillis() + (60 * 1000 * 22));
-
-        BossBarModule module = EventCore.getInstance().getModuleRegistry().getModule(BossBarModule.class);
-        module.getConfig().getEvents().clear();
-        module.getConfig().getEvents().add(event);
-        module.getConfig().getEvents().add(sideEvent);
-        module.getConfig().getEvents().add(nextEventOne);
-        module.getConfig().getEvents().add(nextEventTwo);
+//        final BossBarConfig.Event event = new BossBarConfig.Event("Game Server Panel", BossBarConfig.Event.Location.MAIN_STAGE,
+//                System.currentTimeMillis() - (60 * 1000 * 25), System.currentTimeMillis() + (60 * 1000 * 5));
+//        final BossBarConfig.Event sideEvent = new BossBarConfig.Event("Community Panel", BossBarConfig.Event.Location.SIDE_STAGE,
+//                System.currentTimeMillis() - (60 * 1000 * 2), System.currentTimeMillis() + (60 * 1000 * 28));
+//        final BossBarConfig.Event nextEventOne = new BossBarConfig.Event("Twitter Panel", BossBarConfig.Event.Location.MAIN_STAGE,
+//                System.currentTimeMillis() + (60 * 1000 * 5), System.currentTimeMillis() + (60 * 1000 * 35));
+//        final BossBarConfig.Event nextEventTwo = new BossBarConfig.Event("Hide and Seek", BossBarConfig.Event.Location.OUTSIDE,
+//                System.currentTimeMillis() + (60 * 1000 * 2), System.currentTimeMillis() + (60 * 1000 * 22));
+//
+//        BossBarModule module = EventCore.getInstance().getModuleRegistry().getModule(BossBarModule.class);
+//        module.getConfig().getEvents().clear();
+//        module.getConfig().getEvents().add(event);
+//        module.getConfig().getEvents().add(sideEvent);
+//        module.getConfig().getEvents().add(nextEventOne);
+//        module.getConfig().getEvents().add(nextEventTwo);
         return true;
     }
 

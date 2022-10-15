@@ -48,6 +48,7 @@ public class WarpModule extends Module implements Listener {
 
     private void onMysqlLoad(MySQLLoadedEvent t) {
         plots = t.getMySQLDatabase().getDAO(BoothDAO.class).getPlots();
+        System.out.println("LOADING PLOTS: " + plots.toString());
         generateWarpItems();
     }
 
@@ -58,7 +59,7 @@ public class WarpModule extends Module implements Listener {
 
     @EventHandler
     public void onWorldLoad(WorldLoadEvent worldLoadEvent){
-        if(worldLoadEvent.getWorld().getName().equalsIgnoreCase("world")){
+        if(worldLoadEvent.getWorld().getName().equalsIgnoreCase(Bukkit.getWorlds().get(0).getName())){
             mainWorld = worldLoadEvent.getWorld();
             if (plots != null) {
                 generateWarpItems();
@@ -68,36 +69,36 @@ public class WarpModule extends Module implements Listener {
 
     public void generateWarpItems(){
         warpItems = new ArrayList<>();
-        World world = Bukkit.getWorld("world");
+        World world = Bukkit.getWorlds().get(0);
         plots.sort(Comparator.comparingInt(o -> WarpCategory.fromName(o.getBoothType()).ordinal()));
-        for(int i = 0; i < plots.size(); i++){
-            EventBoothPlot boothPlot = plots.get(i);
-            WarpCategory fi = WarpCategory.fromName(boothPlot.getBoothType());
-            String name = boothPlot.getBooth() == null ? "Booth" : boothPlot.getBooth().getName();
-            ItemStack item = ItemUtils.createItemStack(fi.stackColor, StringUtils.colorizeMessage("&r&l" + name), 1);
-            String[] splits = boothPlot.getFrontPos() == null ? boothPlot.getPosOne().split(",") : boothPlot.getFrontPos().split(",");
-            Location l;
-            if(splits.length > 3){
-                l = new Location(world, Integer.parseInt(splits[0]), Integer.parseInt(splits[1]), Integer.parseInt(splits[2]), Float.parseFloat(splits[3]), Float.parseFloat(splits[4]));
-            } else {
-                l = new Location(world, Integer.parseInt(splits[0]), Integer.parseInt(splits[1]), Integer.parseInt(splits[2]));
+        plots.forEach(plot -> {
+            WarpCategory category = WarpCategory.fromName(plot.getBoothType());
+            String name = plot.getBooth().getName();
+            ItemStack item = ItemUtils.createItemStack(category.stackColor, StringUtils.colorizeMessage("&r&l" + name), 1);
+            String[] splits = plot.getFrontPos() == null ? plot.getPosOne().split(",") : plot.getFrontPos().split(",");
+            Location location;
+            if(splits.length > 3) {
+                location = new Location(world, Integer.parseInt(splits[0]), Integer.parseInt(splits[1]), Integer.parseInt(splits[2]), Float.parseFloat(splits[3]), Float.parseFloat(splits[4]));
+            }else{
+                location = new Location(world, Integer.parseInt(splits[0]), Integer.parseInt(splits[1]), Integer.parseInt(splits[2]));
             }
-            warpItems.add(new WarpItem(name, item, l, fi));
-        }
+            warpItems.add(new WarpItem(name, item, location, category));
+        });
+
         ItemStack ENTRANCE = ItemUtils.createItemStack(Material.OAK_DOOR, "&r&9&lEntrance");
-        warpItems.add(new WarpItem("Entrance", ENTRANCE, new Location(world, 1, 30, -99), WarpCategory.OTHER));
-        ItemStack EXPO_HALL = ItemUtils.createItemStack(Material.YELLOW_WOOL, "&r&9&lExpo Hall");
-        warpItems.add(new WarpItem("Expo Hall", EXPO_HALL, new Location(world, 18, 30, 153, -90, 0), WarpCategory.OTHER));
+        warpItems.add(new WarpItem("Entrance", ENTRANCE, new Location(world, 0.5, 30, -99.5, 0, 0), WarpCategory.OTHER));
+        ItemStack EXPO_HALL = ItemUtils.createItemStack(Material.YELLOW_CONCRETE, "&r&9&lExpo Hall");
+        warpItems.add(new WarpItem("Expo Hall", EXPO_HALL, new Location(world, 58.5, 30, 153.5, -90, 0), WarpCategory.OTHER));
         ItemStack STAGE_ITEM = ItemUtils.createItemStack(Material.NETHER_STAR, "&r&9&lMain Stage");
-        warpItems.add(new WarpItem("Main Stage", STAGE_ITEM, new Location(world, -27,30, 169, 21, 0), WarpCategory.OTHER));
+        warpItems.add(new WarpItem("Main Stage", STAGE_ITEM, new Location(world, -33.5, 30, 190.5, 0, 0), WarpCategory.OTHER));
         ItemStack OUTDOOR_STAGE_ITEM = ItemUtils.createItemStack(Material.JUKEBOX, "&r&9&lOutdoor Stage");
-        warpItems.add(new WarpItem("Outdoor Stage", OUTDOOR_STAGE_ITEM, new Location(world, -75,30, 147, 90, 0), WarpCategory.OTHER));
+        warpItems.add(new WarpItem("Outdoor Stage", OUTDOOR_STAGE_ITEM, new Location(world, -96.5, 30, 148.5, 90, 0), WarpCategory.OTHER));
         ItemStack GAMES_ITEM = ItemUtils.createItemStack(Material.STICKY_PISTON, "&r&9&lStickyPiston Arcade Games");
         warpItems.add(new WarpItem("StickyPiston Arcade Games", GAMES_ITEM, new Location(world, -45, 30, 23, 90, 0), WarpCategory.OTHER));
         ItemStack STICKY_PISTON = ItemUtils.createItemStack(Material.OAK_BOAT, "&r&a&lVIP Yacht");
         warpItems.add(new WarpItem("VIP Yacht", STICKY_PISTON, new Location(world, -206, 30, 298, 180, 0), WarpCategory.OTHER));
-        ItemStack STATION = ItemUtils.createItemStack(Material.GRASS, "&r&9&lBiome Tour Experience");
-        warpItems.add(new WarpItem("Biome Tour Experience", STATION, new Location(world, 42, 30, 12, -140, 0), WarpCategory.OTHER));
+        ItemStack STATION = ItemUtils.createItemStack(Material.PAPER, "&r&9&lMeet & Greet");
+        warpItems.add(new WarpItem("Meet & Greet", STATION, new Location(world, 53.5, 30, 11.5, 180, 0), WarpCategory.OTHER));
 
 
         ItemStack dreamKingdom = ItemUtils.createItemStack(Material.RED_CONCRETE, "&r&lDreamKingdom");

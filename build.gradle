@@ -63,6 +63,7 @@ dependencies {
     compileOnly ('xyz.xenondevs:particle:1.7.1')
     compileOnly 'dev.imabad.mceventsuite:wgregionevents:1.4-SNAPSHOT'
     compileOnly 'com.gmail.filoghost.holographicdisplays:holographicdisplays-api:2.4.0'
+    compileOnly 'dev.imabad.mceventsuite:cubedcosmetics:1.0'
 //    compileOnly 'dev.imabad.mceventsuite:cubedcosmetics:1.0'
     compileOnly 'org.geysermc.floodgate:api:2.0-SNAPSHOT'
     compileOnly 'fr.neatmonster:nocheatplus:3.16.1-SNAPSHOT'
