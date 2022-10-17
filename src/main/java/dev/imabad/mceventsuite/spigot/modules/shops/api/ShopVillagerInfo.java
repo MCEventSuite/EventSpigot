@@ -4,6 +4,7 @@ import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.spigot.EventSpigot;
 import dev.imabad.mceventsuite.spigot.modules.npc.NPC;
 import dev.imabad.mceventsuite.spigot.modules.npc.NPCModule;
+import dev.imabad.mceventsuite.spigot.modules.shops.sponsor.SponsorShackInteraction;
 import dev.imabad.mceventsuite.spigot.modules.shops.starblocks.StarblocksInteraction;
 import dev.imabad.mceventsuite.spigot.utils.StringUtils;
 import org.bukkit.Location;
@@ -39,12 +40,21 @@ public class ShopVillagerInfo
     }
 
     public void spawn() {
-        this.shopNPC = EventCore.getInstance().getModuleRegistry().getModule(NPCModule.class).getNpcManager().createNpc(
-                StringUtils.colorizeMessage(displayName),
-                EntityType.PLAYER,
-                new StarblocksInteraction(shop, this),
-                spawnLocation
-        );
+        if(shop.getName().equalsIgnoreCase("DK Snacks")) {
+            this.shopNPC = EventCore.getInstance().getModuleRegistry().getModule(NPCModule.class).getNpcManager().createNpc(
+                    StringUtils.colorizeMessage(displayName),
+                    EntityType.PLAYER,
+                    new SponsorShackInteraction(shop, this),
+                    spawnLocation
+            );
+        }else{
+            this.shopNPC = EventCore.getInstance().getModuleRegistry().getModule(NPCModule.class).getNpcManager().createNpc(
+                    StringUtils.colorizeMessage(displayName),
+                    EntityType.VILLAGER,
+                    new StarblocksInteraction(shop, this),
+                    spawnLocation
+            );
+        }
     }
 
     public void close(){

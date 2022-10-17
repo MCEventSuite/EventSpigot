@@ -78,9 +78,9 @@ public class WarpModule extends Module implements Listener {
             String[] splits = plot.getFrontPos() == null ? plot.getPosOne().split(",") : plot.getFrontPos().split(",");
             Location location;
             if(splits.length > 3) {
-                location = new Location(world, Integer.parseInt(splits[0]), Integer.parseInt(splits[1]), Integer.parseInt(splits[2]), Float.parseFloat(splits[3]), Float.parseFloat(splits[4]));
+                location = new Location(world, Double.parseDouble(splits[0]), Double.parseDouble(splits[1]), Double.parseDouble(splits[2]), Float.parseFloat(splits[3]), Float.parseFloat(splits[4]));
             }else{
-                location = new Location(world, Integer.parseInt(splits[0]), Integer.parseInt(splits[1]), Integer.parseInt(splits[2]));
+                location = new Location(world, Double.parseDouble(splits[0]), Double.parseDouble(splits[1]), Double.parseDouble(splits[2]));
             }
             warpItems.add(new WarpItem(name, item, location, category));
         });

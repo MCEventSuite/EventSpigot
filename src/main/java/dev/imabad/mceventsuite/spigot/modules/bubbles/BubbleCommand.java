@@ -51,34 +51,42 @@ public class BubbleCommand extends BaseCommand {
             }
             this.bubbleManager.leaveChatBubble(player, this.getLastArgs(args, 1));
         } else if (args[0].equalsIgnoreCase("toggle")) {
-            boolean active = player.getPersistentData("cb_global") == null || player.getPersistentData("cb_global").equals("true");
-            if (active) {
-                player.setPersistentData("cb_global", "false");
-                player.sendMessage(ChatColor.YELLOW + "Chat bubble monitoring " + ChatColor.RED + "disabled");
-            } else {
-                player.setPersistentData("cb_global", "true");
-                player.sendMessage(ChatColor.YELLOW + "Chat bubble monitoring " + ChatColor.GREEN + "enabled");
+            if(sender.hasPermission("eventsuite.cb.toggle")) {
+                boolean active = player.getPersistentData("cb_global") == null || player.getPersistentData("cb_global").equals("true");
+                if(active) {
+                    player.setPersistentData("cb_global", "false");
+                    player.sendMessage(ChatColor.YELLOW + "Chat bubble monitoring " + ChatColor.RED + "disabled");
+                }else{
+                    player.setPersistentData("cb_global", "true");
+                    player.sendMessage(ChatColor.YELLOW + "Chat bubble monitoring " + ChatColor.GREEN + "enabled");
+                }
+            }else{
+                player.sendMessage(ChatColor.RED + "You do not have permission to use this command!");
             }
         } else if (args[0].equalsIgnoreCase("global")) {
-            String text = this.getLastArgs(args, 1);
-            EventCore.getInstance().getEventPlayerManager().getPlayer(player.getUniqueId()).ifPresentOrElse((p) -> {
-                Component javaMessage = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
-                        "&c[Announcement] " +
-                                (p.getRank().getJavaPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(p.getRank().getJavaPrefix()))
-                                + player.getName()
-                                + ": &f" + text)).asComponent();
-                Component bedrockMessage = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
-                        "&c[Announcement] " +
-                                (p.getRank().getBedrockPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(p.getRank().getBedrockPrefix()))
-                                + player.getName()
-                                + ": &f" + text)).asComponent();
+            if(sender.hasPermission("eventsuite.cb.global")) {
+                String text = this.getLastArgs(args, 1);
+                EventCore.getInstance().getEventPlayerManager().getPlayer(player.getUniqueId()).ifPresentOrElse((p) -> {
+                    Component javaMessage = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
+                            "&c[Announcement] " +
+                                    (p.getRank().getJavaPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(p.getRank().getJavaPrefix()))
+                                    + player.getName()
+                                    + ": &f" + text)).asComponent();
+                    Component bedrockMessage = Component.text().append(LegacyComponentSerializer.legacyAmpersand().deserialize(
+                            "&c[Announcement] " +
+                                    (p.getRank().getBedrockPrefix().isEmpty() ? "" : StringUtils.colorizeMessage(p.getRank().getBedrockPrefix()))
+                                    + player.getName()
+                                    + ": &f" + text)).asComponent();
 
-                for (Player player1 : Bukkit.getAllOnlinePlayers())
-                    if (FloodgateApi.getInstance().isFloodgatePlayer(player1.getUniqueId()))
-                        player1.sendMessage(bedrockMessage);
-                    else
-                        player1.sendMessage(javaMessage);
-            }, () -> player.sendMessage("An error occurred, please try again later"));
+                    for(Player player1 : Bukkit.getAllOnlinePlayers())
+                        if(FloodgateApi.getInstance().isFloodgatePlayer(player1.getUniqueId()))
+                            player1.sendMessage(bedrockMessage);
+                        else
+                            player1.sendMessage(javaMessage);
+                }, () -> player.sendMessage("An error occurred, please try again later"));
+            } else {
+                player.sendMessage(ChatColor.RED + "You do not have permission to use this command");
+            }
         }
 
         return true;

@@ -10,6 +10,7 @@ import dev.imabad.mceventsuite.spigot.modules.shops.api.IMovingVillagerShop;
 import dev.imabad.mceventsuite.spigot.modules.shops.api.IProduct;
 import dev.imabad.mceventsuite.spigot.modules.shops.api.IShop;
 import dev.imabad.mceventsuite.spigot.modules.shops.api.ShopVillagerInfo;
+import dev.imabad.mceventsuite.spigot.modules.shops.sponsor.SponsorShackShop;
 import dev.imabad.mceventsuite.spigot.modules.shops.squareways.SquarewayShop;
 import dev.imabad.mceventsuite.spigot.modules.shops.starblocks.StarblocksShop;
 import dev.imabad.mceventsuite.spigot.utils.ItemUtils;
@@ -71,6 +72,7 @@ public class ShopsModule extends Module implements Listener {
 
             this.registerShop(new SquarewayShop(this));
             this.registerShop(new StarblocksShop(this));
+            this.registerShop(new SponsorShackShop(this));
         }
     }
 
