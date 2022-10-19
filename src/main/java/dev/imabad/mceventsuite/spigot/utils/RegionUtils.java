@@ -25,6 +25,10 @@ public class RegionUtils {
         return getPlayerRegions(player).getRegions().stream().anyMatch(protectedRegion -> protectedRegion.getId().equalsIgnoreCase(regionName));
     }
 
+    public static boolean isInFlag(Player player, Flag flag){
+        return getPlayerRegions(player).getRegions().stream().anyMatch(protectedRegion -> protectedRegion.getFlag(flag) != null);
+    }
+
     public static <T extends Flag<?>> T getOrRegisterFlag(T flag) {
         try{
             WorldGuard.getInstance().getFlagRegistry().register(flag);
