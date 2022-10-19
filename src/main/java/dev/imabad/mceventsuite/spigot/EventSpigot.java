@@ -34,7 +34,6 @@ import dev.imabad.mceventsuite.spigot.modules.chat.ChatFilterModule;
 import dev.imabad.mceventsuite.spigot.modules.daylight.DaylightModule;
 import dev.imabad.mceventsuite.spigot.modules.eventblocker.EventBlockModule;
 import dev.imabad.mceventsuite.spigot.modules.eventpass.EventPassSpigotModule;
-import dev.imabad.mceventsuite.spigot.modules.flags.FlagModule;
 import dev.imabad.mceventsuite.spigot.modules.hidenseek.HideNSeekModule;
 import dev.imabad.mceventsuite.spigot.modules.map.MapModule;
 import dev.imabad.mceventsuite.spigot.modules.meet.MeetModule;
