@@ -1,6 +1,7 @@
 package dev.imabad.mceventsuite.spigot.commands;
 
 import com.sk89q.worldguard.protection.flags.BooleanFlag;
+import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.StringFlag;
 import dev.imabad.mceventsuite.core.EventCore;
 import dev.imabad.mceventsuite.core.api.objects.EventPlayer;
@@ -29,7 +30,7 @@ public class FlyCommand extends BaseCommand {
         EventPlayer eventPlayer = EventCore.getInstance().getEventPlayerManager().getPlayer(sender.getUniqueId()).get();
 
         // Checks if user is not in a region with the fly flag & is not a staff member.
-        if(!RegionUtils.isInFlag(sender, RegionUtils.getOrRegisterFlag(new BooleanFlag("can-fly")))
+        if(!RegionUtils.getHighestPriorityRegionFlag(sender, RegionUtils.getOrRegisterFlag(new BooleanFlag("can-fly")))
                 && !sender.hasPermission("mceventsuite.fly.bypass")) {
             if(args.length == 0) {
                 if(!eventPlayer.hasPermission("eventsuite.fly")) {

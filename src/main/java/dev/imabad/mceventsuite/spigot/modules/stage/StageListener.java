@@ -75,7 +75,7 @@ public class StageListener implements Listener {
       regionEnterEvent.getPlayer().getInventory().setItem(5, KNOCK_STICK);
       EventSpigot.getInstance().getAudiences().player(regionEnterEvent.getPlayer()).sendMessage(
               Component.text("You have entered king of the hill!").color(NamedTextColor.GREEN));
-    } else if (regionEnterEvent.getRegionId().equalsIgnoreCase("KOTH-TOP") && this.isKothServer()) {
+    } else if (regionEnterEvent.getRegionId().equalsIgnoreCase("KOTH-TOP")) {
       List<Player> playersOnTop = Bukkit.getOnlinePlayers().stream().filter(player -> RegionUtils.isInRegion(player, "KOTH-TOP")).collect(Collectors.toList());
       List<Player> playersInKOTH = Bukkit.getOnlinePlayers().stream().filter(player -> RegionUtils.isInRegion(player, "KOTH")).collect(Collectors.toList());
       if (playersOnTop.size() > 1) {
@@ -99,7 +99,6 @@ public class StageListener implements Listener {
         leftEvent.getPlayer().getInventory().setItem(5, new ItemStack(Material.AIR));
         EventSpigot.getInstance().getAudiences().player(leftEvent.getPlayer()).sendMessage(
             Component.text("You have left king of the hill!").color(NamedTextColor.RED));
-        BungeeUtils.sendBack(leftEvent.getPlayer());
       }
     } else if(leftEvent.getRegionId().equalsIgnoreCase("KOTH-TOP")){
         List<Player> playersOnTop = Bukkit.getOnlinePlayers().stream().filter(player -> RegionUtils.isInRegion(player, "KOTH-TOP")).collect(Collectors.toList());

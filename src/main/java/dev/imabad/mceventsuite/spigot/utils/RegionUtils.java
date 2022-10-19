@@ -25,8 +25,9 @@ public class RegionUtils {
         return getPlayerRegions(player).getRegions().stream().anyMatch(protectedRegion -> protectedRegion.getId().equalsIgnoreCase(regionName));
     }
 
-    public static boolean isInFlag(Player player, Flag flag){
-        return getPlayerRegions(player).getRegions().stream().anyMatch(protectedRegion -> protectedRegion.getFlag(flag) != null);
+    // Check worldguard region with the highest priority for flag
+    public static <V> V getHighestPriorityRegionFlag(Player player, Flag<V> flag) {
+        return getPlayerRegions(player).queryValue(null, flag);
     }
 
     public static <T extends Flag<?>> T getOrRegisterFlag(T flag) {
