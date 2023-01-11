@@ -19,11 +19,13 @@ import dev.imabad.mceventsuite.core.modules.redis.messages.players.UpdatedRankMe
 import dev.imabad.mceventsuite.core.modules.scavenger.ScavengerModule;
 import dev.imabad.mceventsuite.core.modules.servers.ServersModule;
 import dev.imabad.mceventsuite.core.modules.servers.objects.Server;
+import dev.imabad.mceventsuite.core.util.BadWords;
 import dev.imabad.mceventsuite.spigot.commands.*;
 import dev.imabad.mceventsuite.spigot.impl.EventPermissible;
 import dev.imabad.mceventsuite.spigot.impl.EventPermission;
 import dev.imabad.mceventsuite.spigot.impl.SpigotActionExecutor;
 import dev.imabad.mceventsuite.spigot.listeners.BuildListener;
+import dev.imabad.mceventsuite.spigot.listeners.ChatListener;
 import dev.imabad.mceventsuite.spigot.listeners.EventListener;
 import dev.imabad.mceventsuite.spigot.listeners.PlayerListener;
 import dev.imabad.mceventsuite.spigot.modules.bedrock.BedrockModule;
@@ -158,6 +160,8 @@ public class EventSpigot extends JavaPlugin {
         });
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getServer().getPluginManager().registerEvents(new BuildListener(), this);
+        getServer().getPluginManager().registerEvents(new ChatListener(), this);
+        BadWords.loadConfigs();
         if(getServer().getPluginManager().isPluginEnabled("Vault")){
             System.out.println("Vault is enabled, registering permission handler");
             getServer().getServicesManager().register(Permission.class, new EventPermission(), this, ServicePriority.Highest);
